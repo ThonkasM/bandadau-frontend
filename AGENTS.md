@@ -35,6 +35,9 @@ subpaths de `expo-router` sin `@react-navigation/*`).
   colecciones largas (feed, comentarios, movimientos, tickets).
 - **pnpm**: `react-native-css-interop` se declara como dependencia **directa** porque NativeWind v4
   emite `react-native-css-interop/jsx-runtime` y pnpm no lo hoistea. No quitarla.
+- **Tras reconstruir un paquete `@bandada/*`** (`pnpm --filter @bandada/… build` en `bandadau-shared`),
+  hay que ejecutar `pnpm install` en este repo: pnpm copia (hard-link) los `file:` al store y el `dist/`
+  nuevo no se refleja hasta reinstalar (si no, Metro falla al resolver los chunks con hash).
 
 ## Arquitectura y carpetas
 
