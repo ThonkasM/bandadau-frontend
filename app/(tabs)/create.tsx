@@ -1,5 +1,5 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -8,16 +8,32 @@ import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
+import { MediaPreviewFrame } from '@/features/create/components/media-preview';
 import { useTokens } from '@/theme/theme-provider';
 
 type Visibility = 'PUBLIC' | 'FOLLOWERS' | 'GROUP';
+type Photo = { uri: string; width: number; height: number };
 
-/** UC-05 · Compose post (mockup: not wired yet). */
+/** UC-05 · Compose post (mockup: media preview + crop guide, publish not wired). */
 export default function CreateScreen() {
   const tokens = useTokens();
   const { t } = useTranslation('create');
   const [text, setText] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('PUBLIC');
+  const [photo, setPhoto] = useState<Photo | null>(null);
+  const picks = useRef(0);
+
+  // Mock picker: alternates portrait (3:4) and landscape (4:3) to show the guide.
+  const pickPhoto = () => {
+    const portrait = picks.current % 2 === 0;
+    const [width, height] = portrait ? [900, 1200] : [1200, 900];
+    setPhoto({
+      uri: `https://picsum.photos/seed/bandada-compose-${Date.now()}/${width}/${height}`,
+      width,
+      height,
+    });
+    picks.current += 1;
+  };
 
   return (
     <Screen title={t('title')}>
@@ -41,10 +57,19 @@ export default function CreateScreen() {
         ))}
       </View>
 
-      <View style={styles.mediaRow}>
-        <MediaButton icon="image-plus" label={t('addImage')} />
-        <MediaButton icon="video-plus" label={t('addVideo')} />
-      </View>
+      {photo ? (
+        <>
+          <MediaPreviewFrame uri={photo.uri} width={photo.width} height={photo.height} />
+          <Pressable onPress={() => setPhoto(null)}>
+            <Text variant="link">{t('remove')}</Text>
+          </Pressable>
+        </>
+      ) : (
+        <View style={styles.mediaRow}>
+          <MediaButton icon="image-plus" label={t('addImage')} onPress={pickPhoto} />
+          <MediaButton icon="video-plus" label={t('addVideo')} />
+        </View>
+      )}
 
       <Button label={t('publish')} icon="send" onPress={() => undefined} />
       <Text variant="caption" style={{ color: tokens.color.text.muted }}>
@@ -57,13 +82,16 @@ export default function CreateScreen() {
 function MediaButton({
   icon,
   label,
+  onPress,
 }: {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
+  onPress?: () => void;
 }) {
   const tokens = useTokens();
   return (
     <Pressable
+      onPress={onPress}
       style={[styles.media, { borderColor: tokens.color.border.default }]}
       accessibilityRole="button">
       <MaterialCommunityIcons name={icon} size={22} color={tokens.color.text.muted} />
@@ -73,7 +101,7 @@ function MediaButton({
 }
 
 const styles = StyleSheet.create({
-  composer: { minHeight: 140, textAlignVertical: 'top' },
+  composer: { minHeight: 120, textAlignVertical: 'top' },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   mediaRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
   media: {

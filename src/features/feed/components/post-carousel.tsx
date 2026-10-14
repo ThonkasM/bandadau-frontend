@@ -16,14 +16,26 @@ import {
 import type { PostMedia } from '@/features/feed/types';
 import { useTokens } from '@/theme/theme-provider';
 
+/** Default aspect ratio until the first image reports its real size (IG-like 4:5 portrait). */
+const DEFAULT_RATIO = 4 / 5;
+
 /**
- * Instagram-style media carousel: swipeable pager with page dots.
- * On **web** it also shows left/right arrows (desktop convention).
+ * Instagram-style media carousel. The container aspect ratio is taken from the
+ * **first** image's real dimensions (all slides share it, like Instagram), so
+ * the media shows complete instead of being cropped. Web adds left/right arrows.
  */
-export function PostCarousel({ media }: { media: PostMedia[] }) {
+export function PostCarousel({
+  media,
+  initialRatio = DEFAULT_RATIO,
+}: {
+  media: PostMedia[];
+  initialRatio?: number;
+}) {
   const tokens = useTokens();
   const { t } = useTranslation('feed');
   const [width, setWidth] = useState(0);
+  const [ratio, setRatio] = useState(initialRatio);
+  const ratioLocked = useRef(false);
   const [index, setIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const count = media.length;
@@ -31,6 +43,16 @@ export function PostCarousel({ media }: { media: PostMedia[] }) {
   if (count === 0) return null;
 
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
+  const slideHeight = width / ratio;
+
+  const handleFirstLoad = (i: number) => (event: unknown) => {
+    if (i !== 0 || ratioLocked.current) return;
+    const source = (event as { source?: { width?: number; height?: number } }).source;
+    if (source?.width && source?.height) {
+      ratioLocked.current = true;
+      setRatio(source.width / source.height);
+    }
+  };
 
   const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (!width) return;
@@ -46,7 +68,7 @@ export function PostCarousel({ media }: { media: PostMedia[] }) {
   return (
     <View
       onLayout={onLayout}
-      style={[styles.root, { backgroundColor: tokens.color.bg.muted }]}>
+      style={[styles.root, { aspectRatio: ratio, backgroundColor: tokens.color.bg.muted }]}>
       {width > 0 ? (
         <ScrollView
           ref={scrollRef}
@@ -61,10 +83,11 @@ export function PostCarousel({ media }: { media: PostMedia[] }) {
             <Image
               key={mediaItem.mediaId ?? i}
               source={{ uri: mediaItem.url ?? mediaItem.thumbnailUrl ?? undefined }}
-              style={{ width, height: width }}
+              style={{ width, height: slideHeight }}
               contentFit="cover"
               transition={200}
               recyclingKey={mediaItem.mediaId ?? String(i)}
+              onLoad={handleFirstLoad(i)}
             />
           ))}
         </ScrollView>
@@ -147,7 +170,7 @@ function Arrow({
 }
 
 const styles = StyleSheet.create({
-  root: { width: '100%', aspectRatio: 1, overflow: 'hidden' },
+  root: { width: '100%', overflow: 'hidden' },
   dots: {
     position: 'absolute',
     bottom: 12,

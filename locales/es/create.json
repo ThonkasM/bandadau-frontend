@@ -9,6 +9,13 @@
   },
   "addImage": "Imagen",
   "addVideo": "Video",
+  "remove": "Quitar",
+  "preview": "Así se verá en el feed",
+  "orientation": {
+    "portrait": "Vertical 3:4",
+    "landscape": "Horizontal 4:3",
+    "square": "Cuadrada 1:1"
+  },
   "publish": "Publicar",
   "mockNote": "Mockup: publicar se conecta en la fase de integración."
 }

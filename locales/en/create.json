@@ -9,6 +9,13 @@
   },
   "addImage": "Image",
   "addVideo": "Video",
+  "remove": "Remove",
+  "preview": "How it will look in the feed",
+  "orientation": {
+    "portrait": "Portrait 3:4",
+    "landscape": "Landscape 4:3",
+    "square": "Square 1:1"
+  },
   "publish": "Publish",
   "mockNote": "Mockup: publishing is wired during the integration phase."
 }
