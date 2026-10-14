@@ -2,6 +2,7 @@ import { env } from '@/lib/env';
 
 import { mockFeed } from './feed';
 import { mockNotifications } from './notifications';
+import { mockMyProfile, mockUpdateProfile } from './profile';
 
 export interface MockResult {
   status: number;
@@ -34,6 +35,16 @@ const routes: MockRoute[] = [
     method: 'POST',
     match: (p) => p === '/api/v1/notifications/read-all',
     handle: () => ({ status: 204, body: undefined }),
+  },
+  {
+    method: 'GET',
+    match: (p) => p === '/api/v1/profiles/me',
+    handle: () => ({ status: 200, body: mockMyProfile() }),
+  },
+  {
+    method: 'PATCH',
+    match: (p) => p === '/api/v1/profiles/me',
+    handle: () => ({ status: 200, body: mockUpdateProfile() }),
   },
 ];
 

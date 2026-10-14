@@ -1,0 +1,12 @@
+{
+  "edit": "Edit profile",
+  "error": "We couldn't load your profile.",
+  "displayName": "Display name",
+  "career": "Career",
+  "semester": "Semester",
+  "bio": "Bio",
+  "interests": "Interests (comma separated)",
+  "posts": "Posts",
+  "followers": "Followers",
+  "following": "Following"
+}

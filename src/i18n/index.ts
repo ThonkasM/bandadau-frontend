@@ -14,6 +14,7 @@ export const NAMESPACES = [
   'nav',
   'feed',
   'notifications',
+  'profile',
   'common',
   'enums',
   'errors',

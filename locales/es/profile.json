@@ -1,0 +1,12 @@
+{
+  "edit": "Editar perfil",
+  "error": "No pudimos cargar tu perfil.",
+  "displayName": "Nombre visible",
+  "career": "Carrera",
+  "semester": "Semestre",
+  "bio": "Biografía",
+  "interests": "Intereses (separados por coma)",
+  "posts": "Publicaciones",
+  "followers": "Seguidores",
+  "following": "Siguiendo"
+}
