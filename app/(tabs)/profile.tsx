@@ -119,13 +119,25 @@ export default function ProfileScreen() {
         {gridItems.length > 0 ? (
           <View style={styles.grid}>
             {gridItems.map((i) => (
-              <Image
+              <Pressable
                 key={i}
-                source={{ uri: `https://picsum.photos/seed/bandada-grid-${data.userId}-${i}/400/400` }}
-                style={styles.gridItem}
-                contentFit="cover"
-                transition={150}
-              />
+                accessibilityRole="button"
+                onPress={() =>
+                  router.push({
+                    pathname: '/profile/[userId]',
+                    params: { userId: data.userId, name: data.displayName },
+                  })
+                }
+                style={[styles.gridItem, { backgroundColor: tokens.color.bg.muted }]}>
+                <Image
+                  source={{
+                    uri: `https://picsum.photos/seed/bandada-grid-${data.userId}-${i}/400/400`,
+                  }}
+                  style={styles.gridImage}
+                  contentFit="cover"
+                  transition={150}
+                />
+              </Pressable>
             ))}
           </View>
         ) : (
@@ -175,5 +187,6 @@ const styles = StyleSheet.create({
   tab: { flex: 1, alignItems: 'center', paddingVertical: 10 },
   tabUnderline: { position: 'absolute', bottom: 0, height: 2, width: '40%', borderRadius: 1 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 2, padding: 2 },
-  gridItem: { width: '32.6%', aspectRatio: 1 },
+  gridItem: { width: '32.6%', aspectRatio: 1, borderRadius: 4, overflow: 'hidden' },
+  gridImage: { width: '100%', height: '100%' },
 });

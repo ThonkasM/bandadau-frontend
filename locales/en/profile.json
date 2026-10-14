@@ -9,5 +9,7 @@
   "posts": "Posts",
   "followers": "Followers",
   "following": "Following",
-  "savedEmpty": "You haven't saved any posts yet."
+  "savedEmpty": "You haven't saved any posts yet.",
+  "postsEmpty": "No posts yet.",
+  "back": "Back"
 }

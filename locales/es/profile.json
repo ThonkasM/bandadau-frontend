@@ -9,5 +9,7 @@
   "posts": "Publicaciones",
   "followers": "Seguidores",
   "following": "Siguiendo",
-  "savedEmpty": "Aún no guardaste publicaciones."
+  "savedEmpty": "Aún no guardaste publicaciones.",
+  "postsEmpty": "Aún no hay publicaciones.",
+  "back": "Volver"
 }

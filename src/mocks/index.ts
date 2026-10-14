@@ -8,6 +8,7 @@ import { mockGroups } from './groups';
 import { mockNotifications } from './notifications';
 import { mockMyProfile, mockUpdateProfile } from './profile';
 import { mockTicket, mockTickets } from './tickets';
+import { mockUserPosts } from './user-posts';
 import { mockCreateTopUp, mockLedger, mockWallet } from './wallet';
 
 export interface MockResult {
@@ -28,6 +29,11 @@ const routes: MockRoute[] = [
   // Identity / profile
   { method: 'GET', match: '/api/v1/profiles/me', handle: () => ok(mockMyProfile()) },
   { method: 'PATCH', match: '/api/v1/profiles/me', handle: () => ok(mockUpdateProfile()) },
+  {
+    method: 'GET',
+    match: /^\/api\/v1\/profiles\/[^/]+\/posts$/,
+    handle: (path) => ok(mockUserPosts(segment(path, 4))),
+  },
   // Feed
   { method: 'GET', match: '/api/v1/feed', handle: (_p, query) => ok(mockFeed(query)) },
   // Notifications

@@ -35,7 +35,7 @@ function media(seed: string, count: number, first: Orientation): PostMedia[] {
   return Array.from({ length: count }, (_, index) => image(seed, index, order[index % order.length]!));
 }
 
-function item(
+export function buildFeedItem(
   seed: string,
   displayName: string,
   userId: string,
@@ -69,12 +69,12 @@ function item(
 }
 
 const PAGE_1: FeedItem[] = [
-  item('0192f3b0-7c1e-7a2b-9c3d-4e5f60718001', 'Lucía Pérez', '0192f3b0-0000-7000-8000-000000000001', '¡Arrancando Ingeniería de Software II con todo! Alguien para grupo de estudio de arquitectura hexagonal?', 8, 12, 3, 'portrait'),
-  item('0192f3b0-7c1e-7a2b-9c3d-4e5f60718002', 'Marco Rojas', '0192f3b0-0000-7000-8000-000000000002', 'Comparto apuntes de la clase de eventos y SAGA. Están en el grupo de la materia.', 45, 30, 1, 'landscape'),
+  buildFeedItem('0192f3b0-7c1e-7a2b-9c3d-4e5f60718001', 'Lucía Pérez', '0192f3b0-0000-7000-8000-000000000001', '¡Arrancando Ingeniería de Software II con todo! Alguien para grupo de estudio de arquitectura hexagonal?', 8, 12, 3, 'portrait'),
+  buildFeedItem('0192f3b0-7c1e-7a2b-9c3d-4e5f60718002', 'Marco Rojas', '0192f3b0-0000-7000-8000-000000000002', 'Comparto apuntes de la clase de eventos y SAGA. Están en el grupo de la materia.', 45, 30, 1, 'landscape'),
 ];
 
 const PAGE_2: FeedItem[] = [
-  item('0192f3b0-7c1e-7a2b-9c3d-4e5f60718003', 'Sofía Quispe', '0192f3b0-0000-7000-8000-000000000003', 'Recordatorio: mañana hay taller de microfrontends en el laboratorio 3.', 180, 7, 4, 'square'),
+  buildFeedItem('0192f3b0-7c1e-7a2b-9c3d-4e5f60718003', 'Sofía Quispe', '0192f3b0-0000-7000-8000-000000000003', 'Recordatorio: mañana hay taller de microfrontends en el laboratorio 3.', 180, 7, 4, 'square'),
 ];
 
 /** UC-06 mock: cursor `p2` yields the second page, then the end. */
