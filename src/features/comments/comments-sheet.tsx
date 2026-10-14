@@ -66,7 +66,7 @@ export default function CommentsSheet({ post, visible, onClose }: CommentsPanelP
   return (
     <BottomSheetModal
       ref={ref}
-      snapPoints={['80%']}
+      snapPoints={['90%']}
       enablePanDownToClose
       handleComponent={null}
       backdropComponent={backdrop}
