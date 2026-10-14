@@ -42,7 +42,9 @@ subpaths de `expo-router` sin `@react-navigation/*`).
   **web desktop** se usa un modal centrado. Requiere `GestureHandlerRootView` + `BottomSheetModalProvider`
   en el root y usar `BottomSheetFlatList`/`BottomSheetTextInput` dentro del sheet (scroll/teclado
   coordinados). Para abrir/cerrar usar **`usePresentableSheet`** (`present()` en `requestAnimationFrame`,
-  `onDismiss`/`onChange`): evita el bug de que el sheet no vuelva a abrirse tras cerrarlo. Regla general:
+  `onDismiss`/`onChange`): evita el bug de que el sheet no vuelva a abrirse tras cerrarlo. Si se usan
+  `snapPoints`, poner **`enableDynamicSizing={false}`** (por defecto `true` los ignora y abre pequeño);
+  el composer/acción fija va **fuera** de la lista (`BottomSheetFlatList`), no dentro. Regla general:
   dividir por plataforma con archivos `.native.tsx`/`.web.tsx` y, dentro de web, por ancho con
   `useDeviceType()` (`isWebMobile` vs `isWebDesktop`).
 - **Media**: relación de aspecto según Instagram (`src/lib/media-ratio.ts`) — retrato 4:5, paisaje
