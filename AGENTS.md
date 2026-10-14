@@ -49,6 +49,9 @@ subpaths de `expo-router` sin `@react-navigation/*`).
   `useDeviceType()` (`isWebMobile` vs `isWebDesktop`).
 - **Media**: relación de aspecto según Instagram (`src/lib/media-ratio.ts`) — retrato 4:5, paisaje
   1.91:1, cuadrado 1:1; el contenedor toma el ratio de la primera imagen (`expo-image onLoad`).
+- **Teclado**: `react-native-keyboard-controller` — `KeyboardProvider` en el root, `KeyboardAvoidingView`
+  en los formularios (`AuthLayout`) y la tab bar se oculta con el teclado
+  (`src/hooks/use-tab-bar-keyboard.{ts,native.ts}`). No usar `keyboardDidShow` para animar (llega tarde).
 
 ## Arquitectura y carpetas
 
