@@ -7,4 +7,6 @@ export const env = {
   appUrl: process.env.EXPO_PUBLIC_APP_URL ?? 'http://app.bandada.localhost',
   adminUrl: process.env.EXPO_PUBLIC_ADMIN_URL ?? 'http://admin.bandada.localhost',
   defaultLocale: process.env.EXPO_PUBLIC_DEFAULT_LOCALE ?? 'es',
+  /** Serve local fixtures when the backend service is not available (Fase 1). */
+  useMocks: process.env.EXPO_PUBLIC_USE_MOCKS === 'true',
 } as const;

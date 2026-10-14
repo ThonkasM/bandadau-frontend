@@ -6,6 +6,7 @@ import { ApiError } from '@/lib/api-error';
 import { buildHeaders, buildUrl, type RequestOptions } from '@/lib/http';
 import { randomIdempotencyKey } from '@/lib/idempotency';
 import { newCorrelationId } from '@/lib/ids';
+import { resolveMock } from '@/mocks';
 import { usePreferencesStore } from '@/stores/preferences.store';
 import { useSessionStore } from '@/stores/session.store';
 
@@ -68,6 +69,14 @@ export async function refreshSession(): Promise<boolean> {
 
 /** Single HTTP entrypoint for the app. Never call `fetch` directly from the UI. */
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const method = options.method ?? 'GET';
+  const mock = resolveMock(method, path, options.query as Record<string, unknown> | undefined);
+  if (mock) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    if (mock.status >= 400) throw ApiError.fromUnknown(mock.status, mock.body);
+    return mock.body as T;
+  }
+
   const auth = options.auth !== false;
   // Freeze the idempotency key so retries reuse it (never regenerate on retry).
   const frozen: RequestOptions =

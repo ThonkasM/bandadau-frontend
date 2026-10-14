@@ -18,6 +18,7 @@ export interface VirtualListProps<T> {
   contentContainerStyle?: StyleProp<ViewStyle>;
   onEndReached?: () => void;
   onEndReachedThreshold?: number;
+  style?: StyleProp<ViewStyle>;
 }
 
 /**

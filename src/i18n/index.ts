@@ -8,7 +8,7 @@ import { resources } from '@/i18n/resources';
 import { usePreferencesStore } from '@/stores/preferences.store';
 
 export const DEFAULT_NS = 'app';
-export const NAMESPACES = ['app', 'auth', 'nav', 'common', 'enums', 'errors'] as const;
+export const NAMESPACES = ['app', 'auth', 'nav', 'feed', 'common', 'enums', 'errors'] as const;
 
 /** i18n.md §2: user locale → stored choice → device language → `es`. */
 export function resolveDeviceLocale(userLocale?: string | null): Locale {

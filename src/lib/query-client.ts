@@ -5,6 +5,7 @@ import { isAbortError } from '@/lib/is-abort-error';
 function reportError(error: unknown) {
   if (!isAbortError(error)) {
     // TODO: forward to the error reporter (OTel/Sentry) once wired.
+    // eslint-disable-next-line no-console
     console.warn('[query]', error);
   }
 }
