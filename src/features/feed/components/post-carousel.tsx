@@ -14,27 +14,21 @@ import {
 } from 'react-native';
 
 import type { PostMedia } from '@/features/feed/types';
+import { useDeviceType } from '@/hooks/use-device-type';
+import { DEFAULT_MEDIA_RATIO, targetRatio } from '@/lib/media-ratio';
 import { useTokens } from '@/theme/theme-provider';
 
-/** Default aspect ratio until the first image reports its real size (IG-like 4:5 portrait). */
-const DEFAULT_RATIO = 4 / 5;
-
 /**
- * Instagram-style media carousel. The container aspect ratio is taken from the
- * **first** image's real dimensions (all slides share it, like Instagram), so
- * the media shows complete instead of being cropped. Web adds left/right arrows.
+ * Instagram-style media carousel. All slides share the ratio derived from the
+ * first image's real dimensions (portrait 4:5 / landscape 1.91:1 / square 1:1)
+ * and are cropped to fill it. Web **desktop** shows arrows; touch uses swipe.
  */
-export function PostCarousel({
-  media,
-  initialRatio = DEFAULT_RATIO,
-}: {
-  media: PostMedia[];
-  initialRatio?: number;
-}) {
+export function PostCarousel({ media }: { media: PostMedia[] }) {
   const tokens = useTokens();
   const { t } = useTranslation('feed');
+  const { isWebDesktop } = useDeviceType();
   const [width, setWidth] = useState(0);
-  const [ratio, setRatio] = useState(initialRatio);
+  const [ratio, setRatio] = useState<number>(DEFAULT_MEDIA_RATIO);
   const ratioLocked = useRef(false);
   const [index, setIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
@@ -50,13 +44,14 @@ export function PostCarousel({
     const source = (event as { source?: { width?: number; height?: number } }).source;
     if (source?.width && source?.height) {
       ratioLocked.current = true;
-      setRatio(source.width / source.height);
+      setRatio(targetRatio(source.width, source.height).ratio);
     }
   };
 
-  const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (!width) return;
-    setIndex(Math.round(event.nativeEvent.contentOffset.x / width));
+    const next = Math.round(event.nativeEvent.contentOffset.x / width);
+    setIndex((prev) => (prev === next ? prev : next));
   };
 
   const goTo = (next: number) => {
@@ -77,8 +72,7 @@ export function PostCarousel({
           scrollEnabled={count > 1}
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={16}
-          onMomentumScrollEnd={onScrollEnd}
-          onScrollEndDrag={onScrollEnd}>
+          onScroll={onScroll}>
           {media.map((mediaItem, i) => (
             <Image
               key={mediaItem.mediaId ?? i}
@@ -109,7 +103,7 @@ export function PostCarousel({
             ))}
           </View>
 
-          {Platform.OS === 'web' ? (
+          {isWebDesktop ? (
             <>
               {index > 0 ? (
                 <Arrow

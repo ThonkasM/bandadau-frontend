@@ -3,17 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
+import { targetRatio } from '@/lib/media-ratio';
 import { useTokens } from '@/theme/theme-provider';
-
-export type Orientation = 'portrait' | 'landscape' | 'square';
-
-/** Target crop convention: portrait → 3:4, landscape → 4:3, square → 1:1. */
-export function targetRatio(width: number, height: number): { ratio: number; orientation: Orientation } {
-  if (!width || !height) return { ratio: 1, orientation: 'square' };
-  if (height > width) return { ratio: 3 / 4, orientation: 'portrait' };
-  if (width > height) return { ratio: 4 / 3, orientation: 'landscape' };
-  return { ratio: 1, orientation: 'square' };
-}
 
 /**
  * Instagram-style crop guide: shows exactly how the picked photo will render in

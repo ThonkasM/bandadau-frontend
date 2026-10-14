@@ -12,8 +12,8 @@
   "remove": "Quitar",
   "preview": "Así se verá en el feed",
   "orientation": {
-    "portrait": "Vertical 3:4",
-    "landscape": "Horizontal 4:3",
+    "portrait": "Vertical 4:5",
+    "landscape": "Horizontal 1.91:1",
     "square": "Cuadrada 1:1"
   },
   "publish": "Publicar",

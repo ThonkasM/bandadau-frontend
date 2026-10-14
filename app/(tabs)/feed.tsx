@@ -23,7 +23,7 @@ import type { FeedItem, Post } from '@/features/feed/types';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
-const WEB_COLUMN_WIDTH = 600;
+const WEB_COLUMN_WIDTH = 480;
 const RAIL_MIN_WIDTH = 1200;
 
 export default function FeedScreen() {
@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 24,
     paddingHorizontal: 16,
+    paddingTop: 12,
   },
   column: { flex: 1, minHeight: 0 },
   list: { flex: 1, minHeight: 0 },

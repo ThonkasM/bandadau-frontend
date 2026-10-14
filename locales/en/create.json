@@ -12,8 +12,8 @@
   "remove": "Remove",
   "preview": "How it will look in the feed",
   "orientation": {
-    "portrait": "Portrait 3:4",
-    "landscape": "Landscape 4:3",
+    "portrait": "Portrait 4:5",
+    "landscape": "Landscape 1.91:1",
     "square": "Square 1:1"
   },
   "publish": "Publish",
