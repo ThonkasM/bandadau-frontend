@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     gap: 24,
     paddingHorizontal: 16,
   },
-  column: { flex: 1, minHeight: 0, width: '100%', alignSelf: 'center' },
+  column: { flex: 1, minHeight: 0 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
