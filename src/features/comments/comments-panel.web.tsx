@@ -13,74 +13,17 @@ import { useDeviceType } from '@/hooks/use-device-type';
 import { useTokens } from '@/theme/theme-provider';
 
 import type { CommentsPanelProps } from './comments-panel';
+import CommentsSheet from './comments-sheet';
 
 const RIGHT_PANE_WIDTH = 400;
-
-function useCommentsState(postId: string | undefined) {
-  const [replyTo, setReplyTo] = useState<Comment | null>(null);
-  const comments = useComments(postId);
-  const threads = useMemo(() => groupThreads(comments.items), [comments.items]);
-  return { comments, threads, replyTo, setReplyTo };
-}
-
-/** Web mobile: bottom-sheet look (slide up, drag handle, scrollable comments). */
-function CommentsSheet({ post, visible, onClose }: CommentsPanelProps) {
-  const tokens = useTokens();
-  const { t } = useTranslation('comments');
-  const { comments, threads, replyTo, setReplyTo } = useCommentsState(post?.id);
-
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.sheetOverlay}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
-          <View style={[styles.dim, { backgroundColor: tokens.color.bg.inverse }]} />
-        </Pressable>
-
-        <View
-          style={[
-            styles.sheet,
-            { backgroundColor: tokens.color.bg.surface, borderColor: tokens.color.border.default },
-          ]}>
-          <View style={styles.handleWrap}>
-            <View style={[styles.handle, { backgroundColor: tokens.color.border.strong }]} />
-          </View>
-          <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
-            <Text variant="title">{t('title')}</Text>
-            <Pressable onPress={onClose} accessibilityLabel={t('close')}>
-              <MaterialCommunityIcons name="close" size={22} color={tokens.color.text.secondary} />
-            </Pressable>
-          </View>
-
-          <ScrollView style={styles.sheetList} contentContainerStyle={styles.listContent}>
-            {threads.length === 0 ? (
-              <Text variant="caption" style={styles.empty}>
-                {comments.loading ? t('loading') : t('empty')}
-              </Text>
-            ) : (
-              threads.map((thread: CommentThread) => (
-                <CommentThreadView key={thread.comment.id} thread={thread} onReply={setReplyTo} />
-              ))
-            )}
-          </ScrollView>
-
-          {post ? (
-            <CommentComposer
-              postId={post.id}
-              replyTo={replyTo}
-              onCancelReply={() => setReplyTo(null)}
-            />
-          ) : null}
-        </View>
-      </View>
-    </Modal>
-  );
-}
 
 /** Web desktop: Instagram-style modal (left media carousel, right comments). */
 function CommentsModal({ post, visible, onClose }: CommentsPanelProps) {
   const tokens = useTokens();
   const { t } = useTranslation('comments');
-  const { comments, threads, replyTo, setReplyTo } = useCommentsState(post?.id);
+  const [replyTo, setReplyTo] = useState<Comment | null>(null);
+  const comments = useComments(post?.id);
+  const threads = useMemo(() => groupThreads(comments.items), [comments.items]);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -100,8 +43,7 @@ function CommentsModal({ post, visible, onClose }: CommentsPanelProps) {
             </View>
           ) : null}
 
-          <View
-            style={[styles.right, { borderLeftColor: tokens.color.border.default }]}>
+          <View style={[styles.right, { borderLeftColor: tokens.color.border.default }]}>
             <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
               <Text variant="title">{t('title')}</Text>
               <Pressable onPress={onClose} accessibilityLabel={t('close')}>
@@ -135,13 +77,16 @@ function CommentsModal({ post, visible, onClose }: CommentsPanelProps) {
   );
 }
 
+/**
+ * Web: desktop → centered modal (two panes); mobile → the same **gorhom**
+ * bottom sheet as native (consistent with Homy).
+ */
 export default function CommentsPanelWeb(props: CommentsPanelProps) {
   const { isWebDesktop } = useDeviceType();
   return isWebDesktop ? <CommentsModal {...props} /> : <CommentsSheet {...props} />;
 }
 
 const styles = StyleSheet.create({
-  // Desktop modal
   overlay: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   dim: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.5 },
   card: {
@@ -155,19 +100,6 @@ const styles = StyleSheet.create({
   },
   left: { flex: 1, justifyContent: 'center' },
   right: { width: RIGHT_PANE_WIDTH, borderLeftWidth: StyleSheet.hairlineWidth },
-  // Mobile sheet
-  sheetOverlay: { flex: 1, justifyContent: 'flex-end' },
-  sheet: {
-    maxHeight: '88%',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-  handleWrap: { alignItems: 'center', paddingTop: 8 },
-  handle: { width: 36, height: 4, borderRadius: 2 },
-  sheetList: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
-  // Shared
   header: {
     flexDirection: 'row',
     alignItems: 'center',
