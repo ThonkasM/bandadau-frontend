@@ -1,0 +1,12 @@
+{
+  "title": "Mis entradas",
+  "ticket": "Entrada",
+  "empty": "No tienes entradas.",
+  "error": "No pudimos cargar tus entradas.",
+  "qrHint": "Muestra este código en la entrada.",
+  "status": {
+    "ISSUED": "Válida",
+    "USED": "Usada",
+    "VOIDED": "Anulada"
+  }
+}

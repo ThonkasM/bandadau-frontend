@@ -1,0 +1,14 @@
+{
+  "title": "New post",
+  "placeholder": "What's happening on campus?",
+  "visibilityLabel": "Visibility",
+  "visibility": {
+    "PUBLIC": "Public",
+    "FOLLOWERS": "Followers",
+    "GROUP": "Group"
+  },
+  "addImage": "Image",
+  "addVideo": "Video",
+  "publish": "Publish",
+  "mockNote": "Mockup: publishing is wired during the integration phase."
+}

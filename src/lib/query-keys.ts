@@ -38,4 +38,9 @@ export const queryKeys = {
     root: () => ['notifications'] as const,
     list: () => ['notifications', 'list'] as const,
   },
+  groups: {
+    root: () => ['groups'] as const,
+    list: () => ['groups', 'list'] as const,
+    byId: (id: string) => ['groups', id] as const,
+  },
 } as const;

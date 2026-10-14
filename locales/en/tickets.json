@@ -1,0 +1,12 @@
+{
+  "title": "My tickets",
+  "ticket": "Ticket",
+  "empty": "You have no tickets.",
+  "error": "We couldn't load your tickets.",
+  "qrHint": "Show this code at the entrance.",
+  "status": {
+    "ISSUED": "Valid",
+    "USED": "Used",
+    "VOIDED": "Voided"
+  }
+}

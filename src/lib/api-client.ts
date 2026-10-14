@@ -70,7 +70,12 @@ export async function refreshSession(): Promise<boolean> {
 /** Single HTTP entrypoint for the app. Never call `fetch` directly from the UI. */
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const method = options.method ?? 'GET';
-  const mock = resolveMock(method, path, options.query as Record<string, unknown> | undefined);
+  const mock = resolveMock(
+    method,
+    path,
+    options.query as Record<string, unknown> | undefined,
+    options.body,
+  );
   if (mock) {
     await new Promise((resolve) => setTimeout(resolve, 200));
     if (mock.status >= 400) throw ApiError.fromUnknown(mock.status, mock.body);

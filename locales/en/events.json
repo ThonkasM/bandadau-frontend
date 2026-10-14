@@ -1,0 +1,8 @@
+{
+  "title": "Event",
+  "register": "Register",
+  "registered": "Registered! Check your tickets.",
+  "empty": "No upcoming events.",
+  "error": "We couldn't load the events.",
+  "seats": "{count, plural, =0 {No seats} one {# seat} other {# seats}}"
+}

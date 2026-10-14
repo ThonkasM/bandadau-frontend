@@ -1,0 +1,14 @@
+{
+  "title": "Nueva publicación",
+  "placeholder": "¿Qué está pasando en el campus?",
+  "visibilityLabel": "Visibilidad",
+  "visibility": {
+    "PUBLIC": "Público",
+    "FOLLOWERS": "Seguidores",
+    "GROUP": "Grupo"
+  },
+  "addImage": "Imagen",
+  "addVideo": "Video",
+  "publish": "Publicar",
+  "mockNote": "Mockup: publicar se conecta en la fase de integración."
+}

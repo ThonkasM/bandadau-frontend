@@ -1,0 +1,12 @@
+{
+  "title": "Study groups",
+  "join": "Join",
+  "joined": "Member",
+  "empty": "No groups.",
+  "error": "We couldn't load the groups.",
+  "members": "{count, plural, one {# member} other {# members}}",
+  "privacy": {
+    "PUBLIC": "Public",
+    "PRIVATE": "Private"
+  }
+}

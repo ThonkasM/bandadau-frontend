@@ -1,0 +1,12 @@
+{
+  "title": "Grupos de estudio",
+  "join": "Unirme",
+  "joined": "Miembro",
+  "empty": "No hay grupos.",
+  "error": "No pudimos cargar los grupos.",
+  "members": "{count, plural, one {# miembro} other {# miembros}}",
+  "privacy": {
+    "PUBLIC": "Público",
+    "PRIVATE": "Privado"
+  }
+}

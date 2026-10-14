@@ -1,0 +1,8 @@
+{
+  "title": "Evento",
+  "register": "Inscribirme",
+  "registered": "¡Inscrito! Revisa tus entradas.",
+  "empty": "No hay eventos próximos.",
+  "error": "No pudimos cargar los eventos.",
+  "seats": "{count, plural, =0 {Sin cupo} one {# lugar} other {# lugares}}"
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Wallet",
+  "balance": "Balance",
+  "recharge": "Top up",
+  "movements": "Movements",
+  "empty": "No movements yet.",
+  "error": "We couldn't load your wallet.",
+  "type": {
+    "TOPUP": "Top-up",
+    "DEBIT": "Spend",
+    "REFUND": "Refund"
+  }
+}

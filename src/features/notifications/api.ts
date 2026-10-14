@@ -1,28 +1,25 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { useInfiniteList } from '@/hooks/use-infinite-list';
 import { apiRequest } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
 
-import type { NotificationPage } from './types';
+import type { AppNotification, NotificationPage } from './types';
 
 /** UC-24: paginated in-app inbox (most recent first). */
 export function useNotifications() {
-  return useInfiniteQuery({
+  return useInfiniteList<AppNotification>({
     queryKey: queryKeys.notifications.list(),
-    initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) =>
-      apiRequest<NotificationPage>('/api/v1/notifications', {
-        query: { cursor: pageParam, limit: 20 },
-      }),
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    fetchPage: (cursor) =>
+      apiRequest<NotificationPage>('/api/v1/notifications', { query: { cursor, limit: 20 } }),
+    getId: (item) => item.id,
   });
 }
 
 export function useMarkNotificationRead() {
   const client = useQueryClient();
   return useMutation<void, Error, string>({
-    mutationFn: (id) =>
-      apiRequest<void>(`/api/v1/notifications/${id}/read`, { method: 'POST' }),
+    mutationFn: (id) => apiRequest<void>(`/api/v1/notifications/${id}/read`, { method: 'POST' }),
     onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.notifications.root() }),
   });
 }

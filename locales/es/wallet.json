@@ -1,0 +1,13 @@
+{
+  "title": "Billetera",
+  "balance": "Saldo",
+  "recharge": "Recargar",
+  "movements": "Movimientos",
+  "empty": "Sin movimientos todavía.",
+  "error": "No pudimos cargar tu billetera.",
+  "type": {
+    "TOPUP": "Recarga",
+    "DEBIT": "Consumo",
+    "REFUND": "Reembolso"
+  }
+}
