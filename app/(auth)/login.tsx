@@ -1,15 +1,19 @@
 import type { Locale } from '@bandada/i18n';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, TextInput } from 'react-native';
+import { Pressable } from 'react-native';
 
-import { Screen } from '@/components/screens/screen';
+import { AuthScaffold } from '@/components/screens/auth-scaffold';
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
+import { TextField } from '@/components/ui/text-field';
 import { useLogin } from '@/features/auth/api';
 import { loginSchema } from '@/features/auth/schemas';
 import { ApiError } from '@/lib/api-error';
 import { useTokens } from '@/theme/theme-provider';
 
+/** P-APP-04 · Login (mockup, wired to identity). */
 export default function LoginScreen() {
   const tokens = useTokens();
   const { t, i18n } = useTranslation('auth');
@@ -20,9 +24,7 @@ export default function LoginScreen() {
 
   const errorMessage = useMemo(() => {
     const error = login.error;
-    if (!error) return null;
-    if (error instanceof ApiError) return error.localizedMessage(i18n.language as Locale);
-    return null;
+    return error instanceof ApiError ? error.localizedMessage(i18n.language as Locale) : null;
   }, [login.error, i18n.language]);
 
   const onSubmit = () => {
@@ -32,39 +34,37 @@ export default function LoginScreen() {
   };
 
   return (
-    <Screen title={t('login.title')}>
-      <TextInput
+    <AuthScaffold>
+      <Text variant="title">{t('login.title')}</Text>
+      <Text variant="subtitle">{t('login.subtitle')}</Text>
+
+      <TextField
+        label={t('login.email')}
         value={email}
         onChangeText={setEmail}
-        placeholder={t('login.email')}
         autoCapitalize="none"
         keyboardType="email-address"
-        style={[styles.input, { borderColor: tokens.color.border.default, color: tokens.color.text.primary }]}
+        autoComplete="email"
       />
-      <TextInput
+      <TextField
+        label={t('login.password')}
         value={password}
         onChangeText={setPassword}
-        placeholder={t('login.password')}
         secureTextEntry
-        style={[styles.input, { borderColor: tokens.color.border.default, color: tokens.color.text.primary }]}
+        autoComplete="password"
       />
+
       {errorMessage ? (
-        <Text style={{ color: tokens.color.feedback.danger.fg }}>{errorMessage}</Text>
+        <Text variant="caption" color={tokens.color.feedback.danger.fg}>
+          {errorMessage}
+        </Text>
       ) : null}
-      <Pressable
-        disabled={login.isPending}
-        onPress={onSubmit}
-        style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}>
-        <Text style={{ color: tokens.color.action.primary.fg }}>{t('login.submit')}</Text>
+
+      <Button label={t('login.submit')} loading={login.isPending} onPress={onSubmit} />
+
+      <Pressable onPress={() => router.push('/(auth)/register')} style={{ alignItems: 'center' }}>
+        <Text variant="link">{t('login.noAccount')}</Text>
       </Pressable>
-      <Link href="/(auth)/register" style={{ color: tokens.color.text.link }}>
-        {t('login.noAccount')}
-      </Link>
-    </Screen>
+    </AuthScaffold>
   );
 }
-
-const styles = StyleSheet.create({
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  button: { borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-});

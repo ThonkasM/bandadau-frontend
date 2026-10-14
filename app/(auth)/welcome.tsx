@@ -1,26 +1,39 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
+import { View } from 'react-native';
 
-import { Screen } from '@/components/screens/screen';
-import { useTokens } from '@/theme/theme-provider';
+import { AuthScaffold } from '@/components/screens/auth-scaffold';
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 
+/** P-APP-01 · Welcome (mockup). */
 export default function WelcomeScreen() {
-  const tokens = useTokens();
   const { t } = useTranslation('auth');
+  const router = useRouter();
 
   return (
-    <Screen title={t('welcome.title')} subtitle={t('welcome.subtitle')}>
-      <Link href="/(auth)/login" style={[styles.link, { color: tokens.color.text.link }]}>
-        {t('welcome.signIn')}
-      </Link>
-      <Link href="/(auth)/register" style={[styles.link, { color: tokens.color.text.link }]}>
-        {t('welcome.createAccount')}
-      </Link>
-    </Screen>
+    <AuthScaffold>
+      <View style={{ gap: 10 }}>
+        <Text variant="display">{t('welcome.brand')}</Text>
+        <Text variant="subtitle">{t('welcome.subtitle')}</Text>
+        <Text variant="body">{t('welcome.pitch')}</Text>
+      </View>
+
+      <Button
+        label={t('welcome.createAccount')}
+        icon="account-plus-outline"
+        onPress={() => router.push('/(auth)/register')}
+      />
+      <Button
+        label={t('welcome.signIn')}
+        variant="ghost"
+        icon="login-variant"
+        onPress={() => router.push('/(auth)/login')}
+      />
+
+      <Text variant="caption" style={{ textAlign: 'center' }}>
+        {t('welcome.terms')}
+      </Text>
+    </AuthScaffold>
   );
 }
-
-const styles = StyleSheet.create({
-  link: { fontSize: 16, fontWeight: '600', marginTop: 8 },
-});

@@ -2,15 +2,18 @@ import type { Locale } from '@bandada/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, TextInput } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
-import { Screen } from '@/components/screens/screen';
+import { AuthScaffold } from '@/components/screens/auth-scaffold';
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
+import { TextField } from '@/components/ui/text-field';
 import { useResendCode, useVerifyEmail } from '@/features/auth/api';
 import { verifyEmailSchema } from '@/features/auth/schemas';
 import { ApiError } from '@/lib/api-error';
 import { useTokens } from '@/theme/theme-provider';
 
-/** UC-01: verify the 6-digit email code; on success a session is established. */
+/** P-APP-03 · Verify email (mockup, wired to identity). */
 export default function VerifyEmailScreen() {
   const tokens = useTokens();
   const { t, i18n } = useTranslation('auth');
@@ -24,7 +27,7 @@ export default function VerifyEmailScreen() {
 
   useEffect(() => {
     if (seconds <= 0) return;
-    const timer = setTimeout(() => setSeconds((s) => s - 1), 1000);
+    const timer = setTimeout(() => setSeconds((value) => value - 1), 1000);
     return () => clearTimeout(timer);
   }, [seconds]);
 
@@ -39,43 +42,46 @@ export default function VerifyEmailScreen() {
     verify.mutate(parsed.data, { onSuccess: () => router.replace('/(tabs)/feed') });
   };
 
-  const onResend = () => {
-    resend.mutate({ email }, { onSuccess: () => setSeconds(60) });
-  };
-
   return (
-    <Screen title={t('verify.title')} subtitle={t('verify.subtitle', { email })}>
-      <TextInput
+    <AuthScaffold>
+      <Text variant="title">{t('verify.title')}</Text>
+      <Text variant="subtitle">{t('verify.subtitle', { email })}</Text>
+
+      <TextField
+        label={t('verify.code')}
         value={code}
         onChangeText={setCode}
-        placeholder={t('verify.code')}
         keyboardType="number-pad"
         maxLength={6}
-        style={[styles.input, { borderColor: tokens.color.border.default, color: tokens.color.text.primary }]}
+        style={styles.code}
+        helper={t('verify.codeHelper')}
       />
+
       {errorMessage ? (
-        <Text style={{ color: tokens.color.feedback.danger.fg }}>{errorMessage}</Text>
+        <Text variant="caption" color={tokens.color.feedback.danger.fg}>
+          {errorMessage}
+        </Text>
       ) : null}
-      <Pressable
-        disabled={verify.isPending}
-        onPress={onSubmit}
-        style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}>
-        <Text style={{ color: tokens.color.action.primary.fg }}>{t('verify.submit')}</Text>
-      </Pressable>
+
+      <Button label={t('verify.submit')} loading={verify.isPending} onPress={onSubmit} />
+
       {seconds > 0 ? (
-        <Text style={{ color: tokens.color.text.muted }}>
+        <Text variant="caption" style={styles.center}>
           {t('verify.resentIn', { seconds })}
         </Text>
       ) : (
-        <Pressable disabled={resend.isPending} onPress={onResend}>
-          <Text style={{ color: tokens.color.text.link }}>{t('verify.resend')}</Text>
+        <Pressable
+          disabled={resend.isPending}
+          onPress={() => resend.mutate({ email }, { onSuccess: () => setSeconds(60) })}
+          style={styles.center}>
+          <Text variant="link">{t('verify.resend')}</Text>
         </Pressable>
       )}
-    </Screen>
+    </AuthScaffold>
   );
 }
 
 const styles = StyleSheet.create({
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  button: { borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
+  code: { letterSpacing: 8, textAlign: 'center', fontSize: 22 },
+  center: { alignItems: 'center' },
 });
