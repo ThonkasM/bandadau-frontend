@@ -6,22 +6,18 @@ import { BandadaMark } from '@/components/brand/BandadaLogo';
 import { AuthScaffold } from '@/components/screens/auth-scaffold';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { useTokens } from '@/theme/theme-provider';
+import { useBrand } from '@/theme/use-brand';
 
 /** P-APP-01 · Welcome (mockup). */
 export default function WelcomeScreen() {
   const { t } = useTranslation('auth');
   const router = useRouter();
-  const tokens = useTokens();
+  const brand = useBrand();
 
   return (
     <AuthScaffold>
       <View style={styles.hero}>
-        <BandadaMark
-          size={104}
-          color={tokens.color.brand.primary}
-          accent={tokens.color.brand.accent}
-        />
+        <BandadaMark size={104} color={brand.color} accent={brand.accent} />
         <Text variant="display">{t('welcome.brand')}</Text>
         <Text variant="subtitle" style={styles.center}>
           {t('welcome.subtitle')}

@@ -12,6 +12,7 @@ import {
 } from '@/config/navigation';
 import { SIDEBAR_WIDTH } from '@/constants/layout';
 import { useTokens } from '@/theme/theme-provider';
+import { useBrand } from '@/theme/use-brand';
 
 type ThemeTokens = ReturnType<typeof useTokens>;
 type Styles = ReturnType<typeof createStyles>;
@@ -63,6 +64,7 @@ const SidebarItem = memo(function SidebarItem({
 /** Global web sidebar (≥ 1024px). Tokens only; no raw palette (D13). */
 export default function GlobalSidebar() {
   const tokens = useTokens();
+  const brand = useBrand();
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation('nav');
@@ -76,16 +78,8 @@ export default function GlobalSidebar() {
     <View role="navigation" aria-label={t('menu')} style={styles.sidebar}>
       <View style={styles.header}>
         <View style={styles.brandRow}>
-          <BandadaMark
-            size={28}
-            color={tokens.color.brand.primary}
-            accent={tokens.color.brand.accent}
-          />
-          <BandadaWordmark
-            width={116}
-            color={tokens.color.brand.primary}
-            accent={tokens.color.brand.accent}
-          />
+          <BandadaMark size={28} color={brand.color} accent={brand.accent} />
+          <BandadaWordmark width={116} color={brand.color} accent={brand.accent} />
         </View>
       </View>
       <View style={styles.nav}>

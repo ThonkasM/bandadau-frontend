@@ -6,6 +6,7 @@ import { restoreSession } from '@/auth/session';
 import { BandadaLoader } from '@/components/brand/BandadaLogo';
 import { useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
+import { useBrand } from '@/theme/use-brand';
 
 /**
  * Cold-start gate: restores the session (native: stored refresh token; web:
@@ -13,6 +14,7 @@ import { useTokens } from '@/theme/theme-provider';
  */
 export default function Index() {
   const tokens = useTokens();
+  const brand = useBrand();
   const status = useSessionStore((s) => s.status);
   const [booted, setBooted] = useState(false);
 
@@ -23,11 +25,7 @@ export default function Index() {
   if (!booted) {
     return (
       <View style={[styles.splash, { backgroundColor: tokens.color.bg.canvas }]}>
-        <BandadaLoader
-          size={72}
-          color={tokens.color.brand.primary}
-          accent={tokens.color.brand.accent}
-        />
+        <BandadaLoader size={72} color={brand.color} accent={brand.accent} />
       </View>
     );
   }
