@@ -4,18 +4,17 @@ import { StyleSheet, View } from 'react-native';
 
 import { restoreSession } from '@/auth/session';
 import { BandadaLoader } from '@/components/brand/BandadaLogo';
-import { useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
 /**
- * Cold-start gate: restores the session (native: stored refresh token; web:
- * HttpOnly cookie) and then routes to the feed or the welcome screen.
+ * Cold start always lands on **Welcome**. The session is restored in the
+ * background (native: stored refresh; web: HttpOnly cookie); entering via
+ * login/register/guest navigates to the feed.
  */
 export default function Index() {
   const tokens = useTokens();
   const brand = useBrand();
-  const status = useSessionStore((s) => s.status);
   const [booted, setBooted] = useState(false);
 
   useEffect(() => {
@@ -30,11 +29,7 @@ export default function Index() {
     );
   }
 
-  return status === 'authenticated' ? (
-    <Redirect href="/(tabs)/feed" />
-  ) : (
-    <Redirect href="/(auth)/welcome" />
-  );
+  return <Redirect href="/(auth)/welcome" />;
 }
 
 const styles = StyleSheet.create({

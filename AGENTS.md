@@ -83,6 +83,7 @@ bandadau-frontend/
 ```bash
 pnpm start                            # Metro :8081
 pnpm ios | pnpm android               # expo run:* (CNG; no editar ios/ android/ a mano)
+pnpm ios:device                       # expo run:ios --device (iPhone físico; ver "Build iOS en dispositivo")
 pnpm web                              # dev web
 pnpm build:web                        # expo export -p web + service worker → dist/
 pnpm lint && pnpm typecheck && pnpm test
@@ -92,6 +93,26 @@ maestro test .maestro/                # E2E nativo
 
 `@bandada/ui-tokens`, `@bandada/i18n` y `@bandada/contracts-ts` se consumen como dependencia local
 hermana: `"file:../bandadau-shared/packages/<pkg>"`.
+
+## Build iOS en dispositivo físico
+
+`pnpm ios:device` (= `expo run:ios --device`) compila el dev client con `expo-dev-client` y lo instala
+en el iPhone. La firma usa el **Apple Team personal** `7MWYA8BMK6` (override: `EXPO_APPLE_TEAM_ID`).
+
+Dos plugins de config sostienen esto (`app.config.ts` → `plugins`):
+
+- **`./plugins/with-ios-signing`** (patrón de Maminco): fija `CODE_SIGN_STYLE = Automatic` y desactiva
+  la firma solo para el SDK del simulador (`[sdk=iphonesimulator*]`), para que simulador y dispositivo
+  convivan sin tocar `ios/` a mano.
+- **`./plugins/with-ios-local-entitlements`**: un **Personal Team no soporta** las capabilities
+  `aps-environment` (push, `expo-notifications`) ni `com.apple.developer.associated-domains`
+  (`ios.associatedDomains`). En builds **locales** el plugin vacía esos entitlements para que el perfil
+  se pueda firmar; en **EAS/producción** (`EAS_BUILD`) se conservan. Forzar con `EXPO_LOCAL_DEV=1`/`0`.
+
+La primera vez en una máquina nueva, Xcode debe **crear el provisioning profile** de `com.bandadau.app`.
+`expo run:ios` no pasa `-allowProvisioningUpdates` cuando el team ya está fijado en el pbxproj, así que
+genera el perfil una vez desde Xcode (o con `xcodebuild … -allowProvisioningUpdates`) y luego
+`pnpm ios:device` funciona. El perfil queda en `~/Library/Developer/Xcode/UserData/Provisioning Profiles/`.
 
 ## Variables de entorno (`.env.example`)
 

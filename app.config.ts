@@ -71,6 +71,14 @@ const config: ExpoConfig = {
         color: '#1238A8',
       },
     ],
+    [
+      'expo-build-properties',
+      {
+        ios: {
+          enableSceneSupport: true,
+        },
+      },
+    ],
     './plugins/with-ios-signing',
   ],
   extra: {
