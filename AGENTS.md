@@ -41,8 +41,10 @@ subpaths de `expo-router` sin `@react-navigation/*`).
 - **Bottom sheets**: siempre `@gorhom/bottom-sheet` — en **nativo y web móvil** (patrón de Homy); en
   **web desktop** se usa un modal centrado. Requiere `GestureHandlerRootView` + `BottomSheetModalProvider`
   en el root y usar `BottomSheetFlatList`/`BottomSheetTextInput` dentro del sheet (scroll/teclado
-  coordinados). Regla general: dividir por plataforma con archivos `.native.tsx`/`.web.tsx` y, dentro de
-  web, por ancho con `useDeviceType()` (`isWebMobile` vs `isWebDesktop`).
+  coordinados). Para abrir/cerrar usar **`usePresentableSheet`** (`present()` en `requestAnimationFrame`,
+  `onDismiss`/`onChange`): evita el bug de que el sheet no vuelva a abrirse tras cerrarlo. Regla general:
+  dividir por plataforma con archivos `.native.tsx`/`.web.tsx` y, dentro de web, por ancho con
+  `useDeviceType()` (`isWebMobile` vs `isWebDesktop`).
 - **Media**: relación de aspecto según Instagram (`src/lib/media-ratio.ts`) — retrato 4:5, paisaje
   1.91:1, cuadrado 1:1; el contenedor toma el ratio de la primera imagen (`expo-image onLoad`).
 

@@ -6,7 +6,7 @@ import {
   BottomSheetModal,
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, type TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,31 +16,30 @@ import { groupThreads, useComments } from '@/features/comments/api';
 import { CommentComposer } from '@/features/comments/components/comment-composer';
 import { CommentThreadView } from '@/features/comments/components/comment-thread';
 import type { Comment, CommentThread } from '@/features/comments/types';
+import { usePresentableSheet } from '@/hooks/use-presentable-sheet';
 import { useTokens } from '@/theme/theme-provider';
 
 import type { CommentsPanelProps } from './comments-panel';
 
 /**
- * Comments bottom sheet with `@gorhom/bottom-sheet`.
- *
- * Used on **native and web mobile** (same as Homy): a real bottom sheet with a
- * coordinated inner list (`BottomSheetFlatList`), keyboard-aware composer
- * (`BottomSheetTextInput`) and drag-to-close. Web **desktop** uses a centered
- * modal instead (see `comments-panel.web.tsx`).
+ * Comments bottom sheet with `@gorhom/bottom-sheet` (native **and** web mobile,
+ * like Homy). Uses `usePresentableSheet` for robust open/close (the sheet can be
+ * re-opened after being dismissed). Web desktop uses a centered modal instead.
  */
 export default function CommentsSheet({ post, visible, onClose }: CommentsPanelProps) {
   const tokens = useTokens();
   const { t } = useTranslation('comments');
   const insets = useSafeAreaInsets();
-  const ref = useRef<BottomSheetModal>(null);
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const comments = useComments(post?.id);
   const threads = useMemo(() => groupThreads(comments.items), [comments.items]);
 
-  useEffect(() => {
-    if (visible) ref.current?.present();
-    else ref.current?.dismiss();
-  }, [visible]);
+  const handleClose = useCallback(() => {
+    setReplyTo(null);
+    onClose();
+  }, [onClose]);
+
+  const { ref, onDismiss, onChange } = usePresentableSheet(visible, handleClose);
 
   const backdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -75,13 +74,11 @@ export default function CommentsSheet({ post, visible, onClose }: CommentsPanelP
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
-      onDismiss={() => {
-        setReplyTo(null);
-        onClose();
-      }}>
+      onChange={onChange}
+      onDismiss={onDismiss}>
       <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
         <Text variant="title">{t('title')}</Text>
-        <Pressable onPress={() => ref.current?.dismiss()} accessibilityLabel={t('close')}>
+        <Pressable onPress={onClose} accessibilityLabel={t('close')}>
           <MaterialCommunityIcons name="close" size={22} color={tokens.color.text.secondary} />
         </Pressable>
       </View>

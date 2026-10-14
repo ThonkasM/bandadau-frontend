@@ -58,9 +58,7 @@ export function PostCard({
         </Pressable>
       </View>
 
-      <View style={[styles.media, { borderColor: tokens.color.border.default }]}>
-        <PostCarousel media={post.media} />
-      </View>
+      <PostCarousel media={post.media} />
 
       <View style={styles.actions}>
         <IconButton icon="heart-outline" label={t('like')} />
@@ -135,12 +133,6 @@ const styles = StyleSheet.create({
   username: { fontSize: 14.5, fontWeight: '800' },
   time: { fontSize: 12 },
   more: { padding: 4 },
-  media: {
-    marginHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
