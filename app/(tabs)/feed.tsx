@@ -90,6 +90,7 @@ export default function FeedScreen() {
                 refreshing={feed.refreshing}
                 onEndReached={feed.loadMore}
                 onRefresh={feed.refresh}
+                contentContainerStyle={styles.listContent}
                 renderEmpty={() => (
                   <Text style={[styles.message, { color: tokens.color.text.muted }]}>
                     {tf('empty')}
@@ -101,13 +102,13 @@ export default function FeedScreen() {
 
           {showRail ? <FeedRightRail /> : null}
         </View>
-      </View>
 
-      <CommentsPanel
-        post={activePost}
-        visible={Boolean(activePost)}
-        onClose={() => setActivePost(null)}
-      />
+        <CommentsPanel
+          post={activePost}
+          visible={Boolean(activePost)}
+          onClose={() => setActivePost(null)}
+        />
+      </View>
     </Screen>
   );
 }
@@ -132,10 +133,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 24,
     paddingHorizontal: 16,
-    paddingTop: 12,
   },
   column: { flex: 1, minHeight: 0 },
   list: { flex: 1, minHeight: 0 },
+  // Separation belongs to the list content, not the header/container.
+  listContent: { paddingTop: 12 },
   center: { marginTop: 24 },
   state: { alignItems: 'center', paddingHorizontal: 16 },
   message: { fontSize: 15, marginTop: 16, textAlign: 'center' },
