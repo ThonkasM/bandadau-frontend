@@ -1,4 +1,10 @@
 {
   "empty": "No posts yet. Be the first!",
-  "error": "We couldn't load your feed."
+  "error": "We couldn't load your feed.",
+  "likes": "{count, plural, =0 {No likes yet} one {# like} other {# likes}}",
+  "comments": "{count, plural, one {# comment} other {# comments}}",
+  "like": "Like",
+  "comment": "Comment",
+  "share": "Share",
+  "save": "Save"
 }

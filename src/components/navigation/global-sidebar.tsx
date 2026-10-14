@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { BandadaWordmark } from '@/components/brand/BandadaLogo';
+import { BandadaMark, BandadaWordmark } from '@/components/brand/BandadaLogo';
 import {
   isNavRouteActive,
   type NavRoute,
@@ -75,11 +75,18 @@ export default function GlobalSidebar() {
   return (
     <View role="navigation" aria-label={t('menu')} style={styles.sidebar}>
       <View style={styles.header}>
-        <BandadaWordmark
-          width={130}
-          color={tokens.color.brand.primary}
-          accent={tokens.color.brand.accent}
-        />
+        <View style={styles.brandRow}>
+          <BandadaMark
+            size={28}
+            color={tokens.color.brand.primary}
+            accent={tokens.color.brand.accent}
+          />
+          <BandadaWordmark
+            width={116}
+            color={tokens.color.brand.primary}
+            accent={tokens.color.brand.accent}
+          />
+        </View>
       </View>
       <View style={styles.nav}>
         {sidebarRoutes().map((route) => (
@@ -120,6 +127,7 @@ const createStyles = (tokens: ThemeTokens) =>
       paddingTop: 24,
       paddingBottom: 20,
     },
+    brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     nav: { flex: 1, paddingHorizontal: 12, gap: 4 },
     item: {
       flexDirection: 'row',

@@ -1,4 +1,10 @@
 {
   "empty": "Aún no hay publicaciones. ¡Sé el primero!",
-  "error": "No pudimos cargar el feed."
+  "error": "No pudimos cargar el feed.",
+  "likes": "{count, plural, =0 {Sin reacciones} one {# Me gusta} other {# Me gusta}}",
+  "comments": "{count, plural, one {# comentario} other {# comentarios}}",
+  "like": "Me gusta",
+  "comment": "Comentar",
+  "share": "Compartir",
+  "save": "Guardar"
 }
