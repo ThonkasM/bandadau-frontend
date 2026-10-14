@@ -6,6 +6,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { AuthLayout } from '@/components/screens/auth-layout';
 import { Button } from '@/components/ui/button';
+import { PasswordField } from '@/components/ui/password-field';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { useLogin } from '@/features/auth/api';
@@ -46,11 +47,10 @@ export default function LoginScreen() {
         keyboardType="email-address"
         autoComplete="email"
       />
-      <TextField
+      <PasswordField
         label={t('login.password')}
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
         autoComplete="password"
       />
 

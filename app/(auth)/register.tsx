@@ -7,6 +7,7 @@ import { Pressable, View } from 'react-native';
 import { AuthLayout } from '@/components/screens/auth-layout';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
+import { PasswordField } from '@/components/ui/password-field';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { useRegister, useUniversities } from '@/features/auth/api';
@@ -99,11 +100,10 @@ export default function RegisterScreen() {
         keyboardType="email-address"
         helper={t('register.emailHelper')}
       />
-      <TextField
+      <PasswordField
         label={t('register.password')}
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
         helper={t('register.passwordHelper')}
       />
 

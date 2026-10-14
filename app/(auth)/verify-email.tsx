@@ -36,10 +36,16 @@ export default function VerifyEmailScreen() {
     return error instanceof ApiError ? error.localizedMessage(i18n.language as Locale) : null;
   }, [verify.error, i18n.language]);
 
-  const onSubmit = () => {
-    const parsed = verifyEmailSchema.safeParse({ email, code });
+  const submitCode = (value: string) => {
+    const parsed = verifyEmailSchema.safeParse({ email, code: value });
     if (!parsed.success) return;
     verify.mutate(parsed.data, { onSuccess: () => router.replace('/(tabs)/feed') });
+  };
+
+  const onChangeCode = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 6);
+    setCode(digits);
+    if (digits.length === 6) submitCode(digits);
   };
 
   return (
@@ -50,7 +56,7 @@ export default function VerifyEmailScreen() {
       <TextField
         label={t('verify.code')}
         value={code}
-        onChangeText={setCode}
+        onChangeText={onChangeCode}
         keyboardType="number-pad"
         maxLength={6}
         style={styles.code}
@@ -63,7 +69,7 @@ export default function VerifyEmailScreen() {
         </Text>
       ) : null}
 
-      <Button label={t('verify.submit')} loading={verify.isPending} onPress={onSubmit} />
+      <Button label={t('verify.submit')} loading={verify.isPending} onPress={() => submitCode(code)} />
 
       {seconds > 0 ? (
         <Text variant="caption" style={styles.center}>
