@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { restoreSession } from '@/auth/session';
+import { BandadaLoader } from '@/components/brand/BandadaLogo';
 import { useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -20,7 +21,15 @@ export default function Index() {
   }, []);
 
   if (!booted) {
-    return <View style={[styles.splash, { backgroundColor: tokens.color.bg.canvas }]} />;
+    return (
+      <View style={[styles.splash, { backgroundColor: tokens.color.bg.canvas }]}>
+        <BandadaLoader
+          size={72}
+          color={tokens.color.brand.primary}
+          accent={tokens.color.brand.accent}
+        />
+      </View>
+    );
   }
 
   return status === 'authenticated' ? (
@@ -31,5 +40,5 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  splash: { flex: 1 },
+  splash: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

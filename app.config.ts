@@ -10,6 +10,7 @@ const config: ExpoConfig = {
   version: '0.1.0',
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
+  icon: './assets/brand/icon-1024.png',
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
@@ -18,9 +19,19 @@ const config: ExpoConfig = {
     supportsTablet: true,
     bundleIdentifier: 'com.bandadau.app',
     associatedDomains: [`applinks:app.${BASE_DOMAIN}`],
+    icon: {
+      light: './assets/brand/icon-1024.png',
+      dark: './assets/brand/icon-1024-dark.png',
+      tinted: './assets/brand/icon-1024-tinted.png',
+    },
   },
   android: {
     package: 'com.bandadau.app',
+    adaptiveIcon: {
+      foregroundImage: './assets/brand/android-adaptive-foreground.png',
+      monochromeImage: './assets/brand/android-adaptive-monochrome.png',
+      backgroundColor: '#1238A8',
+    },
     intentFilters: [
       {
         action: 'VIEW',
@@ -33,6 +44,7 @@ const config: ExpoConfig = {
   web: {
     bundler: 'metro',
     output: 'static',
+    favicon: './assets/brand/favicon.png',
   },
   plugins: [
     'expo-router',
@@ -43,9 +55,18 @@ const config: ExpoConfig = {
     [
       'expo-splash-screen',
       {
+        image: './assets/brand/splash-icon.png',
+        imageWidth: 200,
         resizeMode: 'contain',
-        backgroundColor: '#F7F7F5',
-        dark: { backgroundColor: '#12110E' },
+        backgroundColor: '#0A1F66',
+        dark: { backgroundColor: '#0A1F66' },
+      },
+    ],
+    [
+      'expo-notifications',
+      {
+        icon: './assets/brand/notification-icon.png',
+        color: '#1238A8',
       },
     ],
   ],
