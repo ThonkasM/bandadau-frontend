@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet } from 'react-native';
 
-import { AuthScaffold } from '@/components/screens/auth-scaffold';
+import { AuthLayout } from '@/components/screens/auth-layout';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
@@ -43,7 +43,7 @@ export default function VerifyEmailScreen() {
   };
 
   return (
-    <AuthScaffold>
+    <AuthLayout heroHeight={160}>
       <Text variant="title">{t('verify.title')}</Text>
       <Text variant="subtitle">{t('verify.subtitle', { email })}</Text>
 
@@ -77,7 +77,7 @@ export default function VerifyEmailScreen() {
           <Text variant="link">{t('verify.resend')}</Text>
         </Pressable>
       )}
-    </AuthScaffold>
+    </AuthLayout>
   );
 }
 

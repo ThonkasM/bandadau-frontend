@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
-import { AuthScaffold } from '@/components/screens/auth-scaffold';
+import { AuthLayout } from '@/components/screens/auth-layout';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { Text } from '@/components/ui/text';
@@ -67,7 +67,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <AuthScaffold>
+    <AuthLayout heroHeight={170}>
       <Text variant="title">{t('register.title')}</Text>
       <Text variant="subtitle">{t('register.subtitle')}</Text>
 
@@ -123,6 +123,6 @@ export default function RegisterScreen() {
       <Pressable onPress={() => router.push('/(auth)/login')} style={{ alignItems: 'center' }}>
         <Text variant="link">{t('register.haveAccount')}</Text>
       </Pressable>
-    </AuthScaffold>
+    </AuthLayout>
   );
 }

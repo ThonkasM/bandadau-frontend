@@ -8,13 +8,15 @@ import { useBrand } from '@/theme/use-brand';
 export interface BrandHeroProps {
   height?: number;
   subtitle?: string;
+  /** Top safe-area inset so the logo clears the notch / Dynamic Island. */
+  paddingTop?: number;
 }
 
 /**
  * Brand hero: dark brand block (azul río in light, azul noche in dark) with the
  * logo inverted to white + paraba-yellow accent, mirroring the splash.
  */
-export function BrandHero({ height = 240, subtitle }: BrandHeroProps) {
+export function BrandHero({ height = 240, subtitle, paddingTop = 0 }: BrandHeroProps) {
   const { effective } = useTheme();
   const tokens = useTokens();
   const brand = useBrand();
@@ -22,9 +24,9 @@ export function BrandHero({ height = 240, subtitle }: BrandHeroProps) {
     effective === 'dark' ? tokens.color.bg['surface-raised'] : tokens.color.brand.primary;
 
   return (
-    <View style={[styles.hero, { backgroundColor: background, height }]}>
-      <BandadaMark size={92} color={BRAND.white} accent={brand.accent} />
-      <BandadaWordmark width={168} color={BRAND.white} accent={brand.accent} />
+    <View style={[styles.hero, { backgroundColor: background, height, paddingTop }]}>
+      <BandadaMark size={88} color={BRAND.white} accent={brand.accent} />
+      <BandadaWordmark width={160} color={BRAND.white} accent={brand.accent} />
       {subtitle ? (
         <Text variant="caption" color={BRAND.white} style={styles.subtitle}>
           {subtitle}
@@ -40,7 +42,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
   },

@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandHero } from '@/components/brand/brand-hero';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ export default function WelcomeScreen() {
   const { t } = useTranslation('auth');
   const router = useRouter();
   const tokens = useTokens();
+  const insets = useSafeAreaInsets();
   const loginAsGuest = useSessionStore((s) => s.loginAsGuest);
 
   const onGuest = () => {
@@ -22,55 +23,52 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <SafeAreaView edges={['bottom']} style={[styles.safe, { backgroundColor: tokens.color.bg.canvas }]}>
-      <BrandHero height={280} />
+    <View style={[styles.root, { backgroundColor: tokens.color.bg.canvas }]}>
+      <BrandHero height={240} paddingTop={insets.top} />
 
-      <View style={styles.content}>
-        <Text variant="title" style={styles.center}>
-          {t('welcome.title')}
-        </Text>
-        <Text variant="subtitle" style={styles.center}>
-          {t('welcome.pitch')}
-        </Text>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: 24 + insets.bottom }]}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.inner}>
+          <Text variant="title" style={styles.center}>
+            {t('welcome.title')}
+          </Text>
+          <Text variant="subtitle" style={styles.center}>
+            {t('welcome.pitch')}
+          </Text>
 
-        <View style={styles.actions}>
-          <Button
-            label={t('welcome.createAccount')}
-            icon="account-plus-outline"
-            onPress={() => router.push('/(auth)/register')}
-          />
-          <Button
-            label={t('welcome.signIn')}
-            variant="ghost"
-            icon="login-variant"
-            onPress={() => router.push('/(auth)/login')}
-          />
+          <View style={styles.actions}>
+            <Button
+              label={t('welcome.createAccount')}
+              icon="account-plus-outline"
+              onPress={() => router.push('/(auth)/register')}
+            />
+            <Button
+              label={t('welcome.signIn')}
+              variant="ghost"
+              icon="login-variant"
+              onPress={() => router.push('/(auth)/login')}
+            />
+          </View>
+
+          <Pressable onPress={onGuest} style={styles.guestLink}>
+            <Text variant="link">{t('welcome.guest')}</Text>
+          </Pressable>
+
+          <Text variant="caption" style={styles.center}>
+            {t('welcome.terms')}
+          </Text>
         </View>
-
-        <Pressable onPress={onGuest} style={styles.guestLink}>
-          <Text variant="link">{t('welcome.guest')}</Text>
-        </Pressable>
-
-        <Text variant="caption" style={styles.center}>
-          {t('welcome.terms')}
-        </Text>
-      </View>
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  content: {
-    flex: 1,
-    width: '100%',
-    maxWidth: 460,
-    alignSelf: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    gap: 16,
-  },
+  root: { flex: 1 },
+  scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingTop: 24 },
+  inner: { width: '100%', maxWidth: 460, alignSelf: 'center', gap: 16 },
   center: { textAlign: 'center' },
-  guestLink: { alignItems: 'center' },
   actions: { gap: 12, marginTop: 4 },
+  guestLink: { alignItems: 'center' },
 });

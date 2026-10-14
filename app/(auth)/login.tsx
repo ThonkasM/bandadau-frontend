@@ -2,16 +2,9 @@ import type { Locale } from '@bandada/i18n';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet } from 'react-native';
 
-import { BrandHero } from '@/components/brand/brand-hero';
+import { AuthLayout } from '@/components/screens/auth-layout';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
@@ -41,62 +34,41 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView
-      edges={['bottom']}
-      style={[styles.safe, { backgroundColor: tokens.color.bg.canvas }]}>
-      <BrandHero height={200} subtitle={t('welcome.subtitle')} />
+    <AuthLayout heroSubtitle={t('welcome.subtitle')}>
+      <Text variant="title">{t('login.title')}</Text>
+      <Text variant="subtitle">{t('login.subtitle')}</Text>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <Text variant="title">{t('login.title')}</Text>
-          <Text variant="subtitle">{t('login.subtitle')}</Text>
+      <TextField
+        label={t('login.email')}
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        autoComplete="email"
+      />
+      <TextField
+        label={t('login.password')}
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoComplete="password"
+      />
 
-          <TextField
-            label={t('login.email')}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-          />
-          <TextField
-            label={t('login.password')}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="password"
-          />
+      {errorMessage ? (
+        <Text variant="caption" color={tokens.color.feedback.danger.fg}>
+          {errorMessage}
+        </Text>
+      ) : null}
 
-          {errorMessage ? (
-            <Text variant="caption" color={tokens.color.feedback.danger.fg}>
-              {errorMessage}
-            </Text>
-          ) : null}
+      <Button label={t('login.submit')} loading={login.isPending} onPress={onSubmit} />
 
-          <Button label={t('login.submit')} loading={login.isPending} onPress={onSubmit} />
-
-          <Pressable onPress={() => router.push('/(auth)/register')} style={styles.link}>
-            <Text variant="link">{t('login.noAccount')}</Text>
-          </Pressable>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <Pressable onPress={() => router.push('/(auth)/register')} style={styles.link}>
+        <Text variant="link">{t('login.noAccount')}</Text>
+      </Pressable>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  flex: { flex: 1 },
-  form: {
-    flexGrow: 1,
-    width: '100%',
-    maxWidth: 460,
-    alignSelf: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    gap: 16,
-  },
   link: { alignItems: 'center' },
 });
