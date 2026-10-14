@@ -1,0 +1,10 @@
+{
+  "appName": "Bandada U",
+  "loading": "Cargando…",
+  "retry": "Reintentar",
+  "cancel": "Cancelar",
+  "accept": "Aceptar",
+  "save": "Guardar",
+  "offline": "Sin conexión",
+  "offlineBanner": "Sin conexión · mostrando lo guardado"
+}
