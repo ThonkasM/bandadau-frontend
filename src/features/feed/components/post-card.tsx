@@ -6,7 +6,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { FeedItem } from '@/features/feed/types';
 import { useTokens } from '@/theme/theme-provider';
 
-/** Instagram-style post: header, full-bleed media, actions, likes and caption. */
+import { PostCarousel } from './post-carousel';
+
+/** Instagram-style post: header, media carousel, actions, likes and caption. */
 export function PostCard({ item }: { item: FeedItem }) {
   const tokens = useTokens();
   const { t, i18n } = useTranslation('feed');
@@ -16,7 +18,6 @@ export function PostCard({ item }: { item: FeedItem }) {
   const initial = post.author.displayName.slice(0, 1).toUpperCase();
   const relative = formatRelative(post.createdAt, locale);
   const caption = `${post.author.displayName} ${post.text}`;
-  const hasMedia = post.media.length > 0;
 
   return (
     <View
@@ -41,15 +42,7 @@ export function PostCard({ item }: { item: FeedItem }) {
         />
       </View>
 
-      {hasMedia ? (
-        <View style={[styles.media, { backgroundColor: tokens.color.bg.muted }]}>
-          <MaterialCommunityIcons
-            name="image-outline"
-            size={46}
-            color={tokens.color.text.muted}
-          />
-        </View>
-      ) : null}
+      <PostCarousel media={post.media} />
 
       <View style={styles.actions}>
         <IconButton icon="heart-outline" label={t('like')} />
@@ -103,7 +96,6 @@ const styles = StyleSheet.create({
   headerText: { flex: 1 },
   username: { fontSize: 14, fontWeight: '700' },
   time: { fontSize: 11.5 },
-  media: { width: '100%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 8 },
   iconButton: { padding: 4 },
   spacer: { flex: 1 },
