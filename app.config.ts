@@ -48,6 +48,7 @@ const config: ExpoConfig = {
     favicon: './assets/brand/favicon.png',
   },
   plugins: [
+    './plugins/with-ios-local-entitlements',
     'expo-router',
     'expo-localization',
     'expo-secure-store',
