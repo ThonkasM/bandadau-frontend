@@ -1,6 +1,7 @@
 import type { TopUpPackage } from '@/features/wallet/types';
 import { env } from '@/lib/env';
 
+import { mockComments, mockCreateComment } from './comments';
 import { mockEvent, mockEvents, mockRegister } from './events';
 import { mockFeed } from './feed';
 import { mockGroups } from './groups';
@@ -59,7 +60,25 @@ const routes: MockRoute[] = [
   // Groups
   { method: 'GET', match: '/api/v1/groups', handle: () => ok(mockGroups()) },
   { method: 'POST', match: /^\/api\/v1\/groups\/[^/]+\/join$/, handle: () => ok(mockGroups().items[0]) },
+  // Comments (UC-07)
+  {
+    method: 'GET',
+    match: /^\/api\/v1\/posts\/[^/]+\/comments$/,
+    handle: (path) => ok(mockComments(segment(path, 4))),
+  },
+  {
+    method: 'POST',
+    match: /^\/api\/v1\/posts\/[^/]+\/comments$/,
+    handle: (path, _q, body) => {
+      const payload = (body as { text?: string; parentId?: string } | undefined) ?? {};
+      return { status: 201, body: mockCreateComment(segment(path, 4), payload.text ?? '', payload.parentId) };
+    },
+  },
 ];
+
+function segment(path: string, index: number): string {
+  return path.split('/')[index] ?? '';
+}
 
 function lastSegment(path: string): string {
   return path.split('/').filter(Boolean).slice(-1)[0] ?? '';

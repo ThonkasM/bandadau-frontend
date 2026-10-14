@@ -1,0 +1,11 @@
+{
+  "title": "Comments",
+  "placeholder": "Add a comment…",
+  "send": "Send",
+  "reply": "Reply",
+  "replyTo": "Replying to {name}",
+  "cancel": "Cancel",
+  "empty": "Be the first to comment.",
+  "loading": "Loading comments…",
+  "close": "Close"
+}

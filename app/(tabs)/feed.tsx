@@ -1,18 +1,30 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { BandadaWordmark } from '@/components/brand/BandadaLogo';
 import { Screen } from '@/components/screens/screen';
 import { FeedList } from '@/components/ui/feed-list';
+import CommentsPanel from '@/features/comments/comments-panel';
 import { useFeed } from '@/features/feed/api';
+import { FeedRightRail } from '@/features/feed/components/feed-right-rail';
 import { PostCard } from '@/features/feed/components/post-card';
-import type { FeedItem } from '@/features/feed/types';
+import type { FeedItem, Post } from '@/features/feed/types';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
 const WEB_COLUMN_WIDTH = 560;
+const RAIL_MIN_WIDTH = 1200;
 
 export default function FeedScreen() {
   const tokens = useTokens();
@@ -22,63 +34,83 @@ export default function FeedScreen() {
   const { t: ta } = useTranslation('app');
   const router = useRouter();
   const feed = useFeed();
+  const { width } = useWindowDimensions();
+  const showRail = Platform.OS === 'web' && width >= RAIL_MIN_WIDTH;
+  const [activePost, setActivePost] = useState<Post | null>(null);
 
   return (
     <Screen padded={false}>
-      <View style={styles.column}>
-        <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
-          <BandadaWordmark width={118} color={brand.color} accent={brand.accent} />
-          <Pressable
-            onPress={() => router.push('/notifications')}
-            accessibilityRole="button"
-            accessibilityLabel={t('notifications')}
-            style={styles.headerAction}>
-            <MaterialCommunityIcons name="bell-outline" size={24} color={tokens.color.text.primary} />
-          </Pressable>
-        </View>
-
-        {feed.loading ? (
-          <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
-        ) : feed.error ? (
-          <View style={styles.state}>
-            <Text style={[styles.message, { color: tokens.color.text.muted }]}>{tf('error')}</Text>
+      <View style={styles.row}>
+        <View style={[styles.column, showRail && { maxWidth: WEB_COLUMN_WIDTH }]}>
+          <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
+            <BandadaWordmark width={118} color={brand.color} accent={brand.accent} />
             <Pressable
-              onPress={feed.refetch}
-              style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}>
-              <Text style={{ color: tokens.color.action.primary.fg }}>{ta('retry')}</Text>
+              onPress={() => router.push('/notifications')}
+              accessibilityRole="button"
+              accessibilityLabel={t('notifications')}
+              style={styles.headerAction}>
+              <MaterialCommunityIcons
+                name="bell-outline"
+                size={24}
+                color={tokens.color.text.primary}
+              />
             </Pressable>
           </View>
-        ) : (
-          <FeedList<FeedItem>
-            style={styles.list}
-            data={feed.items}
-            renderItem={({ item }) => <PostCard item={item} />}
-            keyExtractor={(item) => item.post.id}
-            hasMore={feed.hasMore}
-            loadingMore={feed.loadingMore}
-            refreshing={feed.refreshing}
-            onEndReached={feed.loadMore}
-            onRefresh={feed.refresh}
-            renderEmpty={() => (
-              <Text style={[styles.message, { color: tokens.color.text.muted }]}>{tf('empty')}</Text>
-            )}
-          />
-        )}
+
+          {feed.loading ? (
+            <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
+          ) : feed.error ? (
+            <View style={styles.state}>
+              <Text style={[styles.message, { color: tokens.color.text.muted }]}>{tf('error')}</Text>
+              <Pressable
+                onPress={feed.refetch}
+                style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}>
+                <Text style={{ color: tokens.color.action.primary.fg }}>{ta('retry')}</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <FeedList<FeedItem>
+              style={styles.list}
+              data={feed.items}
+              renderItem={({ item }) => (
+                <PostCard item={item} onOpenComments={() => setActivePost(item.post)} />
+              )}
+              keyExtractor={(item) => item.post.id}
+              hasMore={feed.hasMore}
+              loadingMore={feed.loadingMore}
+              refreshing={feed.refreshing}
+              onEndReached={feed.loadMore}
+              onRefresh={feed.refresh}
+              renderEmpty={() => (
+                <Text style={[styles.message, { color: tokens.color.text.muted }]}>
+                  {tf('empty')}
+                </Text>
+              )}
+            />
+          )}
+        </View>
+
+        {showRail ? <FeedRightRail /> : null}
       </View>
+
+      <CommentsPanel
+        post={activePost}
+        visible={Boolean(activePost)}
+        onClose={() => setActivePost(null)}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  column: {
+  row: {
     flex: 1,
-    width: '100%',
-    alignSelf: 'center',
-    ...Platform.select({
-      web: { maxWidth: WEB_COLUMN_WIDTH },
-      default: {},
-    }),
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 24,
+    paddingHorizontal: 16,
   },
+  column: { flex: 1, width: '100%', alignSelf: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

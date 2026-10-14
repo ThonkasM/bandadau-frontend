@@ -43,4 +43,8 @@ export const queryKeys = {
     list: () => ['groups', 'list'] as const,
     byId: (id: string) => ['groups', id] as const,
   },
+  comments: {
+    root: () => ['comments'] as const,
+    forPost: (postId: string) => ['comments', postId] as const,
+  },
 } as const;

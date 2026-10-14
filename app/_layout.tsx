@@ -1,11 +1,13 @@
 import '../global.css';
 
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BandadaSplash } from '@/components/brand/BandadaLogo';
@@ -65,24 +67,29 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      {ready ? (
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <ThemedRoot />
-          </ThemeProvider>
-        </QueryClientProvider>
-      ) : null}
-      {showSplash ? (
-        <BandadaSplash
-          onLayout={() => SplashScreen.hideAsync().catch(() => undefined)}
-          onFinish={() => setSplashDone(true)}
-        />
-      ) : null}
+      <GestureHandlerRootView style={styles.flex}>
+        {ready ? (
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider>
+              <BottomSheetModalProvider>
+                <ThemedRoot />
+              </BottomSheetModalProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
+        ) : null}
+        {showSplash ? (
+          <BandadaSplash
+            onLayout={() => SplashScreen.hideAsync().catch(() => undefined)}
+            onFinish={() => setSplashDone(true)}
+          />
+        ) : null}
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   app: { flex: 1 },
   container: { flex: 1, flexDirection: 'row' },
   content: { flex: 1 },

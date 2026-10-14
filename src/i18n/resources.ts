@@ -2,6 +2,7 @@ import { resources as sharedResources } from '@bandada/i18n';
 
 import enApp from '../../locales/en/app.json';
 import enAuth from '../../locales/en/auth.json';
+import enComments from '../../locales/en/comments.json';
 import enCreate from '../../locales/en/create.json';
 import enEvents from '../../locales/en/events.json';
 import enFeed from '../../locales/en/feed.json';
@@ -13,6 +14,7 @@ import enTickets from '../../locales/en/tickets.json';
 import enWallet from '../../locales/en/wallet.json';
 import esApp from '../../locales/es/app.json';
 import esAuth from '../../locales/es/auth.json';
+import esComments from '../../locales/es/comments.json';
 import esCreate from '../../locales/es/create.json';
 import esEvents from '../../locales/es/events.json';
 import esFeed from '../../locales/es/feed.json';
@@ -29,6 +31,7 @@ const appResources = {
     auth: esAuth,
     nav: esNav,
     feed: esFeed,
+    comments: esComments,
     notifications: esNotifications,
     profile: esProfile,
     events: esEvents,
@@ -42,6 +45,7 @@ const appResources = {
     auth: enAuth,
     nav: enNav,
     feed: enFeed,
+    comments: enComments,
     notifications: enNotifications,
     profile: enProfile,
     events: enEvents,

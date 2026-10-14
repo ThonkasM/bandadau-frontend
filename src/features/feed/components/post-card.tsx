@@ -9,7 +9,13 @@ import { useTokens } from '@/theme/theme-provider';
 import { PostCarousel } from './post-carousel';
 
 /** Instagram-style post: header, media carousel, actions, likes and caption. */
-export function PostCard({ item }: { item: FeedItem }) {
+export function PostCard({
+  item,
+  onOpenComments,
+}: {
+  item: FeedItem;
+  onOpenComments?: () => void;
+}) {
   const tokens = useTokens();
   const { t, i18n } = useTranslation('feed');
   const locale = i18n.language as Locale;
@@ -46,7 +52,7 @@ export function PostCard({ item }: { item: FeedItem }) {
 
       <View style={styles.actions}>
         <IconButton icon="heart-outline" label={t('like')} />
-        <IconButton icon="comment-outline" label={t('comment')} />
+        <IconButton icon="comment-outline" label={t('comment')} onPress={onOpenComments} />
         <IconButton icon="send-outline" label={t('share')} />
         <View style={styles.spacer} />
         <IconButton icon="bookmark-outline" label={t('save')} />
@@ -58,9 +64,11 @@ export function PostCard({ item }: { item: FeedItem }) {
         </Text>
         <Text style={[styles.caption, { color: tokens.color.text.primary }]}>{caption}</Text>
         {post.commentsCount > 0 ? (
-          <Text style={[styles.comments, { color: tokens.color.text.muted }]}>
-            {t('comments', { count: post.commentsCount })}
-          </Text>
+          <Pressable onPress={onOpenComments}>
+            <Text style={[styles.comments, { color: tokens.color.text.muted }]}>
+              {t('comments', { count: post.commentsCount })}
+            </Text>
+          </Pressable>
         ) : null}
       </View>
     </View>
@@ -70,13 +78,19 @@ export function PostCard({ item }: { item: FeedItem }) {
 function IconButton({
   icon,
   label,
+  onPress,
 }: {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
+  onPress?: () => void;
 }) {
   const tokens = useTokens();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} style={styles.iconButton}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={styles.iconButton}>
       <MaterialCommunityIcons name={icon} size={26} color={tokens.color.text.primary} />
     </Pressable>
   );

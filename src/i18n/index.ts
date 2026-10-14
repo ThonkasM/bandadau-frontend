@@ -13,6 +13,7 @@ export const NAMESPACES = [
   'auth',
   'nav',
   'feed',
+  'comments',
   'notifications',
   'profile',
   'events',

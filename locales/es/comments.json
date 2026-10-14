@@ -1,0 +1,11 @@
+{
+  "title": "Comentarios",
+  "placeholder": "Agrega un comentario…",
+  "send": "Enviar",
+  "reply": "Responder",
+  "replyTo": "Respondiendo a {name}",
+  "cancel": "Cancelar",
+  "empty": "Sé el primero en comentar.",
+  "loading": "Cargando comentarios…",
+  "close": "Cerrar"
+}
