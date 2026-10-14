@@ -121,15 +121,21 @@ export function FeedList<T>({
   };
 
   if (IS_WEB) {
-    return <FlatList {...common} style={style} />;
+    return <FlatList {...common} style={[style, styles.listContainer]} />;
   }
 
   return (
-    <FlashList {...(common as unknown as FlashListProps<T>)} style={style as FlashListProps<T>['style']} />
+    <FlashList
+      {...(common as unknown as FlashListProps<T>)}
+      style={[style, styles.listContainer] as unknown as FlashListProps<T>['style']}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   footer: { marginVertical: 16 },
   sentinel: { height: 1, width: '100%' },
+  // `minHeight: 0` lets the list shrink inside flex parents on web so it scrolls
+  // internally instead of pushing the page height (react-native-web min-content).
+  listContainer: { minHeight: 0 },
 });

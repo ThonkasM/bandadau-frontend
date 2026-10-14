@@ -23,7 +23,7 @@ import type { FeedItem, Post } from '@/features/feed/types';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
-const WEB_COLUMN_WIDTH = 560;
+const WEB_COLUMN_WIDTH = 600;
 const RAIL_MIN_WIDTH = 1200;
 
 export default function FeedScreen() {
@@ -105,12 +105,13 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   row: {
     flex: 1,
+    minHeight: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 24,
     paddingHorizontal: 16,
   },
-  column: { flex: 1, width: '100%', alignSelf: 'center' },
+  column: { flex: 1, minHeight: 0, width: '100%', alignSelf: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerAction: { padding: 4 },
-  list: { flex: 1 },
+  list: { flex: 1, minHeight: 0 },
   center: { marginTop: 24 },
   state: { alignItems: 'center', paddingHorizontal: 16 },
   message: { fontSize: 15, marginTop: 16, textAlign: 'center' },

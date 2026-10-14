@@ -34,7 +34,7 @@ export function Screen({ title, subtitle, padded = true, children }: ScreenProps
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  body: { flex: 1, paddingHorizontal: 16, paddingTop: 24, gap: 8 },
+  body: { flex: 1, minHeight: 0, paddingHorizontal: 16, paddingTop: 24, gap: 8 },
   bodyFlush: { paddingHorizontal: 0, paddingTop: 0 },
   title: { fontSize: 24, fontWeight: '800' },
   subtitle: { fontSize: 15 },

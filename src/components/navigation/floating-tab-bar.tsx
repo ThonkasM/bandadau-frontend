@@ -63,14 +63,18 @@ export const FloatingTabButton = memo(function FloatingTabButton({
     }
   }, [active]);
 
+  // `href: null` keeps `PlatformPressable` from rendering an `<a>` and calling
+  // `preventDefault()` (which made `TabTrigger` bail on web); we call
+  // `triggerProps.onPress` directly instead.
+  const pressableProps = {
+    href: null,
+    onPress: triggerProps.onPress ?? undefined,
+    onLongPress: triggerProps.onLongPress ?? undefined,
+  } as unknown as React.ComponentProps<typeof PlatformPressable>;
+
   return (
     <PlatformPressable
-      onPress={
-        (triggerProps.onPress ?? undefined) as unknown as React.ComponentProps<
-          typeof PlatformPressable
-        >['onPress']
-      }
-      onLongPress={triggerProps.onLongPress ?? undefined}
+      {...pressableProps}
       onPressIn={handlePressIn}
       style={styles.item}
       pressOpacity={0.6}
