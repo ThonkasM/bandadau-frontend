@@ -2,7 +2,7 @@ import '../global.css';
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -20,19 +20,24 @@ import { ThemeProvider, useTheme, useTokens } from '@/theme/theme-provider';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
+const AUTH_ROUTES = new Set(['/welcome', '/login', '/register', '/verify-email']);
+
 function RootLayoutInner() {
   const { effective } = useTheme();
   const { hasSidebar } = useSidebarLayout();
+  const pathname = usePathname();
   const isDark = effective === 'dark';
+  // Auth screens are full-screen on web (no global sidebar).
+  const showSidebar = hasSidebar && !AUTH_ROUTES.has(pathname);
 
   return (
     <>
       <View style={styles.container}>
-        {hasSidebar && <GlobalSidebar />}
+        {showSidebar && <GlobalSidebar />}
         <View
           style={[
             styles.content,
-            hasSidebar && Platform.OS === 'web' ? { marginLeft: SIDEBAR_WIDTH } : null,
+            showSidebar && Platform.OS === 'web' ? { marginLeft: SIDEBAR_WIDTH } : null,
           ]}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(auth)" />

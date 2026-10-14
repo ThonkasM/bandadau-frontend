@@ -1,11 +1,12 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandHero } from '@/components/brand/brand-hero';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
+import { useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
 
 /** P-APP-01 · Welcome (branded hero + CTAs). */
@@ -13,6 +14,12 @@ export default function WelcomeScreen() {
   const { t } = useTranslation('auth');
   const router = useRouter();
   const tokens = useTokens();
+  const loginAsGuest = useSessionStore((s) => s.loginAsGuest);
+
+  const onGuest = () => {
+    loginAsGuest();
+    router.replace('/(tabs)/feed');
+  };
 
   return (
     <SafeAreaView edges={['bottom']} style={[styles.safe, { backgroundColor: tokens.color.bg.canvas }]}>
@@ -40,6 +47,10 @@ export default function WelcomeScreen() {
           />
         </View>
 
+        <Pressable onPress={onGuest} style={styles.guestLink}>
+          <Text variant="link">{t('welcome.guest')}</Text>
+        </Pressable>
+
         <Text variant="caption" style={styles.center}>
           {t('welcome.terms')}
         </Text>
@@ -60,5 +71,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   center: { textAlign: 'center' },
+  guestLink: { alignItems: 'center' },
   actions: { gap: 12, marginTop: 4 },
 });
