@@ -20,7 +20,7 @@ import { ThemeProvider, useTheme, useTokens } from '@/theme/theme-provider';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
-const AUTH_ROUTES = new Set(['/welcome', '/login', '/register', '/verify-email']);
+const AUTH_ROUTES = new Set(['/', '/welcome', '/login', '/register', '/verify-email']);
 
 function RootLayoutInner() {
   const { effective } = useTheme();

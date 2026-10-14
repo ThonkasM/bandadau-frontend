@@ -114,6 +114,11 @@ La primera vez en una máquina nueva, Xcode debe **crear el provisioning profile
 genera el perfil una vez desde Xcode (o con `xcodebuild … -allowProvisioningUpdates`) y luego
 `pnpm ios:device` funciona. El perfil queda en `~/Library/Developer/Xcode/UserData/Provisioning Profiles/`.
 
+**Ciclo de vida de escenas (obligatorio con Xcode 27 / iOS 27).** Sin `UIApplicationSceneManifest` la app
+crashea al abrir con `EXC_BREAKPOINT … UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`.
+Por eso `expo-build-properties` fija `ios.enableSceneSupport: true` (SDK 57.0.23+): agrega el manifiesto a
+`Info.plist` y mueve el arranque de RN al scene delegate de Expo (`EXExpoAppSceneDelegate`).
+
 ## Variables de entorno (`.env.example`)
 
 ```
