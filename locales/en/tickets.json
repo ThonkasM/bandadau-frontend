@@ -1,5 +1,6 @@
 {
   "title": "My tickets",
+  "scan": "Scan ticket",
   "ticket": "Ticket",
   "empty": "You have no tickets.",
   "error": "We couldn't load your tickets.",

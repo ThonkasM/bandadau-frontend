@@ -1,5 +1,6 @@
 {
   "title": "Mis entradas",
+  "scan": "Escanear entrada",
   "ticket": "Entrada",
   "empty": "No tienes entradas.",
   "error": "No pudimos cargar tus entradas.",

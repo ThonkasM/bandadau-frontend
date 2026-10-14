@@ -10,6 +10,7 @@ import enGroups from '../../locales/en/groups.json';
 import enNav from '../../locales/en/nav.json';
 import enNotifications from '../../locales/en/notifications.json';
 import enProfile from '../../locales/en/profile.json';
+import enScan from '../../locales/en/scan.json';
 import enTickets from '../../locales/en/tickets.json';
 import enWallet from '../../locales/en/wallet.json';
 import esApp from '../../locales/es/app.json';
@@ -22,6 +23,7 @@ import esGroups from '../../locales/es/groups.json';
 import esNav from '../../locales/es/nav.json';
 import esNotifications from '../../locales/es/notifications.json';
 import esProfile from '../../locales/es/profile.json';
+import esScan from '../../locales/es/scan.json';
 import esTickets from '../../locales/es/tickets.json';
 import esWallet from '../../locales/es/wallet.json';
 
@@ -39,6 +41,7 @@ const appResources = {
     tickets: esTickets,
     groups: esGroups,
     create: esCreate,
+    scan: esScan,
   },
   en: {
     app: enApp,
@@ -53,6 +56,7 @@ const appResources = {
     tickets: enTickets,
     groups: enGroups,
     create: enCreate,
+    scan: enScan,
   },
 } as const;
 

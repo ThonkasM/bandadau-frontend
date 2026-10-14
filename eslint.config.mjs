@@ -13,6 +13,7 @@ export default [
       'babel.config.js',
       'metro.config.js',
       'scripts/**',
+      'plugins/**',
     ],
   },
   {

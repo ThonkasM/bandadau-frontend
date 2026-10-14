@@ -1,0 +1,9 @@
+{
+  "title": "Escanear entrada",
+  "hint": "Apunta la cámara al código QR de la entrada.",
+  "simulate": "Simular escaneo",
+  "scanAgain": "Escanear otra",
+  "valid": "Entrada válida. ¡Adelante!",
+  "used": "Esta entrada ya fue usada.",
+  "invalid": "Firma inválida."
+}

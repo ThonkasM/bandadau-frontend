@@ -18,6 +18,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.bandadau.app',
+    appleTeamId: process.env.EXPO_APPLE_TEAM_ID ?? '7MWYA8BMK6',
     associatedDomains: [`applinks:app.${BASE_DOMAIN}`],
     icon: {
       light: './assets/brand/icon-1024.png',
@@ -69,6 +70,7 @@ const config: ExpoConfig = {
         color: '#1238A8',
       },
     ],
+    './plugins/with-ios-signing',
   ],
   extra: {
     appUrl: APP_URL,

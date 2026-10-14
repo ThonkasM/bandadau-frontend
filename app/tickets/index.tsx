@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
+import { Button } from '@/components/ui/button';
 import { FeedList } from '@/components/ui/feed-list';
 import { useMyTickets } from '@/features/tickets/api';
 import { TicketCard } from '@/features/tickets/components/ticket-card';
@@ -19,6 +20,12 @@ export default function TicketsScreen() {
 
   return (
     <Screen title={t('title')}>
+      <Button
+        label={t('scan')}
+        icon="qrcode-scan"
+        variant="secondary"
+        onPress={() => router.push('/scan')}
+      />
       {list.loading ? (
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
       ) : list.error ? (

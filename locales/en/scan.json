@@ -1,0 +1,9 @@
+{
+  "title": "Scan ticket",
+  "hint": "Point the camera at the ticket QR code.",
+  "simulate": "Simulate scan",
+  "scanAgain": "Scan another",
+  "valid": "Valid ticket. Come in!",
+  "used": "This ticket was already used.",
+  "invalid": "Invalid signature."
+}

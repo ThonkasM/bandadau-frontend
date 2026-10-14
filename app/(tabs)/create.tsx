@@ -14,6 +14,8 @@ import { useTokens } from '@/theme/theme-provider';
 type Visibility = 'PUBLIC' | 'FOLLOWERS' | 'GROUP';
 type Photo = { uri: string; width: number; height: number };
 
+const MAX_LENGTH = 2000;
+
 /** UC-05 · Compose post (mockup: media preview + crop guide, publish not wired). */
 export default function CreateScreen() {
   const tokens = useTokens();
@@ -22,6 +24,9 @@ export default function CreateScreen() {
   const [visibility, setVisibility] = useState<Visibility>('PUBLIC');
   const [photo, setPhoto] = useState<Photo | null>(null);
   const picks = useRef(0);
+
+  const counter = `${text.length}/${MAX_LENGTH}`;
+  const hashtags = text.match(/#[\p{L}\d_]+/gu) ?? [];
 
   // Mock picker: alternates portrait (3:4) and landscape (4:3) to show the guide.
   const pickPhoto = () => {
@@ -44,6 +49,21 @@ export default function CreateScreen() {
         multiline
         style={styles.composer}
       />
+      <Text variant="caption" style={[styles.counter, { color: tokens.color.text.muted }]}>
+        {counter}
+      </Text>
+
+      {hashtags.length > 0 ? (
+        <View style={styles.tags}>
+          {hashtags.map((tag) => (
+            <View key={tag} style={[styles.tag, { backgroundColor: tokens.color.bg.muted }]}>
+              <Text variant="caption" color={tokens.color.text.primary}>
+                {tag}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       <Text variant="label">{t('visibilityLabel')}</Text>
       <View style={styles.row}>
@@ -102,6 +122,9 @@ function MediaButton({
 
 const styles = StyleSheet.create({
   composer: { minHeight: 120, textAlignVertical: 'top' },
+  counter: { textAlign: 'right' },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   mediaRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
   media: {
