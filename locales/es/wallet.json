@@ -1,6 +1,7 @@
 {
   "title": "Billetera",
   "balance": "Saldo",
+  "packages": "Paquetes",
   "recharge": "Recargar",
   "movements": "Movimientos",
   "empty": "Sin movimientos todavía.",

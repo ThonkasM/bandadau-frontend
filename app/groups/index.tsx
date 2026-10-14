@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
+import { Button } from '@/components/ui/button';
 import { FeedList } from '@/components/ui/feed-list';
 import { useGroups, useJoinGroup } from '@/features/groups/api';
 import { GroupCard } from '@/features/groups/components/group-card';
@@ -18,6 +19,12 @@ export default function GroupsScreen() {
 
   return (
     <Screen title={t('title')}>
+      <Button
+        label={t('create')}
+        icon="account-multiple-plus"
+        variant="secondary"
+        onPress={() => undefined}
+      />
       {list.loading ? (
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
       ) : list.error ? (

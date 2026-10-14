@@ -21,20 +21,41 @@ export default function TicketDetailScreen() {
       {ticket.isLoading ? (
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
       ) : ticket.data ? (
-        <View style={styles.content}>
-          <Text style={[styles.event, { color: tokens.color.text.primary }]}>
-            {ticket.data.eventTitle ?? t('ticket')}
-          </Text>
-          {ticket.data.eventStartsAt ? (
-            <Text style={{ color: tokens.color.text.muted }}>
-              {formatDate(ticket.data.eventStartsAt, locale, 'long')}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: tokens.color.bg.surface, borderColor: tokens.color.border.default },
+          ]}>
+          <View style={styles.head}>
+            <Text style={[styles.event, { color: tokens.color.text.primary }]}>
+              {ticket.data.eventTitle ?? t('ticket')}
             </Text>
-          ) : null}
-          <View style={[styles.qrCard, { backgroundColor: tokens.color.bg.surface, borderColor: tokens.color.border.default }]}>
-            <MaterialCommunityIcons name="qrcode" size={180} color={tokens.color.text.primary} />
+            {ticket.data.eventStartsAt ? (
+              <Text style={{ color: tokens.color.text.muted }}>
+                {formatDate(ticket.data.eventStartsAt, locale, 'long')}
+              </Text>
+            ) : null}
+            {ticket.data.venue ? (
+              <Text style={{ color: tokens.color.text.muted }}>{ticket.data.venue}</Text>
+            ) : null}
           </View>
-          <Text style={{ color: tokens.color.text.muted }}>{t('qrHint')}</Text>
-          <Text style={{ color: tokens.color.text.link }}>{t(`status.${ticket.data.status}`)}</Text>
+
+          <View style={[styles.divider, { borderTopColor: tokens.color.border.default }]} />
+
+          <View style={styles.qrWrap}>
+            <View
+              style={[
+                styles.qrCard,
+                { backgroundColor: tokens.color.bg.surface, borderColor: tokens.color.border.default },
+              ]}>
+              <MaterialCommunityIcons name="qrcode" size={196} color={tokens.color.text.primary} />
+            </View>
+          </View>
+
+          <Text style={[styles.hint, { color: tokens.color.text.muted }]}>{t('qrHint')}</Text>
+          <Text style={[styles.status, { color: tokens.color.text.link }]}>
+            {t(`status.${ticket.data.status}`)}
+          </Text>
         </View>
       ) : (
         <Text style={{ color: tokens.color.text.muted }}>{t('error')}</Text>
@@ -44,8 +65,18 @@ export default function TicketDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { alignItems: 'center', gap: 10, marginTop: 12 },
-  event: { fontSize: 18, fontWeight: '800', textAlign: 'center' },
-  qrCard: { borderWidth: 1, borderRadius: 20, padding: 20, marginTop: 8 },
   center: { marginTop: 24 },
+  card: { borderWidth: 1, borderRadius: 20, padding: 20, alignItems: 'center', gap: 8, marginTop: 8 },
+  head: { alignItems: 'center', gap: 2 },
+  event: { fontSize: 18, fontWeight: '800', textAlign: 'center' },
+  divider: {
+    width: '100%',
+    borderTopWidth: 1,
+    borderStyle: 'dashed',
+    marginVertical: 12,
+  },
+  qrWrap: { alignItems: 'center' },
+  qrCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
+  hint: { textAlign: 'center', marginTop: 4 },
+  status: { fontSize: 13, fontWeight: '700' },
 });

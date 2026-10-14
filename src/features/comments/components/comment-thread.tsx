@@ -41,9 +41,10 @@ function CommentRow({
   );
 }
 
-const PREVIEW_REPLIES = 2;
+const INITIAL_REPLIES = 2;
+const REPLIES_STEP = 10;
 
-/** A root comment with its replies. Shows the first replies and a "view N more" toggle. */
+/** A root comment with its replies. Shows a few replies, then "view more" in batches of 10, with a hide toggle. */
 export function CommentThreadView({
   thread,
   onReply,
@@ -53,20 +54,30 @@ export function CommentThreadView({
 }) {
   const tokens = useTokens();
   const { t } = useTranslation('comments');
-  const [expanded, setExpanded] = useState(false);
-  const hidden = thread.replies.length - PREVIEW_REPLIES;
-  const visibleReplies = expanded ? thread.replies : thread.replies.slice(0, PREVIEW_REPLIES);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_REPLIES);
+  const total = thread.replies.length;
+  const shownReplies = thread.replies.slice(0, visibleCount);
+  const hidden = total - visibleCount;
 
   return (
     <View style={styles.thread}>
       <CommentRow comment={thread.comment} onReply={onReply} />
-      {visibleReplies.map((reply) => (
+      {shownReplies.map((reply) => (
         <CommentRow key={reply.id} comment={reply} indent onReply={onReply} />
       ))}
-      {!expanded && hidden > 0 ? (
-        <Pressable onPress={() => setExpanded(true)} style={styles.moreReplies}>
+      {hidden > 0 ? (
+        <Pressable
+          onPress={() => setVisibleCount((count) => Math.min(count + REPLIES_STEP, total))}
+          style={styles.moreReplies}>
           <RNText style={[styles.viewReplies, { color: tokens.color.text.muted }]}>
-            {t('viewReplies', { count: hidden })}
+            {t('viewReplies', { count: Math.min(REPLIES_STEP, hidden) })}
+          </RNText>
+        </Pressable>
+      ) : null}
+      {visibleCount > INITIAL_REPLIES ? (
+        <Pressable onPress={() => setVisibleCount(INITIAL_REPLIES)} style={styles.moreReplies}>
+          <RNText style={[styles.viewReplies, { color: tokens.color.text.muted }]}>
+            {t('hideReplies')}
           </RNText>
         </Pressable>
       ) : null}

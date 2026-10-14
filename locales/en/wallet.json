@@ -1,6 +1,7 @@
 {
   "title": "Wallet",
   "balance": "Balance",
+  "packages": "Packages",
   "recharge": "Top up",
   "movements": "Movements",
   "empty": "No movements yet.",

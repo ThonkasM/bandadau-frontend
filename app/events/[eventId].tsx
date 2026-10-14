@@ -1,4 +1,5 @@
 import { formatCredits, formatDate, type Locale } from '@bandada/i18n';
+import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -43,7 +44,12 @@ export default function EventDetailScreen() {
   return (
     <Screen title={data.title}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.cover, { backgroundColor: tokens.color.bg.muted }]} />
+        <Image
+          source={{ uri: `https://picsum.photos/seed/bandada-event-${data.id}/1200/675` }}
+          style={styles.cover}
+          contentFit="cover"
+          transition={200}
+        />
         <Text style={{ color: tokens.color.text.muted }}>
           {formatDate(data.startsAt, locale, 'long')}
         </Text>

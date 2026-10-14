@@ -1,5 +1,6 @@
 {
   "title": "Study groups",
+  "create": "Create group",
   "join": "Join",
   "joined": "Member",
   "empty": "No groups.",
