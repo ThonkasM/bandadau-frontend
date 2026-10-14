@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { PlatformPressable } from 'expo-router/react-navigation';
 import { useTabTrigger } from 'expo-router/ui';
 import { memo, useCallback, useMemo } from 'react';
-import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Platform, StyleSheet, type ViewStyle } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -14,6 +14,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTabBarCollapse } from '@/components/navigation/tab-bar-collapse';
+import { useTabBarKeyboardHide } from '@/hooks/use-tab-bar-keyboard';
 import { useTokens } from '@/theme/theme-provider';
 
 type ThemeTokens = ReturnType<typeof useTokens>;
@@ -40,6 +41,8 @@ export function FloatingTabBar({ children, hidden = false }: FloatingTabBarProps
   const styles = useMemo(() => createStyles(tokens), [tokens]);
   const collapsed = useTabBarCollapse();
   const reducedMotion = useReducedMotion();
+  const hideDistance = insets.bottom + BOTTOM_GAP + CAPSULE_HEIGHT + 12;
+  const keyboardStyle = useTabBarKeyboardHide(hideDistance);
 
   const progress = useDerivedValue(() =>
     reducedMotion ? collapsed.value : withSpring(collapsed.value, SPRING),
@@ -53,9 +56,10 @@ export function FloatingTabBar({ children, hidden = false }: FloatingTabBarProps
   if (hidden) return null;
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + BOTTOM_GAP }]}>
+    <Animated.View
+      style={[styles.container, { paddingBottom: insets.bottom + BOTTOM_GAP }, keyboardStyle]}>
       <Animated.View style={[styles.capsule, shrinkStyle]}>{children}</Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 

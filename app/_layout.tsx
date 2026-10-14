@@ -11,6 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BandadaSplash } from '@/components/brand/BandadaLogo';
@@ -76,21 +77,23 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={styles.flex}>
-        {ready ? (
-          <QueryClientProvider client={queryClient}>
-            <ThemeProvider>
-              <BottomSheetModalProvider>
-                <ThemedRoot />
-              </BottomSheetModalProvider>
-            </ThemeProvider>
-          </QueryClientProvider>
-        ) : null}
-        {showSplash ? (
-          <BandadaSplash
-            onLayout={() => SplashScreen.hideAsync().catch(() => undefined)}
-            onFinish={() => setSplashDone(true)}
-          />
-        ) : null}
+        <KeyboardProvider>
+          {ready ? (
+            <QueryClientProvider client={queryClient}>
+              <ThemeProvider>
+                <BottomSheetModalProvider>
+                  <ThemedRoot />
+                </BottomSheetModalProvider>
+              </ThemeProvider>
+            </QueryClientProvider>
+          ) : null}
+          {showSplash ? (
+            <BandadaSplash
+              onLayout={() => SplashScreen.hideAsync().catch(() => undefined)}
+              onFinish={() => setSplashDone(true)}
+            />
+          ) : null}
+        </KeyboardProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

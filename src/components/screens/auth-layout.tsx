@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandHero } from '@/components/brand/brand-hero';
@@ -24,9 +25,7 @@ export function AuthLayout({ children, heroSubtitle, heroHeight = 180 }: AuthLay
     <View style={[styles.root, { backgroundColor: tokens.color.bg.canvas }]}>
       <BrandHero height={heroHeight} subtitle={heroSubtitle} paddingTop={insets.top} />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}>
+      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
         <ScrollView
           contentContainerStyle={[styles.form, { paddingBottom: 24 + insets.bottom }]}
           keyboardShouldPersistTaps="handled"
