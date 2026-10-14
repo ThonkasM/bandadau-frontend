@@ -1,3 +1,6 @@
+// Hermes does not implement `Intl.PluralRules`; i18next and ICU (intl-messageformat)
+// need it. This polyfill must run before i18n initializes.
+import 'intl-pluralrules';
 import '../global.css';
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
