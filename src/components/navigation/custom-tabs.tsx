@@ -1,9 +1,13 @@
 import { type Href,usePathname } from 'expo-router';
 import { TabList, Tabs,TabSlot, TabTrigger } from 'expo-router/ui';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet } from 'react-native';
 
+import {
+  TabBarCollapseProvider,
+  useTabBarCollapse,
+} from '@/components/navigation/tab-bar-collapse';
 import { tabRoutes } from '@/config/navigation';
 
 import { FloatingTabBar, FloatingTabButton } from './floating-tab-bar';
@@ -16,21 +20,31 @@ interface CustomTabsProps {
 /**
  * Custom headless tabs (`expo-router/ui`) with a floating capsule for
  * native + narrow web. The hidden `TabList` defines the routes; the visible
- * buttons use `useTabTrigger` for focus + navigation.
+ * buttons use `useTabTrigger` for focus + navigation. The bar shrinks on scroll.
  */
 export function CustomTabs({ showBar = true }: CustomTabsProps) {
+  return (
+    <TabBarCollapseProvider>
+      <CustomTabsNavigator showBar={showBar} />
+    </TabBarCollapseProvider>
+  );
+}
+
+function CustomTabsNavigator({ showBar }: { showBar: boolean }) {
   const { t } = useTranslation('nav');
   const pathname = usePathname();
   const routes = useMemo(() => tabRoutes(), []);
+  const collapsed = useTabBarCollapse();
 
   const tabsOptions = useMemo(
     () => ({ backBehavior: Platform.OS === 'web' ? ('history' as const) : undefined }),
     [],
   );
 
-  // Touch the pathname so active states re-render on navigation (the buttons
-  // read `triggerProps.isFocused`, but the navigator must re-evaluate).
-  void pathname;
+  // Each screen starts with the bar expanded.
+  useEffect(() => {
+    collapsed.value = 0;
+  }, [pathname, collapsed]);
 
   return (
     <Tabs options={tabsOptions}>

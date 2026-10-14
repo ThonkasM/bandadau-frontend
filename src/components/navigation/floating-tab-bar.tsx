@@ -4,8 +4,16 @@ import { PlatformPressable } from 'expo-router/react-navigation';
 import { useTabTrigger } from 'expo-router/ui';
 import { memo, useCallback, useMemo } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useDerivedValue,
+  useReducedMotion,
+  withSpring,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useTabBarCollapse } from '@/components/navigation/tab-bar-collapse';
 import { useTokens } from '@/theme/theme-provider';
 
 type ThemeTokens = ReturnType<typeof useTokens>;
@@ -17,23 +25,36 @@ const ITEM_GAP = 2;
 const H_MARGIN = 16;
 const BAR_MAX_WIDTH = 520;
 const BOTTOM_GAP = 10;
+const SHRINK_SCALE = 0.84;
+const SPRING = { damping: 18, stiffness: 240, mass: 0.7 };
 
 export interface FloatingTabBarProps {
   children: React.ReactNode;
   hidden?: boolean;
 }
 
-/** Floating opaque capsule (iOS 26 / Instagram style) shared by native and narrow web. */
+/** Floating opaque capsule (iOS 26 / Instagram style) that shrinks on scroll down. */
 export function FloatingTabBar({ children, hidden = false }: FloatingTabBarProps) {
   const insets = useSafeAreaInsets();
   const tokens = useTokens();
   const styles = useMemo(() => createStyles(tokens), [tokens]);
+  const collapsed = useTabBarCollapse();
+  const reducedMotion = useReducedMotion();
+
+  const progress = useDerivedValue(() =>
+    reducedMotion ? collapsed.value : withSpring(collapsed.value, SPRING),
+  );
+
+  const shrinkStyle = useAnimatedStyle(() => {
+    const scale = interpolate(progress.value, [0, 1], [1, SHRINK_SCALE]);
+    return { transform: [{ translateY: ((1 - scale) * CAPSULE_HEIGHT) / 2 }, { scale }] };
+  });
 
   if (hidden) return null;
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom + BOTTOM_GAP }]}>
-      <View style={styles.capsule}>{children}</View>
+      <Animated.View style={[styles.capsule, shrinkStyle]}>{children}</Animated.View>
     </View>
   );
 }

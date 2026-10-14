@@ -1,4 +1,5 @@
 import { formatRelative, type Locale } from '@bandada/i18n';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text as RNText, View } from 'react-native';
 
@@ -40,7 +41,9 @@ function CommentRow({
   );
 }
 
-/** A root comment with its direct replies (one nesting level). */
+const PREVIEW_REPLIES = 2;
+
+/** A root comment with its replies. Shows the first replies and a "view N more" toggle. */
 export function CommentThreadView({
   thread,
   onReply,
@@ -48,12 +51,25 @@ export function CommentThreadView({
   thread: CommentThread;
   onReply: (comment: Comment) => void;
 }) {
+  const tokens = useTokens();
+  const { t } = useTranslation('comments');
+  const [expanded, setExpanded] = useState(false);
+  const hidden = thread.replies.length - PREVIEW_REPLIES;
+  const visibleReplies = expanded ? thread.replies : thread.replies.slice(0, PREVIEW_REPLIES);
+
   return (
     <View style={styles.thread}>
       <CommentRow comment={thread.comment} onReply={onReply} />
-      {thread.replies.map((reply) => (
+      {visibleReplies.map((reply) => (
         <CommentRow key={reply.id} comment={reply} indent onReply={onReply} />
       ))}
+      {!expanded && hidden > 0 ? (
+        <Pressable onPress={() => setExpanded(true)} style={styles.moreReplies}>
+          <RNText style={[styles.viewReplies, { color: tokens.color.text.muted }]}>
+            {t('viewReplies', { count: hidden })}
+          </RNText>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -69,4 +85,6 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', gap: 14 },
   time: { fontSize: 12 },
   reply: { fontSize: 12, fontWeight: '700' },
+  moreReplies: { marginLeft: 44, paddingLeft: 8, paddingVertical: 4 },
+  viewReplies: { fontSize: 13, fontWeight: '700' },
 });

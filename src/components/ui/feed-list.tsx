@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useTabBarOnScroll } from '@/components/navigation/tab-bar-collapse';
 import { useTokens } from '@/theme/theme-provider';
 
 const IS_WEB = Platform.OS === 'web';
@@ -65,6 +66,7 @@ export function FeedList<T>({
 }: FeedListProps<T>) {
   const insets = useSafeAreaInsets();
   const tokens = useTokens();
+  const collapseOnScroll = useTabBarOnScroll();
   const sentinelRef = useRef<View | null>(null);
 
   const useSentinel = IS_WEB && typeof IntersectionObserver !== 'undefined';
@@ -106,6 +108,7 @@ export function FeedList<T>({
     ],
     showsVerticalScrollIndicator: false,
     scrollEventThrottle: 16,
+    onScroll: collapseOnScroll,
     onEndReached: useSentinel ? undefined : onEndReached,
     onEndReachedThreshold: useSentinel ? undefined : 0.3,
     ListFooterComponent: footer,

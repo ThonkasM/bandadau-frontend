@@ -4,6 +4,7 @@
   "send": "Enviar",
   "reply": "Responder",
   "replyTo": "Respondiendo a {name}",
+  "viewReplies": "{count, plural, one {Ver # respuesta} other {Ver las # respuestas}}",
   "cancel": "Cancelar",
   "empty": "Sé el primero en comentar.",
   "loading": "Cargando comentarios…",

@@ -15,4 +15,11 @@ export default [
       'scripts/**',
     ],
   },
+  {
+    rules: {
+      // React Compiler rule that doesn't understand Reanimated shared values
+      // (`sharedValue.value = …`) nor refs mutated inside callbacks/effects.
+      'react-hooks/immutability': 'off',
+    },
+  },
 ];
