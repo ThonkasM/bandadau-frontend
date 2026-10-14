@@ -1,8 +1,8 @@
+import { FALLBACK_LOCALE, type Locale,resolveLocale } from '@bandada/i18n';
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import ICU from 'i18next-icu';
 import { initReactI18next } from 'react-i18next';
-import { FALLBACK_LOCALE, resolveLocale, type Locale } from '@bandada/i18n';
 
 import { resources } from '@/i18n/resources';
 import { usePreferencesStore } from '@/stores/preferences.store';

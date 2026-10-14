@@ -1,16 +1,16 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { vars } from 'nativewind';
-import { Platform, useColorScheme, View } from 'react-native';
 import {
   applyTheme,
+  type EffectiveTheme,
   flatTokens,
   resolveEffectiveTheme,
-  tokens,
-  type EffectiveTheme,
   type ThemeName,
   type ThemePreference,
   type ThemeTokens,
+  tokens,
 } from '@bandada/ui-tokens';
+import { vars } from 'nativewind';
+import { createContext, type ReactNode,useContext, useMemo } from 'react';
+import { Platform, useColorScheme, View } from 'react-native';
 
 import { usePreferencesStore } from '@/stores/preferences.store';
 

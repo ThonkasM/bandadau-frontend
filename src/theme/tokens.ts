@@ -1,10 +1,10 @@
 export {
   cssVarName,
   flatTokens,
-  tokenNames,
-  tokens,
   type FlatTokenValue,
   type ThemeName,
   type ThemeTokens,
   type TokenName,
+  tokenNames,
+  tokens,
 } from '@bandada/ui-tokens';

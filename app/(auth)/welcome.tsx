@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
 import { useTokens } from '@/theme/theme-provider';

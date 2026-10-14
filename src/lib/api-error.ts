@@ -1,4 +1,4 @@
-import { isProblem, type FieldError, type ProblemDetails } from '@bandada/contracts-ts';
+import { type FieldError, isProblem, type ProblemDetails } from '@bandada/contracts-ts';
 import { errorMessage, type Locale } from '@bandada/i18n';
 
 /** Normalized client error derived from RFC 9457 Problem Details. */

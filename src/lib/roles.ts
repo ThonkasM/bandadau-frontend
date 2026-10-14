@@ -1,3 +1,6 @@
-/** Roles available in Club Bandada U (catalog §7). */
-export const ROLES = ['STUDENT', 'ORGANIZER', 'MODERATOR', 'ADMIN'] as const;
-export type Role = (typeof ROLES)[number];
+import type { identity } from '@bandada/contracts-ts';
+
+/** Roles of the platform (catalog §7), sourced from the generated contract. */
+export type Role = identity.components['schemas']['Role'];
+
+export const ROLES: readonly Role[] = ['STUDENT', 'ORGANIZER', 'MODERATOR', 'ADMIN'];

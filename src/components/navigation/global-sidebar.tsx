@@ -6,8 +6,8 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   isNavRouteActive,
-  sidebarRoutes,
   type NavRoute,
+  sidebarRoutes,
 } from '@/config/navigation';
 import { SIDEBAR_WIDTH } from '@/constants/layout';
 import { useTokens } from '@/theme/theme-provider';

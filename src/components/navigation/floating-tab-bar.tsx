@@ -1,7 +1,7 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import * as Haptics from 'expo-haptics';
 import { PlatformPressable } from 'expo-router/react-navigation';
 import { useTabTrigger } from 'expo-router/ui';
-import * as Haptics from 'expo-haptics';
 import { memo, useCallback, useMemo } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +9,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTokens } from '@/theme/theme-provider';
 
 type ThemeTokens = ReturnType<typeof useTokens>;
-type Styles = ReturnType<typeof createStyles>;
 
 const ICON_SIZE = 26;
 const CAPSULE_HEIGHT = 56;
@@ -66,7 +65,11 @@ export const FloatingTabButton = memo(function FloatingTabButton({
 
   return (
     <PlatformPressable
-      onPress={triggerProps.onPress ?? undefined}
+      onPress={
+        (triggerProps.onPress ?? undefined) as unknown as React.ComponentProps<
+          typeof PlatformPressable
+        >['onPress']
+      }
       onLongPress={triggerProps.onLongPress ?? undefined}
       onPressIn={handlePressIn}
       style={styles.item}

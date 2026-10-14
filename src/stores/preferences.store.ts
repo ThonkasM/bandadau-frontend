@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
 import { DEFAULT_LOCALE, type Locale } from '@bandada/i18n';
 import type { ThemePreference } from '@bandada/ui-tokens';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { storage } from '@/lib/storage';
 

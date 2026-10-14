@@ -21,6 +21,21 @@ Expo SDK 57 · React Native (New Architecture) · **expo-router** · TypeScript 
 Maestro · Playwright (PWA). Verifica cada API contra el changelog de SDK 57 (p. ej. `expo/fetch` global,
 subpaths de `expo-router` sin `@react-navigation/*`).
 
+### Datos, rendimiento y compilador (ajuste para mejor experiencia nativa)
+
+- **TanStack Query es la única vía a datos de servidor.** Todo fetch pasa por hooks
+  (`useQuery`/`useInfiniteQuery`/`useMutation`); prohibido `useEffect + fetch`. Query keys
+  centralizadas en `src/lib/query-keys.ts`. Persister offline (MMKV nativo / IndexedDB web) y
+  `networkMode: 'offlineFirst'`.
+- **React Compiler activado** (`app.config.ts` → `experiments.reactCompiler`). No escribir
+  `useMemo`/`useCallback`/`React.memo` "por reflejo": el compilador los aplica. Solo añadirlos para
+  costo medido o semántica explícita.
+- **Listas**: `@shopify/flash-list` (v2, New Architecture) en nativo y `FlatList` en web, a través de
+  `src/components/ui/virtual-list.tsx` (`VirtualList`). Prohibido `ScrollView` + `.map` para
+  colecciones largas (feed, comentarios, movimientos, tickets).
+- **pnpm**: `react-native-css-interop` se declara como dependencia **directa** porque NativeWind v4
+  emite `react-native-css-interop/jsx-runtime` y pnpm no lo hoistea. No quitarla.
+
 ## Arquitectura y carpetas
 
 ```

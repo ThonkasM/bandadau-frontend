@@ -1,41 +1,34 @@
+import type { Locale } from '@bandada/i18n';
 import { Link, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
-import type { LoginResponse } from '@/features/auth/types';
+import { useLogin } from '@/features/auth/api';
+import { loginSchema } from '@/features/auth/schemas';
 import { ApiError } from '@/lib/api-error';
-import { apiRequest } from '@/lib/api-client';
-import { useSessionStore, type SessionUser } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
 
 export default function LoginScreen() {
   const tokens = useTokens();
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
   const router = useRouter();
-  const setSession = useSessionStore((s) => s.setSession);
+  const login = useLogin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  const onSubmit = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const data = await apiRequest<LoginResponse>('/api/v1/auth/login', {
-        method: 'POST',
-        auth: false,
-        body: { email, password, clientApp: 'APP' },
-      });
-      setSession({ accessToken: data.accessToken, user: data.user as SessionUser });
-      router.replace('/(tabs)/feed');
-    } catch (err) {
-      setError(err instanceof ApiError ? err.localizedMessage('es') : 'INTERNAL_ERROR');
-    } finally {
-      setLoading(false);
-    }
+  const errorMessage = useMemo(() => {
+    const error = login.error;
+    if (!error) return null;
+    if (error instanceof ApiError) return error.localizedMessage(i18n.language as Locale);
+    return null;
+  }, [login.error, i18n.language]);
+
+  const onSubmit = () => {
+    const parsed = loginSchema.safeParse({ email, password });
+    if (!parsed.success) return;
+    login.mutate(parsed.data, { onSuccess: () => router.replace('/(tabs)/feed') });
   };
 
   return (
@@ -55,9 +48,11 @@ export default function LoginScreen() {
         secureTextEntry
         style={[styles.input, { borderColor: tokens.color.border.default, color: tokens.color.text.primary }]}
       />
-      {error ? <Text style={{ color: tokens.color.feedback.danger.fg }}>{error}</Text> : null}
+      {errorMessage ? (
+        <Text style={{ color: tokens.color.feedback.danger.fg }}>{errorMessage}</Text>
+      ) : null}
       <Pressable
-        disabled={loading}
+        disabled={login.isPending}
         onPress={onSubmit}
         style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}>
         <Text style={{ color: tokens.color.action.primary.fg }}>{t('login.submit')}</Text>

@@ -10,12 +10,9 @@ const config: ExpoConfig = {
   version: '0.1.0',
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
-  newArchEnabled: true,
   experiments: {
     typedRoutes: true,
-  },
-  splash: {
-    resizeMode: 'contain',
+    reactCompiler: true,
   },
   ios: {
     supportsTablet: true,

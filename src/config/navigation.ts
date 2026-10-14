@@ -1,4 +1,4 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import type MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 

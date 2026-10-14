@@ -1,13 +1,13 @@
 import { Platform } from 'react-native';
 
 import { clearRefreshToken, getRefreshToken, setRefreshToken } from '@/auth/refresh-token';
+import type { AuthTokens } from '@/features/auth/types';
 import { ApiError } from '@/lib/api-error';
 import { buildHeaders, buildUrl, type RequestOptions } from '@/lib/http';
-import { newCorrelationId } from '@/lib/ids';
 import { randomIdempotencyKey } from '@/lib/idempotency';
+import { newCorrelationId } from '@/lib/ids';
 import { usePreferencesStore } from '@/stores/preferences.store';
-import { useSessionStore, type SessionUser } from '@/stores/session.store';
-import type { LoginResponse } from '@/features/auth/types';
+import { useSessionStore } from '@/stores/session.store';
 
 function currentLocale(): string {
   return usePreferencesStore.getState().locale;
@@ -55,10 +55,15 @@ async function doRefresh(): Promise<string | null> {
     return null;
   }
 
-  const data = (await res.json()) as LoginResponse;
+  const data = (await res.json()) as AuthTokens;
   if (data.refreshToken) await setRefreshToken(data.refreshToken);
-  useSessionStore.getState().setSession({ accessToken: data.accessToken, user: data.user as SessionUser });
+  useSessionStore.getState().setSession({ accessToken: data.accessToken, user: data.user });
   return data.accessToken;
+}
+
+/** Forces a refresh (used on app start and by the 401 interceptor). */
+export async function refreshSession(): Promise<boolean> {
+  return Boolean(await refreshAccessToken());
 }
 
 /** Single HTTP entrypoint for the app. Never call `fetch` directly from the UI. */

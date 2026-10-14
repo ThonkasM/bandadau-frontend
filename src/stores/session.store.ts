@@ -1,17 +1,8 @@
 import { create } from 'zustand';
 
-import type { Role } from '@/lib/roles';
+import type { AuthUser, Role } from '@/features/auth/types';
 
-export interface SessionUser {
-  id: string;
-  displayName: string;
-  email: string;
-  roles: Role[];
-  universityId: string;
-  locale: string;
-  theme: string;
-}
-
+export type SessionUser = AuthUser;
 export type SessionStatus = 'loading' | 'anonymous' | 'authenticated';
 
 interface SessionState {

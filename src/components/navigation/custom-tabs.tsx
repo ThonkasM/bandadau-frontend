@@ -1,10 +1,11 @@
-import { usePathname, type Href } from 'expo-router';
-import { TabList, TabSlot, TabTrigger, Tabs } from 'expo-router/ui';
+import { type Href,usePathname } from 'expo-router';
+import { TabList, Tabs,TabSlot, TabTrigger } from 'expo-router/ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet } from 'react-native';
 
 import { tabRoutes } from '@/config/navigation';
+
 import { FloatingTabBar, FloatingTabButton } from './floating-tab-bar';
 
 interface CustomTabsProps {
