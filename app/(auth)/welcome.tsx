@@ -45,7 +45,7 @@ export default function WelcomeScreen() {
             />
             <Button
               label={t('welcome.signIn')}
-              variant="ghost"
+              variant="secondary"
               icon="login-variant"
               onPress={() => router.push('/(auth)/login')}
             />

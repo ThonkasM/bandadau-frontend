@@ -6,6 +6,7 @@ import { useTheme, useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
 export interface BrandHeroProps {
+  /** Content height, EXCLUDING the safe-area inset (the hero grows by `paddingTop`). */
   height?: number;
   subtitle?: string;
   /** Top safe-area inset so the logo clears the notch / Dynamic Island. */
@@ -24,8 +25,13 @@ export function BrandHero({ height = 240, subtitle, paddingTop = 0 }: BrandHeroP
     effective === 'dark' ? tokens.color.bg['surface-raised'] : tokens.color.brand.primary;
 
   return (
-    <View style={[styles.hero, { backgroundColor: background, height, paddingTop }]}>
-      <BandadaMark size={88} color={BRAND.white} accent={brand.accent} />
+    <View
+      style={[
+        styles.hero,
+        { backgroundColor: background, minHeight: height + paddingTop, paddingTop },
+      ]}
+    >
+      <BandadaMark size={height < 200 ? 64 : 88} color={BRAND.white} accent={brand.accent} />
       <BandadaWordmark width={160} color={BRAND.white} accent={brand.accent} />
       {subtitle ? (
         <Text variant="caption" color={BRAND.white} style={styles.subtitle}>

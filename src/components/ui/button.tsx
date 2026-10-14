@@ -1,4 +1,5 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
@@ -28,6 +29,7 @@ export function Button({
   icon,
 }: ButtonProps) {
   const tokens = useTokens();
+  const [pressed, setPressed] = useState(false);
   const isDisabled = disabled || loading;
 
   const background =
@@ -49,14 +51,17 @@ export function Button({
       accessibilityState={{ disabled: isDisabled }}
       disabled={isDisabled}
       onPress={onPress}
-      style={({ pressed }) => [
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      style={[
         styles.base,
         size === 'lg' ? styles.lg : styles.md,
         background ? { backgroundColor: background } : null,
-        variant === 'ghost' ? { borderWidth: 1, borderColor: tokens.color.border.default } : null,
-        pressed && { opacity: 0.85 },
-        isDisabled && { opacity: 0.5 },
-      ]}>
+        variant !== 'primary' ? { borderWidth: 1, borderColor: tokens.color.border.default } : null,
+        pressed ? { opacity: 0.85 } : null,
+        isDisabled ? { opacity: 0.5 } : null,
+      ]}
+    >
       {loading ? (
         <ActivityIndicator color={foreground} />
       ) : (
@@ -70,9 +75,9 @@ export function Button({
 }
 
 const styles = StyleSheet.create({
-  base: { borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  base: { alignSelf: 'stretch', borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   md: { paddingVertical: 10, paddingHorizontal: 16 },
-  lg: { paddingVertical: 14, paddingHorizontal: 20 },
-  content: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  label: { fontSize: 15.5, fontWeight: '700' },
+  lg: { minHeight: 52, paddingVertical: 14, paddingHorizontal: 20 },
+  content: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  label: { fontSize: 15.5, fontWeight: '700', textAlign: 'center' },
 });
