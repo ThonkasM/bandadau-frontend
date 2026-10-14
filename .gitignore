@@ -1,0 +1,24 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.key
+node_modules/
+dist/
+build/
+coverage/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
+
+# Expo
+.expo/
+ios/
+android/
+web-build/
+*.ipa
+*.apk
+*.aab
