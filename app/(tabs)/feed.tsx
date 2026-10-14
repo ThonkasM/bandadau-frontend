@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 
-import { BandadaWordmark } from '@/components/brand/BandadaLogo';
+import { BandadaMark, BandadaWordmark } from '@/components/brand/BandadaLogo';
 import { Screen } from '@/components/screens/screen';
 import { FeedList } from '@/components/ui/feed-list';
 import CommentsPanel from '@/features/comments/comments-panel';
@@ -40,10 +40,14 @@ export default function FeedScreen() {
 
   return (
     <Screen padded={false}>
-      <View style={styles.row}>
-        <View style={[styles.column, showRail && { maxWidth: WEB_COLUMN_WIDTH }]}>
-          <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
-            <BandadaWordmark width={118} color={brand.color} accent={brand.accent} />
+      <View style={styles.fill}>
+        <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
+          <View style={styles.headerSide} />
+          <View style={styles.lockup}>
+            <BandadaMark size={28} color={brand.color} accent={brand.accent} />
+            <BandadaWordmark width={116} color={brand.color} accent={brand.accent} />
+          </View>
+          <View style={[styles.headerSide, styles.headerSideRight]}>
             <Pressable
               onPress={() => router.push('/notifications')}
               accessibilityRole="button"
@@ -56,41 +60,47 @@ export default function FeedScreen() {
               />
             </Pressable>
           </View>
-
-          {feed.loading ? (
-            <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
-          ) : feed.error ? (
-            <View style={styles.state}>
-              <Text style={[styles.message, { color: tokens.color.text.muted }]}>{tf('error')}</Text>
-              <Pressable
-                onPress={feed.refetch}
-                style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}>
-                <Text style={{ color: tokens.color.action.primary.fg }}>{ta('retry')}</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <FeedList<FeedItem>
-              style={styles.list}
-              data={feed.items}
-              renderItem={({ item }) => (
-                <PostCard item={item} onOpenComments={() => setActivePost(item.post)} />
-              )}
-              keyExtractor={(item) => item.post.id}
-              hasMore={feed.hasMore}
-              loadingMore={feed.loadingMore}
-              refreshing={feed.refreshing}
-              onEndReached={feed.loadMore}
-              onRefresh={feed.refresh}
-              renderEmpty={() => (
-                <Text style={[styles.message, { color: tokens.color.text.muted }]}>
-                  {tf('empty')}
-                </Text>
-              )}
-            />
-          )}
         </View>
 
-        {showRail ? <FeedRightRail /> : null}
+        <View style={styles.row}>
+          <View style={[styles.column, showRail && { maxWidth: WEB_COLUMN_WIDTH }]}>
+            {feed.loading ? (
+              <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
+            ) : feed.error ? (
+              <View style={styles.state}>
+                <Text style={[styles.message, { color: tokens.color.text.muted }]}>
+                  {tf('error')}
+                </Text>
+                <Pressable
+                  onPress={feed.refetch}
+                  style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}>
+                  <Text style={{ color: tokens.color.action.primary.fg }}>{ta('retry')}</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <FeedList<FeedItem>
+                style={styles.list}
+                data={feed.items}
+                renderItem={({ item }) => (
+                  <PostCard item={item} onOpenComments={() => setActivePost(item.post)} />
+                )}
+                keyExtractor={(item) => item.post.id}
+                hasMore={feed.hasMore}
+                loadingMore={feed.loadingMore}
+                refreshing={feed.refreshing}
+                onEndReached={feed.loadMore}
+                onRefresh={feed.refresh}
+                renderEmpty={() => (
+                  <Text style={[styles.message, { color: tokens.color.text.muted }]}>
+                    {tf('empty')}
+                  </Text>
+                )}
+              />
+            )}
+          </View>
+
+          {showRail ? <FeedRightRail /> : null}
+        </View>
       </View>
 
       <CommentsPanel
@@ -103,6 +113,18 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1, minHeight: 0 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerSide: { flex: 1 },
+  headerSideRight: { alignItems: 'flex-end' },
+  lockup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerAction: { padding: 4 },
   row: {
     flex: 1,
     minHeight: 0,
@@ -112,15 +134,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   column: { flex: 1, minHeight: 0 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  headerAction: { padding: 4 },
   list: { flex: 1, minHeight: 0 },
   center: { marginTop: 24 },
   state: { alignItems: 'center', paddingHorizontal: 16 },
