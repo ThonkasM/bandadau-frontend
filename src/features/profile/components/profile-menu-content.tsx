@@ -35,7 +35,7 @@ function Row({
 /** Profile "⋯" menu options (edit, settings, open panel, log out). */
 export function ProfileMenuContent({ onClose }: { onClose: () => void }) {
   const tokens = useTokens();
-  const { t } = useTranslation('profile');
+  const { t } = useTranslation(['profile', 'app']);
   const router = useRouter();
   const user = useSessionStore((s) => s.user);
 
@@ -52,12 +52,21 @@ export function ProfileMenuContent({ onClose }: { onClose: () => void }) {
 
   return (
     <View style={styles.wrap}>
-      <Row icon="account-edit-outline" label={t('menu.edit')} onPress={go('/profile/edit')} />
-      <Row icon="cog-outline" label={t('menu.settings')} onPress={go('/settings')} />
+      <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
+        <Text style={[styles.headerTitle, { color: tokens.color.text.primary }]}>
+          {t('profile:menu.header')}
+        </Text>
+        <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={t('app:close')} hitSlop={8}>
+          <MaterialCommunityIcons name="close" size={20} color={tokens.color.text.muted} />
+        </Pressable>
+      </View>
+
+      <Row icon="account-edit-outline" label={t('profile:menu.edit')} onPress={go('/profile/edit')} />
+      <Row icon="cog-outline" label={t('profile:menu.settings')} onPress={go('/settings')} />
       {hasPanelAccess(user?.roles) ? (
         <Row
           icon="shield-account-outline"
-          label={t('menu.openPanel')}
+          label={t('profile:menu.openPanel')}
           onPress={() => {
             onClose();
             void openAdminPanel();
@@ -65,13 +74,23 @@ export function ProfileMenuContent({ onClose }: { onClose: () => void }) {
         />
       ) : null}
       <View style={[styles.divider, { backgroundColor: tokens.color.border.default }]} />
-      <Row icon="logout" label={t('menu.logout')} danger onPress={onLogout} />
+      <Row icon="logout" label={t('profile:menu.logout')} danger onPress={onLogout} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 12, paddingVertical: 8 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 6,
+    paddingBottom: 10,
+    marginBottom: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerTitle: { fontSize: 16, fontWeight: '800' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 6 },
   iconWrap: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   label: { flex: 1, fontSize: 15, fontWeight: '600' },
