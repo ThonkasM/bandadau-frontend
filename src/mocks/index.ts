@@ -1,9 +1,10 @@
+import type { ReactionType } from '@/features/feed/types';
 import type { TopUpPackage } from '@/features/wallet/types';
 import { env } from '@/lib/env';
 
 import { mockComments, mockCreateComment } from './comments';
 import { mockEvent, mockEvents, mockRegister, mockRegistration } from './events';
-import { mockFeed } from './feed';
+import { mockFeed, mockReaction } from './feed';
 import { mockGroups } from './groups';
 import { mockNotifications } from './notifications';
 import { mockMyProfile, mockUpdateProfile } from './profile';
@@ -84,6 +85,18 @@ const routes: MockRoute[] = [
       const payload = (body as { text?: string; parentId?: string } | undefined) ?? {};
       return { status: 201, body: mockCreateComment(segment(path, 4), payload.text ?? '', payload.parentId) };
     },
+  },
+  // Reactions (UC-07)
+  {
+    method: 'PUT',
+    match: /^\/api\/v1\/posts\/[^/]+\/reactions\/me$/,
+    handle: (path, _q, body) =>
+      ok(mockReaction(segment(path, 4), (body as { type?: ReactionType } | undefined)?.type ?? 'LIKE')),
+  },
+  {
+    method: 'DELETE',
+    match: /^\/api\/v1\/posts\/[^/]+\/reactions\/me$/,
+    handle: (path) => ok(mockReaction(segment(path, 4), null)),
   },
 ];
 

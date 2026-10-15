@@ -3,6 +3,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useRemoveReaction, useSetReaction } from '@/features/feed/api';
 import type { FeedItem } from '@/features/feed/types';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -20,10 +21,17 @@ export function PostCard({
   const { t, i18n } = useTranslation('feed');
   const locale = i18n.language as Locale;
   const { post } = item;
+  const setReaction = useSetReaction();
+  const removeReaction = useRemoveReaction();
 
   const initial = post.author.displayName.slice(0, 1).toUpperCase();
   const relative = formatRelative(post.createdAt, locale);
   const caption = `${post.author.displayName} ${post.text}`;
+  const liked = post.myReaction === 'LIKE';
+  const onLike = () => {
+    if (liked) removeReaction.mutate({ postId: post.id });
+    else setReaction.mutate({ postId: post.id, type: 'LIKE' });
+  };
 
   return (
     <View
@@ -61,7 +69,12 @@ export function PostCard({
       <PostCarousel media={post.media} />
 
       <View style={styles.actions}>
-        <IconButton icon="heart-outline" label={t('like')} />
+        <IconButton
+          icon={liked ? 'heart' : 'heart-outline'}
+          label={t('like')}
+          onPress={onLike}
+          color={liked ? tokens.color.brand.highlight : undefined}
+        />
         <IconButton icon="comment-outline" label={t('comment')} onPress={onOpenComments} />
         <IconButton icon="send-outline" label={t('share')} />
         <View style={styles.spacer} />
@@ -89,10 +102,12 @@ function IconButton({
   icon,
   label,
   onPress,
+  color,
 }: {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
   onPress?: () => void;
+  color?: string;
 }) {
   const tokens = useTokens();
   return (
@@ -101,7 +116,11 @@ function IconButton({
       accessibilityLabel={label}
       onPress={onPress}
       style={styles.iconButton}>
-      <MaterialCommunityIcons name={icon} size={24} color={tokens.color.text.primary} />
+      <MaterialCommunityIcons
+        name={icon}
+        size={24}
+        color={color ?? tokens.color.text.primary}
+      />
     </Pressable>
   );
 }

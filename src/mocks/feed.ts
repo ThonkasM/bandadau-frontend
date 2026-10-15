@@ -1,4 +1,4 @@
-import type { FeedItem, FeedPage, PostMedia } from '@/features/feed/types';
+import type { FeedItem, FeedPage, PostMedia, ReactionState, ReactionType } from '@/features/feed/types';
 
 function minutesAgo(minutes: number): string {
   return new Date(Date.now() - minutes * 60_000).toISOString();
@@ -83,4 +83,12 @@ export function mockFeed(query?: Record<string, unknown>): FeedPage {
   if (!cursor) return { items: PAGE_1, nextCursor: 'p2' };
   if (cursor === 'p2') return { items: PAGE_2, nextCursor: null };
   return { items: [], nextCursor: null };
+}
+
+/** UC-07 mock: toggled reaction state for a post (mirrors the optimistic update). */
+export function mockReaction(postId: string, type: ReactionType | null): ReactionState {
+  const item = [...PAGE_1, ...PAGE_2].find((it) => it.post.id === postId);
+  const counts = { ...(item?.post.reactionCounts ?? { like: 0, support: 0, helpful: 0, funny: 0 }) };
+  if (type) counts[type.toLowerCase() as keyof typeof counts] += 1;
+  return { postId, myReaction: type, reactionCounts: counts };
 }

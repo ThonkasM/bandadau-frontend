@@ -5,6 +5,9 @@ export type FeedItem = social.components['schemas']['FeedItem'];
 export type Post = social.components['schemas']['Post'];
 export type PostMedia = social.components['schemas']['PostMedia'];
 export type ProfileSummary = social.components['schemas']['ProfileSummary'];
+export type ReactionType = social.components['schemas']['ReactionType'];
+export type ReactionCounts = social.components['schemas']['ReactionCounts'];
+export type ReactionState = social.components['schemas']['ReactionState'];
 
 /** `GET /api/v1/feed` → `{ items, nextCursor }` (cursor pagination). */
 export type FeedPage = social.components['schemas']['CursorPageMeta'] & { items: FeedItem[] };
