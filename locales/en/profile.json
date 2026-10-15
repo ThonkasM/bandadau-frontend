@@ -15,6 +15,7 @@
   "menu": {
     "title": "Options",
     "header": "Menu",
+    "tickets": "My tickets",
     "edit": "Edit profile",
     "settings": "Settings",
     "openPanel": "Open panel",

@@ -32,7 +32,7 @@ function Row({
   );
 }
 
-/** Profile "⋯" menu options (edit, settings, open panel, log out). */
+/** Profile "⋯" menu options (tickets, edit, settings, open panel, log out). */
 export function ProfileMenuContent({ onClose }: { onClose: () => void }) {
   const tokens = useTokens();
   const { t } = useTranslation(['profile', 'app']);
@@ -52,15 +52,21 @@ export function ProfileMenuContent({ onClose }: { onClose: () => void }) {
 
   return (
     <View style={styles.wrap}>
-      <View style={[styles.header, { borderBottomColor: tokens.color.border.default }]}>
-        <Text style={[styles.headerTitle, { color: tokens.color.text.primary }]}>
+      <View style={styles.header}>
+        <Text style={[styles.headerTitle, { color: tokens.color.text.muted }]}>
           {t('profile:menu.header')}
         </Text>
-        <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={t('app:close')} hitSlop={8}>
-          <MaterialCommunityIcons name="close" size={20} color={tokens.color.text.muted} />
+        <Pressable
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('app:close')}
+          hitSlop={8}
+          style={[styles.closeButton, { backgroundColor: tokens.color.bg.muted }]}>
+          <MaterialCommunityIcons name="close" size={16} color={tokens.color.text.secondary} />
         </Pressable>
       </View>
 
+      <Row icon="ticket-outline" label={t('profile:menu.tickets')} onPress={go('/tickets')} />
       <Row icon="account-edit-outline" label={t('profile:menu.edit')} onPress={go('/profile/edit')} />
       <Row icon="cog-outline" label={t('profile:menu.settings')} onPress={go('/settings')} />
       {hasPanelAccess(user?.roles) ? (
@@ -86,11 +92,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 6,
-    paddingBottom: 10,
-    marginBottom: 4,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingTop: 2,
+    paddingBottom: 8,
   },
-  headerTitle: { fontSize: 16, fontWeight: '800' },
+  headerTitle: { fontSize: 12, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
+  closeButton: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 6 },
   iconWrap: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   label: { flex: 1, fontSize: 15, fontWeight: '600' },
