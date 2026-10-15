@@ -5,6 +5,8 @@
   "empty": "No tienes entradas.",
   "error": "No pudimos cargar tus entradas.",
   "qrHint": "Muestra este código en la entrada.",
+  "orderCode": "Orden #{code}",
+  "tapToEnlarge": "Toca para ampliar",
   "status": {
     "ISSUED": "Válida",
     "USED": "Usada",

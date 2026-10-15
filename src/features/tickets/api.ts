@@ -4,7 +4,7 @@ import { useInfiniteList } from '@/hooks/use-infinite-list';
 import { apiRequest } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
 
-import type { Ticket, TicketPage } from './types';
+import type { Ticket, TicketDetail, TicketPage } from './types';
 
 /** UC-12/14: my tickets (QR). */
 export function useMyTickets() {
@@ -19,7 +19,7 @@ export function useMyTickets() {
 export function useTicket(id: string | undefined) {
   return useQuery({
     queryKey: queryKeys.tickets.byId(id ?? ''),
-    queryFn: () => apiRequest<Ticket>(`/api/v1/tickets/${id}`),
+    queryFn: () => apiRequest<TicketDetail>(`/api/v1/tickets/${id}`),
     enabled: Boolean(id),
   });
 }

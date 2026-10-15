@@ -5,6 +5,8 @@
   "empty": "You have no tickets.",
   "error": "We couldn't load your tickets.",
   "qrHint": "Show this code at the entrance.",
+  "orderCode": "Order #{code}",
+  "tapToEnlarge": "Tap to enlarge",
   "status": {
     "ISSUED": "Valid",
     "USED": "Used",
