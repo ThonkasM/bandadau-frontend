@@ -1,4 +1,5 @@
 import type { Event, EventPage, Registration } from '@/features/events/types';
+import { eventCoverUrl } from '@/lib/event-cover';
 
 function inDays(days: number): string {
   return new Date(Date.now() + days * 86_400_000).toISOString();
@@ -20,7 +21,7 @@ const EVENTS: Event[] = [
     seatsAvailable: 66,
     status: 'PUBLISHED',
     coverMediaId: null,
-    coverUrl: null,
+    coverUrl: eventCoverUrl('0192f3d0-0000-7000-8000-000000000001'),
     publishedAt: NOW,
     createdAt: NOW,
     updatedAt: NOW,
@@ -38,7 +39,7 @@ const EVENTS: Event[] = [
     seatsAvailable: 28,
     status: 'PUBLISHED',
     coverMediaId: null,
-    coverUrl: null,
+    coverUrl: eventCoverUrl('0192f3d0-0000-7000-8000-000000000002'),
     publishedAt: NOW,
     createdAt: NOW,
     updatedAt: NOW,
@@ -56,7 +57,7 @@ const EVENTS: Event[] = [
     seatsAvailable: 1,
     status: 'PUBLISHED',
     coverMediaId: null,
-    coverUrl: null,
+    coverUrl: eventCoverUrl('0192f3d0-0000-7000-8000-000000000003'),
     publishedAt: NOW,
     createdAt: NOW,
     updatedAt: NOW,

@@ -113,5 +113,5 @@ export function tabRoutes(): NavRoute[] {
 }
 
 export function sidebarRoutes(): NavRoute[] {
-  return NAV_ROUTES;
+  return NAV_ROUTES.filter((route) => route.inTabBar);
 }

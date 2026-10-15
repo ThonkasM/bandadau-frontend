@@ -5,11 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Event } from '@/features/events/types';
+import { eventCoverUrl } from '@/lib/event-cover';
 import { useTokens } from '@/theme/theme-provider';
-
-function coverUrl(eventId: string): string {
-  return `https://picsum.photos/seed/bandada-event-${eventId}/1200/675`;
-}
 
 export function EventCard({ event, onPress }: { event: Event; onPress?: () => void }) {
   const tokens = useTokens();
@@ -26,7 +23,7 @@ export function EventCard({ event, onPress }: { event: Event; onPress?: () => vo
         { backgroundColor: tokens.color.bg.surface, borderColor: tokens.color.border.default },
       ]}>
       <View style={[styles.cover, { backgroundColor: tokens.color.bg.muted }]}>
-        <Image source={{ uri: coverUrl(event.id) }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
+        <Image source={{ uri: event.coverUrl ?? eventCoverUrl(event.id) }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
         <View style={[styles.dateBadge, { backgroundColor: tokens.color.bg.surface }]}>
           <Text style={[styles.dateText, { color: tokens.color.text.primary }]}>
             {formatDate(event.startsAt, locale)}

@@ -11,6 +11,7 @@ import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
 import { useEvent, useRegisterToEvent, useRegistration } from '@/features/events/api';
 import { useTicket } from '@/features/tickets/api';
 import { TicketRevealModal } from '@/features/tickets/components/ticket-reveal-modal';
+import { eventCoverUrl } from '@/lib/event-cover';
 import { newUuid } from '@/lib/ids';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -75,7 +76,7 @@ export default function EventDetailScreen() {
     <Screen title={data.title} showBack>
       <ScrollView contentContainerStyle={styles.content}>
         <Image
-          source={{ uri: `https://picsum.photos/seed/bandada-event-${data.id}/1200/675` }}
+          source={{ uri: data.coverUrl ?? eventCoverUrl(data.id) }}
           style={styles.cover}
           contentFit="cover"
           transition={200}
