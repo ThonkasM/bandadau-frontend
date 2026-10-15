@@ -36,15 +36,16 @@ export default function UserPostsScreen() {
   const listRef = useRef<FlatList<FeedItem>>(null);
   const scrolled = useRef(false);
 
-  // Scroll to the tapped post (respecting position so the user can keep browsing).
+  // Jump straight to the tapped post (no scroll animation). If it's the most
+  // recent post (first item), just show the feed from the start.
   useEffect(() => {
     if (scrolled.current || !params.postId || posts.items.length === 0) return;
     const index = posts.items.findIndex((item) => item.post.id === params.postId);
-    if (index < 0) return;
     scrolled.current = true;
+    if (index <= 0) return;
     const timer = setTimeout(() => {
-      listRef.current?.scrollToIndex({ index, viewPosition: 0.3, animated: true });
-    }, 250);
+      listRef.current?.scrollToIndex({ index, viewPosition: 0.3, animated: false });
+    }, 100);
     return () => clearTimeout(timer);
   }, [params.postId, posts.items]);
 
