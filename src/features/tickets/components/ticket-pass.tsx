@@ -15,6 +15,7 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import QRCode from 'react-native-qrcode-svg';
 import Animated, {
+  type SharedValue,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
@@ -30,6 +31,7 @@ import Svg, {
   LinearGradient,
   Path,
   RadialGradient,
+  Rect,
   Stop,
 } from 'react-native-svg';
 
@@ -54,6 +56,8 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /** Cuántas bandas discretas recorre la impresión (más = más fino). */
 const PRINT_STEPS = 14;
+/** Alto de la banda del cabezal de impresión (el brillo que "imprime"). */
+const PRINT_HEAD_H = 30;
 
 /** Easing cuantizado: el valor avanza a saltos (sensación de impresora). */
 function printEasing(t: number) {
@@ -89,6 +93,7 @@ function passPath(w: number, h: number, r = 22) {
 export function TicketPass({
   ticket,
   qr,
+  qrReveal,
   qrScale = 0.42,
   interactive = false,
   motion = false,
@@ -99,6 +104,8 @@ export function TicketPass({
 }: {
   ticket: Ticket;
   qr?: string;
+  /** 0 → 1: cuánto se ha "impreso" el QR (lo controla el reveal de la impresora). */
+  qrReveal?: SharedValue<number>;
   qrScale?: number;
   interactive?: boolean;
   motion?: boolean;
@@ -118,6 +125,7 @@ export function TicketPass({
   const gradientId = `${uid}g`;
   const sheenId = `${uid}s`;
   const clipId = `${uid}c`;
+  const headId = `${uid}h`;
   const [size, setSize] = useState({ w: 0, h: 0 });
   const wv = useSharedValue(1);
   const hv = useSharedValue(1);
@@ -207,6 +215,12 @@ export function TicketPass({
     transform: [{ translateY: print.value * h }],
     opacity: 1 - print.value,
   }));
+  // QR "printing" (driven by `qrReveal` when the parent runs the printer reveal).
+  const qrClipStyle = useAnimatedStyle(() => ({ height: (qrReveal ? qrReveal.value : 1) * qrSize }));
+  const qrLineStyle = useAnimatedStyle(() => {
+    const p = qrReveal ? qrReveal.value : 1;
+    return { transform: [{ translateY: p * qrSize }], opacity: p >= 1 ? 0 : 1 };
+  });
   const eventName = ticket.eventTitle ?? t('ticket');
   // Sheen: soft white glow on the dark card, golden glow on the light one.
   const sheenColor = isDark ? tokens.color.pass.fg : tokens.color.brand.accent;
@@ -228,10 +242,10 @@ export function TicketPass({
                   <Stop offset="0.55" stopColor={tokens.color.pass.bg} />
                   <Stop offset="1" stopColor={tokens.color.pass['bg-2']} />
                 </LinearGradient>
-              <RadialGradient id={sheenId} cx="50%" cy="50%" r="50%">
-                <Stop offset="0" stopColor={sheenColor} stopOpacity={sheenOpacity} />
-                <Stop offset="1" stopColor={sheenColor} stopOpacity="0" />
-              </RadialGradient>
+                <RadialGradient id={sheenId} cx="50%" cy="50%" r="50%">
+                  <Stop offset="0" stopColor={sheenColor} stopOpacity={sheenOpacity} />
+                  <Stop offset="1" stopColor={sheenColor} stopOpacity="0" />
+                </RadialGradient>
                 <ClipPath id={clipId}>
                   <Path d={passPath(w, h)} />
                 </ClipPath>
@@ -324,18 +338,36 @@ export function TicketPass({
                     },
                   ]}>
                   {qr ? (
-                    <Pressable
-                      onPress={onPressQr}
-                      disabled={!onPressQr}
-                      accessibilityRole={onPressQr ? 'button' : undefined}
-                      accessibilityLabel={t('tapToEnlarge')}>
-                      <QRCode
-                        value={qr}
-                        size={qrSize}
-                        backgroundColor={tokens.color.qr.bg}
-                        color={tokens.color.qr.fg}
+                    <>
+                      <Animated.View
+                        style={[{ width: qrSize, height: qrSize, overflow: 'hidden' }, qrClipStyle]}>
+                        <Pressable
+                          onPress={onPressQr}
+                          disabled={!onPressQr}
+                          accessibilityRole={onPressQr ? 'button' : undefined}
+                          accessibilityLabel={t('tapToEnlarge')}>
+                          <QRCode
+                            value={qr}
+                            size={qrSize}
+                            backgroundColor={tokens.color.qr.bg}
+                            color={tokens.color.qr.fg}
+                          />
+                        </Pressable>
+                      </Animated.View>
+                      <Animated.View
+                        pointerEvents="none"
+                        style={[
+                          styles.qrLine,
+                          {
+                            top: w * 0.02,
+                            left: w * 0.02,
+                            width: qrSize,
+                            backgroundColor: tokens.color.brand.accent,
+                          },
+                          qrLineStyle,
+                        ]}
                       />
-                    </Pressable>
+                    </>
                   ) : (
                     <ActivityIndicator color={tokens.color.qr.fg} />
                   )}
@@ -352,12 +384,18 @@ export function TicketPass({
         {w > 0 ? (
           <Animated.View
             pointerEvents="none"
-            style={[
-              styles.scanline,
-              { left: 0, top: 0, width: w, backgroundColor: tokens.color.brand.accent },
-              scanStyle,
-            ]}
-          />
+            style={[styles.printHead, { top: -PRINT_HEAD_H, width: w }, scanStyle]}>
+            <Svg width={w} height={PRINT_HEAD_H}>
+              <Defs>
+                <LinearGradient id={headId} x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor={tokens.color.brand.accent} stopOpacity="0" />
+                  <Stop offset="0.72" stopColor={tokens.color.brand.accent} stopOpacity="0.26" />
+                  <Stop offset="1" stopColor={tokens.color.brand.accent} stopOpacity="0.95" />
+                </LinearGradient>
+              </Defs>
+              <Rect x="0" y="0" width={w} height={PRINT_HEAD_H} fill={`url(#${headId})`} />
+            </Svg>
+          </Animated.View>
         ) : null}
       </Animated.View>
     </View>
@@ -398,7 +436,8 @@ const styles = StyleSheet.create({
   address: { fontSize: 14, lineHeight: 19 },
   qrArea: { flex: 1, justifyContent: 'flex-end', alignItems: 'center' },
   qrBox: { borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  scanline: { position: 'absolute', height: 3, borderRadius: 2 },
+  qrLine: { position: 'absolute', height: 3, borderRadius: 2 },
+  printHead: { position: 'absolute', left: 0, height: PRINT_HEAD_H },
   icon: {
     position: 'absolute',
     width: 30,
