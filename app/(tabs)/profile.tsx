@@ -19,7 +19,6 @@ export default function ProfileScreen() {
   const tokens = useTokens();
   const brand = useBrand();
   const insets = useSafeAreaInsets();
-  const { t } = useTranslation('nav');
   const { t: tp } = useTranslation('profile');
   const { t: ta } = useTranslation('app');
   const router = useRouter();
@@ -73,7 +72,7 @@ export default function ProfileScreen() {
           onPress={() => setMenuOpen(true)}
           accessibilityRole="button"
           accessibilityLabel={tp('menu.title')}
-          style={[styles.menuButton, { top: insets.top + 8, backgroundColor: tokens.color.bg.surface }]}>
+          style={[styles.menuButton, { backgroundColor: tokens.color.bg.surface }]}>
           <MaterialCommunityIcons name="dots-horizontal" size={22} color={tokens.color.text.primary} />
         </Pressable>
 
@@ -97,19 +96,6 @@ export default function ProfileScreen() {
           <Stat label={tp('followers')} value={data.followersCount} />
           <View style={[styles.divider, { backgroundColor: tokens.color.border.default }]} />
           <Stat label={tp('following')} value={data.followingCount} />
-        </View>
-
-        <View style={styles.actions}>
-          <Pressable
-            onPress={() => router.push('/profile/edit')}
-            style={[styles.action, { backgroundColor: tokens.color.action.primary.bg }]}>
-            <Text style={{ color: tokens.color.action.primary.fg }}>{tp('edit')}</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push('/settings')}
-            style={[styles.action, styles.actionGhost, { borderColor: tokens.color.border.default }]}>
-            <Text style={{ color: tokens.color.text.primary }}>{t('settings')}</Text>
-          </Pressable>
         </View>
 
         <View style={[styles.tabs, { borderBottomColor: tokens.color.border.default }]}>
@@ -154,7 +140,11 @@ export default function ProfileScreen() {
         )}
       </ScrollView>
 
-      <ProfileMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
+      <ProfileMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        anchor={{ top: insets.top + 54, right: 12 }}
+      />
     </Screen>
   );
 }
@@ -177,7 +167,9 @@ const styles = StyleSheet.create({
   cover: { width: '100%', height: 140 },
   menuButton: {
     position: 'absolute',
+    top: 8,
     right: 12,
+    zIndex: 10,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -200,9 +192,6 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 18, fontWeight: '800' },
   statLabel: { fontSize: 12 },
   divider: { width: 1, height: 28 },
-  actions: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginTop: 16 },
-  action: { flex: 1, borderRadius: 12, paddingVertical: 11, alignItems: 'center' },
-  actionGhost: { borderWidth: 1, backgroundColor: 'transparent' },
   tabs: { flexDirection: 'row', marginTop: 20, borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 10 },
   tabUnderline: { position: 'absolute', bottom: 0, height: 2, width: '40%', borderRadius: 1 },

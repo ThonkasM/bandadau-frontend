@@ -14,10 +14,12 @@ import { useTokens } from '@/theme/theme-provider';
 export interface ProfileMenuProps {
   visible: boolean;
   onClose: () => void;
+  /** Web desktop: popover anchor (top/right in window px), aligned with the ⋯ button. */
+  anchor?: { top: number; right: number };
 }
 
-/** Profile options menu: bottom sheet on native/web-mobile, centered modal on web desktop. */
-export function ProfileMenu({ visible, onClose }: ProfileMenuProps) {
+/** Profile options menu: bottom sheet on native/web-mobile, popover anchored to the button on web desktop. */
+export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
   const tokens = useTokens();
   const { isWebDesktop } = useDeviceType();
   const { ref, onDismiss, onChange } = usePresentableSheet(visible, onClose);
@@ -47,17 +49,20 @@ export function ProfileMenu({ visible, onClose }: ProfileMenuProps) {
   if (isWebDesktop) {
     return (
       <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-        <View style={styles.overlay}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
-            <View style={[styles.dim, { backgroundColor: tokens.color.bg.inverse }]} />
-          </Pressable>
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: tokens.color.bg.surface, borderColor: tokens.color.border.default },
-            ]}>
-            <ProfileMenuContent onClose={onClose} />
-          </View>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
+          <View style={[styles.dim, { backgroundColor: tokens.color.bg.inverse }]} />
+        </Pressable>
+        <View
+          style={[
+            styles.popover,
+            {
+              top: anchor?.top ?? 64,
+              right: anchor?.right ?? 12,
+              backgroundColor: tokens.color.bg.surface,
+              borderColor: tokens.color.border.default,
+            },
+          ]}>
+          <ProfileMenuContent onClose={onClose} />
         </View>
       </Modal>
     );
@@ -78,12 +83,11 @@ export function ProfileMenu({ visible, onClose }: ProfileMenuProps) {
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  dim: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.5 },
-  card: {
-    width: '100%',
-    maxWidth: 360,
-    borderRadius: 16,
+  dim: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.25 },
+  popover: {
+    position: 'absolute',
+    width: 260,
+    borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
