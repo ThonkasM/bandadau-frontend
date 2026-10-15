@@ -1,4 +1,4 @@
-import type { Event, EventPage, Registration } from '@/features/events/types';
+import type { Event, EventPage, Registration, RegistrationPage } from '@/features/events/types';
 import { eventCoverUrl } from '@/lib/event-cover';
 
 function inDays(days: number): string {
@@ -125,4 +125,23 @@ export function mockRegistration(registrationId: string): Registration {
     confirmed ? 'CONFIRMED' : 'PENDING',
     confirmed ? '0192f3e0-0000-7000-8000-0000000000bb' : null,
   );
+}
+
+/** UC-12: my registrations (mock). */
+export function mockRegistrations(): RegistrationPage {
+  const items: Registration[] = [];
+  for (const [id, eventId] of REG_EVENTS) {
+    const event = mockEvent(eventId);
+    if (event) {
+      items.push(buildRegistration(id, event, 'CONFIRMED', '0192f3e0-0000-7000-8000-0000000000bb'));
+    }
+  }
+  return { items, nextCursor: null };
+}
+
+/** UC-13: cancel a registration (mock, inverse SAGA). */
+export function mockCancelRegistration(registrationId: string): Registration {
+  const eventId = REG_EVENTS.get(registrationId) ?? EVENTS[1]!.id;
+  const event = mockEvent(eventId) ?? EVENTS[1]!;
+  return buildRegistration(registrationId, event, 'CANCELLATION_PENDING', null);
 }

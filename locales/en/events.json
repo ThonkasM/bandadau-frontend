@@ -19,5 +19,18 @@
     "failedTitle": "Couldn't complete",
     "retry": "Retry",
     "close": "Close"
+  },
+  "registrations": {
+    "title": "My registrations",
+    "empty": "You have no registrations.",
+    "cancel": "Cancel registration",
+    "cancelled": "Cancellation in progress…",
+    "status": {
+      "PENDING": "Processing…",
+      "CONFIRMED": "Confirmed",
+      "FAILED": "Failed",
+      "CANCELLATION_PENDING": "Cancelling…",
+      "CANCELLED": "Cancelled"
+    }
   }
 }

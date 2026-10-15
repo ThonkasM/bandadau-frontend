@@ -29,6 +29,16 @@ async function rawFetch(
   });
 }
 
+/** Parses a `Retry-After` header (delta-seconds or HTTP-date) into seconds. */
+function parseRetryAfter(value: string | null): number | null {
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds);
+  const date = Date.parse(value);
+  if (Number.isNaN(date)) return null;
+  return Math.max(0, Math.round((date - Date.now()) / 1000));
+}
+
 let refreshInFlight: Promise<string | null> | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
@@ -67,8 +77,14 @@ export async function refreshSession(): Promise<boolean> {
   return Boolean(await refreshAccessToken());
 }
 
+export interface ApiMeta<T> {
+  data: T;
+  /** Seconds suggested by `Retry-After` (SAGA polling), or `null`. */
+  retryAfter: number | null;
+}
+
 /** Single HTTP entrypoint for the app. Never call `fetch` directly from the UI. */
-export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+async function send<T>(path: string, options: RequestOptions = {}): Promise<ApiMeta<T>> {
   const method = options.method ?? 'GET';
   const mock = resolveMock(
     method,
@@ -79,7 +95,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   if (mock) {
     await new Promise((resolve) => setTimeout(resolve, 200));
     if (mock.status >= 400) throw ApiError.fromUnknown(mock.status, mock.body);
-    return mock.body as T;
+    return { data: mock.body as T, retryAfter: null };
   }
 
   const auth = options.auth !== false;
@@ -104,8 +120,22 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   if (!res.ok) {
     throw ApiError.fromUnknown(res.status, await safeJson(res));
   }
-  if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
+  const retryAfter = parseRetryAfter(res.headers.get('Retry-After'));
+  if (res.status === 204) return { data: undefined as T, retryAfter };
+  return { data: (await res.json()) as T, retryAfter };
+}
+
+/** Standard request: returns the parsed body. */
+export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return (await send<T>(path, options)).data;
+}
+
+/** Request that also exposes `Retry-After` (SAGA polling). */
+export async function apiRequestMeta<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<ApiMeta<T>> {
+  return send<T>(path, options);
 }
 
 async function safeJson(res: Response): Promise<unknown> {

@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { openAdminPanel } from '@/auth/handoff';
 import { logout } from '@/auth/session';
+import { MenuHeader } from '@/features/profile/components/menu-header';
 import { hasPanelAccess, useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -24,7 +25,7 @@ function Row({
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={styles.row}>
       <View style={[styles.iconWrap, { backgroundColor: tokens.color.bg.muted }]}>
-        <MaterialCommunityIcons name={icon} size={20} color={tint} />
+        <MaterialCommunityIcons name={icon} size={18} color={tint} />
       </View>
       <Text style={[styles.label, { color: tint }]}>{label}</Text>
       <MaterialCommunityIcons name="chevron-right" size={18} color={tokens.color.text.muted} />
@@ -33,7 +34,13 @@ function Row({
 }
 
 /** Profile "⋯" menu options (tickets, edit, settings, open panel, log out). */
-export function ProfileMenuContent({ onClose }: { onClose: () => void }) {
+export function ProfileMenuContent({
+  onClose,
+  onOpenSettings,
+}: {
+  onClose: () => void;
+  onOpenSettings: () => void;
+}) {
   const tokens = useTokens();
   const { t } = useTranslation(['profile', 'app']);
   const router = useRouter();
@@ -52,23 +59,16 @@ export function ProfileMenuContent({ onClose }: { onClose: () => void }) {
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: tokens.color.text.muted }]}>
-          {t('profile:menu.header')}
-        </Text>
-        <Pressable
-          onPress={onClose}
-          accessibilityRole="button"
-          accessibilityLabel={t('app:close')}
-          hitSlop={8}
-          style={[styles.closeButton, { backgroundColor: tokens.color.bg.muted }]}>
-          <MaterialCommunityIcons name="close" size={16} color={tokens.color.text.secondary} />
-        </Pressable>
-      </View>
+      <MenuHeader title={t('profile:menu.header')} onClose={onClose} />
 
       <Row icon="ticket-outline" label={t('profile:menu.tickets')} onPress={go('/tickets')} />
+      <Row
+        icon="calendar-check-outline"
+        label={t('profile:menu.registrations')}
+        onPress={go('/registrations')}
+      />
       <Row icon="account-edit-outline" label={t('profile:menu.edit')} onPress={go('/profile/edit')} />
-      <Row icon="cog-outline" label={t('profile:menu.settings')} onPress={go('/settings')} />
+      <Row icon="cog-outline" label={t('profile:menu.settings')} onPress={onOpenSettings} />
       {hasPanelAccess(user?.roles) ? (
         <Row
           icon="shield-account-outline"
@@ -87,18 +87,8 @@ export function ProfileMenuContent({ onClose }: { onClose: () => void }) {
 
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 12, paddingVertical: 8 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 6,
-    paddingTop: 2,
-    paddingBottom: 8,
-  },
-  headerTitle: { fontSize: 12, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
-  closeButton: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 6 },
-  iconWrap: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 6 },
+  iconWrap: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   label: { flex: 1, fontSize: 15, fontWeight: '600' },
   divider: { height: 1, marginVertical: 6 },
 });

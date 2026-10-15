@@ -3,7 +3,14 @@ import type { TopUpPackage } from '@/features/wallet/types';
 import { env } from '@/lib/env';
 
 import { mockComments, mockCreateComment } from './comments';
-import { mockEvent, mockEvents, mockRegister, mockRegistration } from './events';
+import {
+  mockCancelRegistration,
+  mockEvent,
+  mockEvents,
+  mockRegister,
+  mockRegistration,
+  mockRegistrations,
+} from './events';
 import { mockFeed, mockReaction } from './feed';
 import { mockGroups } from './groups';
 import { mockNotifications } from './notifications';
@@ -48,6 +55,16 @@ const routes: MockRoute[] = [
     method: 'POST',
     match: /^\/api\/v1\/events\/[^/]+\/registrations$/,
     handle: (path) => ({ status: 202, body: mockRegister(path.split('/').slice(-2)[0] ?? '') }),
+  },
+  {
+    method: 'GET',
+    match: '/api/v1/registrations/me',
+    handle: () => ok(mockRegistrations()),
+  },
+  {
+    method: 'POST',
+    match: /^\/api\/v1\/registrations\/[^/]+\/cancel$/,
+    handle: (path) => ({ status: 202, body: mockCancelRegistration(segment(path, 4)) }),
   },
   {
     method: 'GET',

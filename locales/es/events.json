@@ -19,5 +19,18 @@
     "failedTitle": "No se pudo completar",
     "retry": "Reintentar",
     "close": "Cerrar"
+  },
+  "registrations": {
+    "title": "Mis inscripciones",
+    "empty": "No tienes inscripciones.",
+    "cancel": "Cancelar inscripción",
+    "cancelled": "Cancelación en proceso…",
+    "status": {
+      "PENDING": "Procesando…",
+      "CONFIRMED": "Confirmada",
+      "FAILED": "Falló",
+      "CANCELLATION_PENDING": "Cancelando…",
+      "CANCELLED": "Cancelada"
+    }
   }
 }

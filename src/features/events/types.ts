@@ -8,3 +8,8 @@ export type RegistrationStatus = Registration['status'];
 
 /** `GET /api/v1/events` → `{ items, nextCursor }`. */
 export type EventPage = events.components['schemas']['CursorPageMeta'] & { items: Event[] };
+
+/** `GET /api/v1/registrations/me` → `{ items, nextCursor }`. */
+export type RegistrationPage = events.components['schemas']['CursorPageMeta'] & {
+  items: Registration[];
+};

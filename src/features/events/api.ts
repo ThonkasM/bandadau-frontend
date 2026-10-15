@@ -1,10 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 
 import { useInfiniteList } from '@/hooks/use-infinite-list';
-import { apiRequest } from '@/lib/api-client';
+import { apiRequest, apiRequestMeta } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
 
-import type { Event, EventPage, Registration } from './types';
+import type { Event, EventPage, Registration, RegistrationPage } from './types';
+
+// SAGA polling bounds (contract suggests `Retry-After`).
+const MIN_POLL_MS = 1000;
+const MAX_POLL_MS = 5000;
+const POLL_CAP_MS = 120_000;
 
 /** UC-11/12: public events list (cursor paginated). */
 export function useEvents() {
@@ -24,15 +30,32 @@ export function useEvent(id: string | undefined) {
   });
 }
 
-/** UC-12: poll a registration while the SAGA is in progress (PENDING). */
+/**
+ * UC-12/13: poll a registration while the SAGA is in progress, honouring the
+ * `Retry-After` header (clamped to 1–5 s) with a total cap.
+ */
 export function useRegistration(id: string | null | undefined) {
+  const retryRef = useRef(MIN_POLL_MS);
+  const startRef = useRef<number | null>(null);
   return useQuery({
     queryKey: queryKeys.registrations.byId(id ?? ''),
-    queryFn: () => apiRequest<Registration>(`/api/v1/registrations/${id}`),
+    queryFn: async () => {
+      const { data, retryAfter } = await apiRequestMeta<Registration>(
+        `/api/v1/registrations/${id}`,
+      );
+      retryRef.current = Math.min(MAX_POLL_MS, Math.max(MIN_POLL_MS, (retryAfter ?? 1) * 1000));
+      return data;
+    },
     enabled: Boolean(id),
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      return status === 'PENDING' || status === 'CANCELLATION_PENDING' ? 1000 : false;
+      if (status !== 'PENDING' && status !== 'CANCELLATION_PENDING') {
+        startRef.current = null;
+        return false;
+      }
+      if (startRef.current === null) startRef.current = Date.now();
+      if (Date.now() - startRef.current > POLL_CAP_MS) return false;
+      return retryRef.current;
     },
   });
 }
@@ -47,5 +70,27 @@ export function useRegisterToEvent() {
         idempotencyKey,
       }),
     onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.events.root() }),
+  });
+}
+
+/** UC-13: cancel a registration (inverse SAGA, 202 + Retry-After). */
+export function useCancelRegistration() {
+  const client = useQueryClient();
+  return useMutation<Registration, Error, string>({
+    mutationFn: (registrationId) =>
+      apiRequest<Registration>(`/api/v1/registrations/${registrationId}/cancel`, {
+        method: 'POST',
+      }),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.registrations.root() }),
+  });
+}
+
+/** UC-12: my registrations. */
+export function useMyRegistrations() {
+  return useInfiniteList<Registration>({
+    queryKey: queryKeys.registrations.mine(),
+    fetchPage: (cursor) =>
+      apiRequest<RegistrationPage>('/api/v1/registrations/me', { query: { cursor, limit: 20 } }),
+    getId: (item) => item.id,
   });
 }
