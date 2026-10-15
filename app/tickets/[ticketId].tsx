@@ -5,8 +5,8 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
 import { useTicket } from '@/features/tickets/api';
+import { TicketPass } from '@/features/tickets/components/ticket-pass';
 import { TicketQrModal } from '@/features/tickets/components/ticket-qr-modal';
-import { TicketView } from '@/features/tickets/components/ticket-view';
 import { useTokens } from '@/theme/theme-provider';
 
 /** UC-12 · Ticket detail (Eventbrite-style) with a tap-to-enlarge QR. */
@@ -36,9 +36,10 @@ export default function TicketDetailScreen() {
   return (
     <Screen title={t('title')} showBack padded={false}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <TicketView
+        <TicketPass
           ticket={ticket.data}
           qr={ticket.data.qrPayload}
+          interactive
           onPressQr={() => setQrOpen(true)}
         />
       </ScrollView>

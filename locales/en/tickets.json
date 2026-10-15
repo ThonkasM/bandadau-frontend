@@ -19,6 +19,13 @@
     "swipeToSave": "Swipe down to save it",
     "save": "Save to My tickets"
   },
+  "pass": {
+    "event": "Event",
+    "ticket": "Ticket",
+    "admission": "Admission time",
+    "where": "Where",
+    "a11y": "Ticket for {event}"
+  },
   "status": {
     "ISSUED": "Valid",
     "USED": "Used",

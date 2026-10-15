@@ -19,6 +19,13 @@
     "swipeToSave": "Desliza hacia abajo para guardarla",
     "save": "Guardar en Mis entradas"
   },
+  "pass": {
+    "event": "Evento",
+    "ticket": "Entrada",
+    "admission": "Hora de admisión",
+    "where": "Dónde",
+    "a11y": "Entrada para {event}"
+  },
   "status": {
     "ISSUED": "Válida",
     "USED": "Usada",

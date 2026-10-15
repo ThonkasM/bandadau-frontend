@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { TicketView } from '@/features/tickets/components/ticket-view';
+import { TicketPass } from '@/features/tickets/components/ticket-pass';
 import type { TicketDetail } from '@/features/tickets/types';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -78,7 +78,7 @@ export function TicketRevealModal({
 
             <GestureDetector gesture={pan}>
               <Animated.View style={styles.ticketWrap}>
-                <TicketView ticket={ticket} qr={ticket.qrPayload} qrSize={168} />
+                <TicketPass ticket={ticket} qr={ticket.qrPayload} animateIn />
               </Animated.View>
             </GestureDetector>
 
