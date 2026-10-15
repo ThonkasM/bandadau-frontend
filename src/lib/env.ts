@@ -3,10 +3,10 @@
  * Never put secrets here.
  */
 
-// Mocks (local fixtures): on by default in dev, unless explicitly disabled.
-// `EXPO_PUBLIC_USE_MOCKS=true` forces them; `=false` disables them.
+// Mocks (local fixtures): OFF unless explicitly enabled with `EXPO_PUBLIC_USE_MOCKS=true`.
+// Never active in production builds.
 const mocksFlag = process.env.EXPO_PUBLIC_USE_MOCKS;
-const useMocks = mocksFlag === 'true' || (mocksFlag === undefined && __DEV__);
+const useMocks = mocksFlag === 'true';
 
 export const env = {
   apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://api.bandada.localhost',

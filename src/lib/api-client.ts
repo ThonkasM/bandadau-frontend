@@ -84,10 +84,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   const auth = options.auth !== false;
   // Freeze the idempotency key so retries reuse it (never regenerate on retry).
-  const frozen: RequestOptions =
-    options.idempotent && !options.idempotencyKey
-      ? { ...options, idempotencyKey: randomIdempotencyKey() }
-      : { ...options, locale: options.locale ?? currentLocale() };
+  // `locale` (Accept-Language) is always applied, in every branch.
+  const frozen: RequestOptions = {
+    ...options,
+    locale: options.locale ?? currentLocale(),
+    ...(options.idempotent && !options.idempotencyKey
+      ? { idempotencyKey: randomIdempotencyKey() }
+      : {}),
+  };
 
   let accessToken = auth ? useSessionStore.getState().accessToken : null;
   let res = await rawFetch(path, frozen, accessToken);
