@@ -112,7 +112,7 @@ export function TicketPass({
   useDeviceTilt(rx, ry, interactive && motion, dragging);
 
   useEffect(() => {
-    if (animateIn) enter.value = withSpring(0, { damping: 14, stiffness: 80, mass: 1 });
+    if (animateIn) enter.value = withSpring(0, { damping: 16, stiffness: 120, mass: 1 });
   }, [animateIn, enter]);
 
   useEffect(() => {
@@ -122,7 +122,7 @@ export function TicketPass({
     }
     if (size.w === 0) return;
     print.value = 0;
-    print.value = withDelay(150, withTiming(1, { duration: 440, easing: Easing.out(Easing.cubic) }));
+    print.value = withDelay(500, withTiming(1, { duration: 420, easing: Easing.out(Easing.cubic) }));
   }, [animateIn, size.w, print]);
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -377,6 +377,6 @@ const styles = StyleSheet.create({
   address: { fontSize: 14, lineHeight: 19 },
   qrArea: { flex: 1, justifyContent: 'flex-end', alignItems: 'center' },
   qrBox: { borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  scanline: { position: 'absolute', height: 2, borderRadius: 1 },
+  scanline: { position: 'absolute', height: 3, borderRadius: 2 },
   icon: { position: 'absolute', width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
 });
