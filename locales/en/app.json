@@ -9,5 +9,7 @@
   "close": "Close",
   "free": "Free",
   "offline": "Offline",
-  "offlineBanner": "Offline · showing saved content"
+  "offlineBanner": "Offline · showing saved data",
+  "errorTitle": "Something went wrong",
+  "errorMessage": "An unexpected error occurred. Please try again."
 }

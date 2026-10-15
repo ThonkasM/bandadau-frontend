@@ -16,6 +16,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { restoreSession } from '@/auth/session';
 import { BandadaSplash } from '@/components/brand/BandadaLogo';
+import { ErrorBoundary } from '@/components/errors/error-boundary';
 import GlobalSidebar from '@/components/navigation/global-sidebar';
 import { SIDEBAR_WIDTH } from '@/constants/layout';
 import { useSidebarLayout } from '@/hooks/use-sidebar-layout';
@@ -84,7 +85,9 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
               <ThemeProvider>
                 <BottomSheetModalProvider>
-                  <ThemedRoot />
+                  <ErrorBoundary>
+                    <ThemedRoot />
+                  </ErrorBoundary>
                 </BottomSheetModalProvider>
               </ThemeProvider>
             </QueryClientProvider>

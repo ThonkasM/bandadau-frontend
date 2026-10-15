@@ -9,5 +9,7 @@
   "close": "Cerrar",
   "free": "Gratis",
   "offline": "Sin conexión",
-  "offlineBanner": "Sin conexión · mostrando lo guardado"
+  "offlineBanner": "Sin conexión · mostrando lo guardado",
+  "errorTitle": "Algo salió mal",
+  "errorMessage": "Ocurrió un error inesperado. Vuelve a intentarlo."
 }

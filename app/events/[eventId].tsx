@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
+import { Button } from '@/components/ui/button';
 import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
 import { useEvent, useRegisterToEvent, useRegistration } from '@/features/events/api';
 import EventDetailView from '@/features/events/components/event-detail-view';
@@ -42,7 +43,8 @@ export default function EventDetailScreen() {
   if (event.isError || !event.data) {
     return (
       <Screen title={t('title')} showBack>
-        <Text style={{ color: tokens.color.text.muted }}>{ta('retry')}</Text>
+        <Text style={{ color: tokens.color.text.muted }}>{ta('errorMessage')}</Text>
+        <Button label={ta('retry')} onPress={() => event.refetch()} />
       </Screen>
     );
   }
@@ -54,8 +56,9 @@ export default function EventDetailScreen() {
     !dismissed && !revealVisible && (register.isPending || register.isError || Boolean(registrationId));
   const phase: PaymentPhase = register.isError ? 'failed' : 'processing';
 
-  const startRegister = () => {
-    idempotencyKey.current = newUuid();
+  // `fresh` = new intent (regenerate the key); a retry reuses the same key.
+  const startRegister = (fresh = false) => {
+    if (fresh) idempotencyKey.current = newUuid();
     setRegistrationId(null);
     setDismissed(false);
     register.mutate(
@@ -74,7 +77,7 @@ export default function EventDetailScreen() {
       <EventDetailView
         event={data}
         confirmed={confirmed}
-        onParticipate={startRegister}
+        onParticipate={() => startRegister(true)}
         onViewTickets={() => router.push('/tickets')}
       />
 
@@ -100,7 +103,7 @@ export default function EventDetailScreen() {
             title: t('payment.failedTitle'),
             message: errorMessage(reg?.failureReason ?? undefined, locale),
             primaryLabel: t('payment.retry'),
-            onPrimary: startRegister,
+            onPrimary: () => startRegister(),
             secondaryLabel: t('payment.close'),
           },
         }}

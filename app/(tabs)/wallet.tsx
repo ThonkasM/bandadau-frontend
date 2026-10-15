@@ -2,13 +2,14 @@ import { formatCredits, formatNumber, type Locale } from '@bandada/i18n';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
 import { FeedList } from '@/components/ui/feed-list';
 import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
 import { useCreateTopUp, useLedger, useMyWallet, useSimulatePayment } from '@/features/wallet/api';
 import { LedgerRow } from '@/features/wallet/components/ledger-row';
+import { BalanceSkeleton, MovementsSkeleton } from '@/features/wallet/components/wallet-skeleton';
 import { type LedgerEntry, TOPUP_PACKAGES, type TopUpPackage } from '@/features/wallet/types';
 import { newUuid } from '@/lib/ids';
 import { useTokens } from '@/theme/theme-provider';
@@ -32,8 +33,9 @@ export default function WalletScreen() {
 
   const selectedCredits = TOPUP_PACKAGES.find((option) => option.id === pkg)?.credits ?? 0;
 
-  const onRecharge = async () => {
-    idempotencyKey.current = newUuid();
+  // `fresh` = new intent (regenerate the key); a retry reuses the same key.
+  const onRecharge = async (fresh = false) => {
+    if (fresh) idempotencyKey.current = newUuid();
     setPayPhase('processing');
     setPayVisible(true);
     const started = Date.now();
@@ -64,7 +66,7 @@ export default function WalletScreen() {
           <Text style={{ color: tokens.color.text.muted }}>{t('balance')}</Text>
         </View>
         {wallet.isLoading ? (
-          <ActivityIndicator color={tokens.color.action.primary.bg} />
+          <BalanceSkeleton />
         ) : (
           <Text style={[styles.amount, { color: tokens.color.text.primary }]}>
             {formatCredits(wallet.data?.balanceCredits ?? 0, locale)}
@@ -100,14 +102,14 @@ export default function WalletScreen() {
       </View>
 
       <Pressable
-        onPress={onRecharge}
+        onPress={() => onRecharge(true)}
         style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}>
         <Text style={{ color: tokens.color.action.primary.fg }}>{t('recharge')}</Text>
       </Pressable>
 
       <Text style={[styles.section, { color: tokens.color.text.muted }]}>{t('movements')}</Text>
       {ledger.loading ? (
-        <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
+        <MovementsSkeleton />
       ) : (
         <FeedList<LedgerEntry>
           style={styles.list}
@@ -144,7 +146,7 @@ export default function WalletScreen() {
             title: t('topup.failedTitle'),
             message: t('topup.failedMessage'),
             primaryLabel: t('topup.retry'),
-            onPrimary: onRecharge,
+            onPrimary: () => onRecharge(),
             secondaryLabel: t('topup.close'),
           },
         }}
@@ -156,7 +158,7 @@ export default function WalletScreen() {
 const styles = StyleSheet.create({
   balance: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 6 },
   balanceTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  amount: { fontSize: 30, fontWeight: '900' },
+  amount: { fontSize: 30, fontWeight: '900', lineHeight: 38 },
   section: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', marginTop: 16 },
   packages: { flexDirection: 'row', gap: 10, marginTop: 8 },
   packageCard: {
@@ -172,5 +174,4 @@ const styles = StyleSheet.create({
   packagePrice: { fontSize: 12 },
   button: { borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 12 },
   list: { flex: 1, marginTop: 6 },
-  center: { marginTop: 16 },
 });
