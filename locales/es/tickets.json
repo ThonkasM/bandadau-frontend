@@ -2,11 +2,23 @@
   "title": "Mis entradas",
   "scan": "Escanear entrada",
   "ticket": "Entrada",
-  "empty": "No tienes entradas.",
+  "empty": "No tienes entradas disponibles.",
+  "emptyUsed": "No tienes entradas usadas.",
   "error": "No pudimos cargar tus entradas.",
   "qrHint": "Muestra este código en la entrada.",
   "orderCode": "Orden #{code}",
   "tapToEnlarge": "Toca para ampliar",
+  "viewQr": "Ver QR",
+  "tabs": {
+    "available": "Disponible",
+    "used": "Usado"
+  },
+  "reveal": {
+    "title": "¡Tu entrada está lista!",
+    "subtitle": "Guárdala para no perderla.",
+    "swipeToSave": "Desliza hacia abajo para guardarla",
+    "save": "Guardar en Mis entradas"
+  },
   "status": {
     "ISSUED": "Válida",
     "USED": "Usada",

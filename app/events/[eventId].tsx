@@ -9,10 +9,12 @@ import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
 import { useEvent, useRegisterToEvent, useRegistration } from '@/features/events/api';
+import { useTicket } from '@/features/tickets/api';
+import { TicketRevealModal } from '@/features/tickets/components/ticket-reveal-modal';
 import { newUuid } from '@/lib/ids';
 import { useTokens } from '@/theme/theme-provider';
 
-/** UC-12 · Event detail + register (simulated payment SAGA, wired to events-service). */
+/** UC-12 · Event detail + register: simulated payment SAGA → ticket reveal. */
 export default function EventDetailScreen() {
   const tokens = useTokens();
   const router = useRouter();
@@ -24,6 +26,9 @@ export default function EventDetailScreen() {
   const register = useRegisterToEvent();
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const registration = useRegistration(registrationId);
+  const reg = registration.data;
+  const confirmed = reg?.status === 'CONFIRMED';
+  const revealed = useTicket(reg?.ticketId ?? undefined);
   const [dismissed, setDismissed] = useState(false);
   const idempotencyKey = useRef(newUuid());
 
@@ -44,19 +49,12 @@ export default function EventDetailScreen() {
   }
 
   const data = event.data;
-  const reg = registration.data;
-  const confirmed = reg?.status === 'CONFIRMED';
   const price = data.priceCredits === 0 ? ta('free') : formatCredits(data.priceCredits, locale);
 
-  const phase: PaymentPhase = register.isError
-    ? 'failed'
-    : register.isPending || !reg || reg.status === 'PENDING'
-      ? 'processing'
-      : reg.status === 'CONFIRMED'
-        ? 'confirmed'
-        : 'failed';
-  const modalVisible =
-    !dismissed && (register.isPending || register.isError || Boolean(registrationId));
+  const revealVisible = !dismissed && confirmed && Boolean(revealed.data);
+  const paymentVisible =
+    !dismissed && !revealVisible && (register.isPending || register.isError || Boolean(registrationId));
+  const phase: PaymentPhase = register.isError ? 'failed' : 'processing';
 
   const startRegister = () => {
     idempotencyKey.current = newUuid();
@@ -66,6 +64,11 @@ export default function EventDetailScreen() {
       { eventId: data.id, idempotencyKey: idempotencyKey.current },
       { onSuccess: (r) => setRegistrationId(r.id) },
     );
+  };
+
+  const saveTicket = () => {
+    setDismissed(true);
+    router.push('/tickets');
   };
 
   return (
@@ -88,14 +91,14 @@ export default function EventDetailScreen() {
         </View>
 
         {confirmed ? (
-          <Text style={{ color: tokens.color.feedback.success.fg }}>{t('registered')}</Text>
+          <Button label={t('viewTickets')} variant="secondary" onPress={() => router.push('/tickets')} />
         ) : (
           <Button label={t('register')} onPress={startRegister} />
         )}
       </ScrollView>
 
       <PaymentModal
-        visible={modalVisible}
+        visible={paymentVisible}
         phase={phase}
         onClose={() => setDismissed(true)}
         copy={{
@@ -110,12 +113,7 @@ export default function EventDetailScreen() {
             title: t('payment.confirmedTitle'),
             subtitle: t('payment.confirmedSubtitle'),
             primaryLabel: t('payment.viewTicket'),
-            onPrimary: () => {
-              setDismissed(true);
-              if (reg?.ticketId) router.push(`/tickets/${reg.ticketId}`);
-              else router.push('/tickets');
-            },
-            secondaryLabel: t('payment.close'),
+            onPrimary: saveTicket,
           },
           failed: {
             title: t('payment.failedTitle'),
@@ -126,6 +124,10 @@ export default function EventDetailScreen() {
           },
         }}
       />
+
+      {revealed.data ? (
+        <TicketRevealModal visible={revealVisible} ticket={revealed.data} onSave={saveTicket} />
+      ) : null}
     </Screen>
   );
 }

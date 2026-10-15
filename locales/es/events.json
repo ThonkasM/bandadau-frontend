@@ -1,7 +1,8 @@
 {
   "title": "Evento",
-  "register": "Inscribirme",
+  "register": "Participar",
   "registered": "¡Inscrito! Revisa tus entradas.",
+  "viewTickets": "Ver mis entradas",
   "empty": "No hay eventos próximos.",
   "error": "No pudimos cargar los eventos.",
   "seats": "{count, plural, =0 {Sin cupo} one {# lugar} other {# lugares}}",

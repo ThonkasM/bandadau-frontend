@@ -2,11 +2,23 @@
   "title": "My tickets",
   "scan": "Scan ticket",
   "ticket": "Ticket",
-  "empty": "You have no tickets.",
+  "empty": "You have no available tickets.",
+  "emptyUsed": "You have no used tickets.",
   "error": "We couldn't load your tickets.",
   "qrHint": "Show this code at the entrance.",
   "orderCode": "Order #{code}",
   "tapToEnlarge": "Tap to enlarge",
+  "viewQr": "View QR",
+  "tabs": {
+    "available": "Available",
+    "used": "Used"
+  },
+  "reveal": {
+    "title": "Your ticket is ready!",
+    "subtitle": "Save it so you don't lose it.",
+    "swipeToSave": "Swipe down to save it",
+    "save": "Save to My tickets"
+  },
   "status": {
     "ISSUED": "Valid",
     "USED": "Used",
