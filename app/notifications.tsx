@@ -24,7 +24,7 @@ export default function NotificationsScreen() {
   const hasUnread = list.items.some((item) => !item.readAt);
 
   return (
-    <Screen title={t('notifications')}>
+    <Screen title={t('notifications')} showBack>
       {list.loading ? (
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
       ) : list.error ? (

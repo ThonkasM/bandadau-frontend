@@ -19,7 +19,7 @@ export default function TicketsScreen() {
   const list = useMyTickets();
 
   return (
-    <Screen title={t('title')}>
+    <Screen title={t('title')} showBack>
       <Button
         label={t('scan')}
         icon="qrcode-scan"

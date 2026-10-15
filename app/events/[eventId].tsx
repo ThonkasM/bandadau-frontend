@@ -24,7 +24,7 @@ export default function EventDetailScreen() {
 
   if (event.isLoading) {
     return (
-      <Screen title={t('title')}>
+      <Screen title={t('title')} showBack>
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
       </Screen>
     );
@@ -32,7 +32,7 @@ export default function EventDetailScreen() {
 
   if (event.isError || !event.data) {
     return (
-      <Screen title={t('title')}>
+      <Screen title={t('title')} showBack>
         <Text style={{ color: tokens.color.text.muted }}>{ta('retry')}</Text>
       </Screen>
     );
@@ -42,7 +42,7 @@ export default function EventDetailScreen() {
   const price = data.priceCredits === 0 ? ta('free') : formatCredits(data.priceCredits, locale);
 
   return (
-    <Screen title={data.title}>
+    <Screen title={data.title} showBack>
       <ScrollView contentContainerStyle={styles.content}>
         <Image
           source={{ uri: `https://picsum.photos/seed/bandada-event-${data.id}/1200/675` }}

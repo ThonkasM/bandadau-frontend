@@ -18,7 +18,7 @@ export default function GroupsScreen() {
   const join = useJoinGroup();
 
   return (
-    <Screen title={t('title')}>
+    <Screen title={t('title')} showBack>
       <Button
         label={t('create')}
         icon="account-multiple-plus"

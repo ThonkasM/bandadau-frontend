@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { AppHeader } from '@/components/screens/app-header';
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { useTokens } from '@/theme/theme-provider';
@@ -31,6 +32,7 @@ export default function ScanScreen() {
 
   return (
     <Screen padded={false}>
+      <AppHeader title={t('title')} />
       <View style={styles.area}>
         <View style={[styles.viewport, { backgroundColor: tokens.color.bg.muted }]}>
           <MaterialCommunityIcons

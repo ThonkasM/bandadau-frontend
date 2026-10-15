@@ -35,6 +35,11 @@ export interface FeedListProps<T> {
   contentContainerStyle?: StyleProp<ViewStyle>;
   contentBottomPadding?: number;
   style?: StyleProp<ViewStyle>;
+  numColumns?: number;
+  columnWrapperStyle?: StyleProp<ViewStyle>;
+  /** Imperative ref (e.g. to `scrollToIndex` to a specific item). */
+  listRef?: React.Ref<FlatList<T>>;
+  onScrollToIndexFailed?: (info: { index: number; averageItemLength: number }) => void;
 }
 
 /**
@@ -63,6 +68,10 @@ export function FeedList<T>({
   contentContainerStyle,
   contentBottomPadding = 96,
   style,
+  numColumns,
+  columnWrapperStyle,
+  listRef,
+  onScrollToIndexFailed,
 }: FeedListProps<T>) {
   const insets = useSafeAreaInsets();
   const tokens = useTokens();
@@ -109,6 +118,10 @@ export function FeedList<T>({
     showsVerticalScrollIndicator: false,
     scrollEventThrottle: 16,
     onScroll: collapseOnScroll,
+    onScrollToIndexFailed,
+    ...(numColumns && numColumns > 1
+      ? { numColumns, columnWrapperStyle: columnWrapperStyle ?? { gap: 12 } }
+      : {}),
     onEndReached: useSentinel ? undefined : onEndReached,
     onEndReachedThreshold: useSentinel ? undefined : 0.3,
     ListFooterComponent: footer,
@@ -124,11 +137,12 @@ export function FeedList<T>({
   };
 
   if (IS_WEB) {
-    return <FlatList {...common} style={[style, styles.listContainer]} />;
+    return <FlatList ref={listRef} {...common} style={[style, styles.listContainer]} />;
   }
 
   return (
     <FlashList
+      ref={listRef as never}
       {...(common as unknown as FlashListProps<T>)}
       style={[style, styles.listContainer] as unknown as FlashListProps<T>['style']}
     />

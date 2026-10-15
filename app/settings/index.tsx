@@ -44,7 +44,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <Screen title={t('settings')}>
+    <Screen title={t('settings')} showBack>
       <Text style={[styles.section, { color: tokens.color.text.muted }]}>{t('menu')}</Text>
       <View style={styles.row}>
         {THEME_OPTIONS.map((option) => (

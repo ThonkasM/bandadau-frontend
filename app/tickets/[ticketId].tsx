@@ -17,7 +17,7 @@ export default function TicketDetailScreen() {
   const ticket = useTicket(id);
 
   return (
-    <Screen title={t('title')}>
+    <Screen title={t('title')} showBack>
       {ticket.isLoading ? (
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
       ) : ticket.data ? (

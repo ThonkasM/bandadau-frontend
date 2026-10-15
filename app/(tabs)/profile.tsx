@@ -4,24 +4,30 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Screen } from '@/components/screens/screen';
-import { useMyProfile } from '@/features/profile/api';
+import { useMyProfile, useUserPosts } from '@/features/profile/api';
+import { ProfileMenu } from '@/features/profile/components/profile-menu';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
 type Tab = 'posts' | 'saved';
 
-/** UC-04 · Profile: cover, avatar, stats, tabs and grid (mockup). */
+/** UC-04 · Profile: cover, avatar, stats, tabs and post grid (mockup). */
 export default function ProfileScreen() {
   const tokens = useTokens();
   const brand = useBrand();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation('nav');
   const { t: tp } = useTranslation('profile');
   const { t: ta } = useTranslation('app');
   const router = useRouter();
   const profile = useMyProfile();
   const [tab, setTab] = useState<Tab>('posts');
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const posts = useUserPosts(profile.data?.userId);
 
   if (profile.isLoading) {
     return (
@@ -45,7 +51,13 @@ export default function ProfileScreen() {
   }
 
   const data = profile.data;
-  const gridItems = tab === 'posts' ? Array.from({ length: 9 }, (_, i) => i) : [];
+  const gridItems = tab === 'posts' ? posts.items : [];
+
+  const openPost = (postId: string) =>
+    router.push({
+      pathname: '/profile/[userId]',
+      params: { userId: data.userId, name: data.displayName, postId },
+    });
 
   return (
     <Screen padded={false}>
@@ -56,6 +68,14 @@ export default function ProfileScreen() {
           contentFit="cover"
           transition={200}
         />
+
+        <Pressable
+          onPress={() => setMenuOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel={tp('menu.title')}
+          style={[styles.menuButton, { top: insets.top + 8, backgroundColor: tokens.color.bg.surface }]}>
+          <MaterialCommunityIcons name="dots-horizontal" size={22} color={tokens.color.text.primary} />
+        </Pressable>
 
         <View style={styles.identity}>
           <View
@@ -68,9 +88,7 @@ export default function ProfileScreen() {
             </Text>
           </View>
           <Text style={[styles.name, { color: tokens.color.text.primary }]}>{data.displayName}</Text>
-          {data.career ? (
-            <Text style={{ color: tokens.color.text.muted }}>{data.career}</Text>
-          ) : null}
+          {data.career ? <Text style={{ color: tokens.color.text.muted }}>{data.career}</Text> : null}
         </View>
 
         <View style={styles.stats}>
@@ -89,11 +107,7 @@ export default function ProfileScreen() {
           </Pressable>
           <Pressable
             onPress={() => router.push('/settings')}
-            style={[
-              styles.action,
-              styles.actionGhost,
-              { borderColor: tokens.color.border.default },
-            ]}>
+            style={[styles.action, styles.actionGhost, { borderColor: tokens.color.border.default }]}>
             <Text style={{ color: tokens.color.text.primary }}>{t('settings')}</Text>
           </Pressable>
         </View>
@@ -118,21 +132,14 @@ export default function ProfileScreen() {
 
         {gridItems.length > 0 ? (
           <View style={styles.grid}>
-            {gridItems.map((i) => (
+            {gridItems.map((item) => (
               <Pressable
-                key={i}
+                key={item.post.id}
                 accessibilityRole="button"
-                onPress={() =>
-                  router.push({
-                    pathname: '/profile/[userId]',
-                    params: { userId: data.userId, name: data.displayName },
-                  })
-                }
+                onPress={() => openPost(item.post.id)}
                 style={[styles.gridItem, { backgroundColor: tokens.color.bg.muted }]}>
                 <Image
-                  source={{
-                    uri: `https://picsum.photos/seed/bandada-grid-${data.userId}-${i}/400/400`,
-                  }}
+                  source={{ uri: item.post.media[0]?.thumbnailUrl ?? item.post.media[0]?.url ?? undefined }}
                   style={styles.gridImage}
                   contentFit="cover"
                   transition={150}
@@ -141,9 +148,13 @@ export default function ProfileScreen() {
             ))}
           </View>
         ) : (
-          <Text style={[styles.message, { color: tokens.color.text.muted }]}>{tp('savedEmpty')}</Text>
+          <Text style={[styles.message, { color: tokens.color.text.muted }]}>
+            {tab === 'saved' ? tp('savedEmpty') : tp('postsEmpty')}
+          </Text>
         )}
       </ScrollView>
+
+      <ProfileMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
     </Screen>
   );
 }
@@ -164,6 +175,15 @@ const styles = StyleSheet.create({
   button: { borderRadius: 12, paddingVertical: 12, marginHorizontal: 24, alignItems: 'center' },
   scroll: { paddingBottom: 96 },
   cover: { width: '100%', height: 140 },
+  menuButton: {
+    position: 'absolute',
+    right: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   identity: { alignItems: 'center', marginTop: -44, gap: 4 },
   avatar: {
     width: 88,

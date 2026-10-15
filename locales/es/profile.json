@@ -11,5 +11,12 @@
   "following": "Siguiendo",
   "savedEmpty": "Aún no guardaste publicaciones.",
   "postsEmpty": "Aún no hay publicaciones.",
-  "back": "Volver"
+  "back": "Volver",
+  "menu": {
+    "title": "Opciones",
+    "edit": "Editar perfil",
+    "settings": "Configuración",
+    "openPanel": "Abrir panel",
+    "logout": "Cerrar sesión"
+  }
 }

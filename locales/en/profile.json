@@ -11,5 +11,12 @@
   "following": "Following",
   "savedEmpty": "You haven't saved any posts yet.",
   "postsEmpty": "No posts yet.",
-  "back": "Back"
+  "back": "Back",
+  "menu": {
+    "title": "Options",
+    "edit": "Edit profile",
+    "settings": "Settings",
+    "openPanel": "Open panel",
+    "logout": "Log out"
+  }
 }

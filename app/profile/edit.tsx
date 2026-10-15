@@ -43,7 +43,7 @@ export default function EditProfileScreen() {
   const field = { borderColor: tokens.color.border.default, color: tokens.color.text.primary };
 
   return (
-    <Screen title={t('edit')}>
+    <Screen title={t('edit')} showBack>
       <ScrollView contentContainerStyle={styles.content}>
         <TextInput
           value={displayName}
