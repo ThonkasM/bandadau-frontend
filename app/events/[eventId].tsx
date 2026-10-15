@@ -1,17 +1,15 @@
-import { errorMessage, formatCredits, formatDate, type Locale } from '@bandada/i18n';
-import { Image } from 'expo-image';
+import { errorMessage, type Locale } from '@bandada/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
-import { Button } from '@/components/ui/button';
 import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
 import { useEvent, useRegisterToEvent, useRegistration } from '@/features/events/api';
+import EventDetailView from '@/features/events/components/event-detail-view';
 import { useTicket } from '@/features/tickets/api';
 import { TicketRevealModal } from '@/features/tickets/components/ticket-reveal-modal';
-import { eventCoverUrl } from '@/lib/event-cover';
 import { newUuid } from '@/lib/ids';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -50,7 +48,6 @@ export default function EventDetailScreen() {
   }
 
   const data = event.data;
-  const price = data.priceCredits === 0 ? ta('free') : formatCredits(data.priceCredits, locale);
 
   const revealVisible = !dismissed && confirmed && Boolean(revealed.data);
   const paymentVisible =
@@ -73,30 +70,13 @@ export default function EventDetailScreen() {
   };
 
   return (
-    <Screen title={data.title} showBack>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Image
-          source={{ uri: data.coverUrl ?? eventCoverUrl(data.id) }}
-          style={styles.cover}
-          contentFit="cover"
-          transition={200}
-        />
-        <Text style={{ color: tokens.color.text.muted }}>
-          {formatDate(data.startsAt, locale, 'long')}
-        </Text>
-        <Text style={{ color: tokens.color.text.muted }}>{data.venue}</Text>
-        <Text style={{ color: tokens.color.text.primary }}>{data.description}</Text>
-        <View style={styles.row}>
-          <Text style={[styles.price, { color: tokens.color.text.primary }]}>{price}</Text>
-          <Text style={{ color: tokens.color.text.muted }}>{t('seats', { count: data.seatsAvailable })}</Text>
-        </View>
-
-        {confirmed ? (
-          <Button label={t('viewTickets')} variant="secondary" onPress={() => router.push('/tickets')} />
-        ) : (
-          <Button label={t('register')} onPress={startRegister} />
-        )}
-      </ScrollView>
+    <Screen title={t('title')} showBack padded={false}>
+      <EventDetailView
+        event={data}
+        confirmed={confirmed}
+        onParticipate={startRegister}
+        onViewTickets={() => router.push('/tickets')}
+      />
 
       <PaymentModal
         visible={paymentVisible}
@@ -134,9 +114,5 @@ export default function EventDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: 8, paddingBottom: 24 },
-  cover: { height: 160, borderRadius: 16 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 8 },
-  price: { fontSize: 18, fontWeight: '800' },
   center: { marginTop: 24 },
 });
