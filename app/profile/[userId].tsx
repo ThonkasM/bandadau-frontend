@@ -44,7 +44,8 @@ export default function UserPostsScreen() {
     scrolled.current = true;
     if (index <= 0) return;
     const timer = setTimeout(() => {
-      listRef.current?.scrollToIndex({ index, viewPosition: 0.3, animated: false });
+      // `viewPosition: 0` aligns the card's top with the top of the list (its start).
+      listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false });
     }, 100);
     return () => clearTimeout(timer);
   }, [params.postId, posts.items]);
@@ -73,10 +74,14 @@ export default function UserPostsScreen() {
               onRefresh={posts.refresh}
               contentContainerStyle={styles.listContent}
               onScrollToIndexFailed={({ index, averageItemLength }) => {
+                // Estimate, then retry once the list has measured the target item.
                 listRef.current?.scrollToOffset({
                   offset: index * averageItemLength,
-                  animated: true,
+                  animated: false,
                 });
+                setTimeout(() => {
+                  listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false });
+                }, 120);
               }}
               renderEmpty={() => (
                 <Text style={[styles.message, { color: tokens.color.text.muted }]}>
