@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
+import { PrinterOutput } from '@/features/tickets/components/printer-output';
 import { TicketPass } from '@/features/tickets/components/ticket-pass';
 import { useTicketSounds } from '@/features/tickets/hooks/use-ticket-sounds';
 import type { TicketDetail } from '@/features/tickets/types';
@@ -24,7 +25,7 @@ import { useTokens } from '@/theme/theme-provider';
 
 const SAVE_THRESHOLD = 110;
 const LEAVE_MS = 280;
-const SLOT_H = 16;
+const PRINTER_H = 44;
 const GLOW_H = 16;
 
 // Línea de tiempo (ms)
@@ -75,7 +76,6 @@ export function TicketRevealModal({
   const reduceMotion = useReducedMotion();
   const [slotW, setSlotW] = useState(0);
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
-  const slotGradId = `${uid}sg`;
   const glowGradId = `${uid}gg`;
   const sounds = useTicketSounds();
 
@@ -225,27 +225,7 @@ export function TicketRevealModal({
                   pointerEvents="none"
                   onLayout={onSlotLayout}
                   style={[styles.slot, slotStyle]}>
-                  {slotW > 0 ? (
-                    <Svg width={slotW} height={SLOT_H} style={styles.slotBg}>
-                      <Defs>
-                        <LinearGradient id={slotGradId} x1="0" y1="0" x2="1" y2="0">
-                          <Stop offset="0" stopColor={tokens.color.brand.primary} />
-                          <Stop offset="0.55" stopColor={tokens.color.brand.primary} />
-                          <Stop offset="1" stopColor={tokens.color.brand.accent} />
-                        </LinearGradient>
-                      </Defs>
-                      <Rect
-                        x="0"
-                        y="0"
-                        width={slotW}
-                        height={SLOT_H}
-                        rx={SLOT_H / 2}
-                        fill={`url(#${slotGradId})`}
-                      />
-                    </Svg>
-                  ) : null}
-
-                  <View style={[styles.slit, { backgroundColor: tokens.color.bg.canvas }]} />
+                  {slotW > 0 ? <PrinterOutput width={slotW} height={PRINTER_H} /> : null}
 
                   <Animated.View pointerEvents="none" style={[styles.glow, glowStyle]}>
                     {slotW > 0 ? (
@@ -320,16 +300,14 @@ const styles = StyleSheet.create({
   window: { overflow: 'hidden' },
   slot: {
     position: 'absolute',
-    top: -10,
+    top: -18,
     left: -14,
     right: -14,
-    height: SLOT_H,
+    height: PRINTER_H,
     zIndex: 2,
     justifyContent: 'center',
   },
-  slotBg: { position: 'absolute', top: 0, left: 0 },
-  slit: { height: 4, borderRadius: 2, marginHorizontal: 7 },
-  glow: { position: 'absolute', left: 0, right: 0, top: SLOT_H - 2 },
+  glow: { position: 'absolute', left: 0, right: 0, bottom: -GLOW_H + 4 },
   footer: { alignItems: 'center', gap: 4, marginTop: 6 },
   hintRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
   hint: { fontSize: 13 },
