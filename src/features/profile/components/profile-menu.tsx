@@ -2,6 +2,7 @@ import {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
   BottomSheetModal,
+  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useCallback, useMemo } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
@@ -9,20 +10,22 @@ import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { ProfileMenuContent } from '@/features/profile/components/profile-menu-content';
 import { useDeviceType } from '@/hooks/use-device-type';
 import { usePresentableSheet } from '@/hooks/use-presentable-sheet';
-import { useTokens } from '@/theme/theme-provider';
+import { useTheme, useTokens } from '@/theme/theme-provider';
 
 export interface ProfileMenuProps {
   visible: boolean;
   onClose: () => void;
-  /** Web desktop: popover anchor (top/right in window px), aligned with the ⋯ button. */
+  /** Web: popover anchor (top/right in window px), aligned with the ⋯ button. */
   anchor?: { top: number; right: number };
 }
 
 /** Profile options menu: gorhom bottom sheet on native; popover anchored to the ⋯ button on web. */
 export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
   const tokens = useTokens();
+  const { effective } = useTheme();
   const { isWeb } = useDeviceType();
   const { ref, onDismiss, onChange } = usePresentableSheet(visible, onClose);
+  const isDark = effective === 'dark';
 
   const backdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -50,8 +53,17 @@ export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
     return (
       <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
-          <View style={styles.blur} />
-          <View style={[styles.dim, { backgroundColor: tokens.color.bg.inverse }]} />
+          <View style={isDark ? styles.blurDark : styles.blurLight} />
+          <View
+            style={[
+              styles.dim,
+              {
+                // A dark scrim in both themes (`bg.inverse` is light in dark mode).
+                backgroundColor: isDark ? tokens.color.bg.canvas : tokens.color.bg.inverse,
+                opacity: isDark ? 0.5 : 0.3,
+              },
+            ]}
+          />
         </Pressable>
         <View
           style={[
@@ -78,14 +90,16 @@ export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
       backgroundStyle={backgroundStyle}
       onChange={onChange}
       onDismiss={onDismiss}>
-      <ProfileMenuContent onClose={onClose} />
+      <BottomSheetView style={styles.sheetContent}>
+        <ProfileMenuContent onClose={onClose} />
+      </BottomSheetView>
     </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
-  // Web: blurred backdrop behind the popover (like Homy's filters overlay).
-  blur: {
+  // Web: blurred backdrop behind the popover (stronger in dark mode).
+  blurLight: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -93,7 +107,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     ...Platform.select({ web: { backdropFilter: 'blur(2px)' } as object }),
   },
-  dim: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.25 },
+  blurDark: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    ...Platform.select({ web: { backdropFilter: 'blur(5px)' } as object }),
+  },
+  dim: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   popover: {
     position: 'absolute',
     width: 260,
@@ -101,4 +123,5 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
+  sheetContent: { paddingBottom: 8 },
 });
