@@ -18,6 +18,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { TicketPass } from '@/features/tickets/components/ticket-pass';
+import { useTicketSounds } from '@/features/tickets/hooks/use-ticket-sounds';
 import type { TicketDetail } from '@/features/tickets/types';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -76,6 +77,7 @@ export function TicketRevealModal({
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const slotGradId = `${uid}sg`;
   const glowGradId = `${uid}gg`;
+  const sounds = useTicketSounds();
 
   const translateY = useSharedValue(0); // swipe / salida
   const opacity = useSharedValue(0); // título y subtítulo
@@ -105,6 +107,7 @@ export function TicketRevealModal({
       feed.value = 1;
       qrReveal.value = 1;
       ui.value = 1;
+      sounds.confirm();
       return;
     }
 
@@ -119,7 +122,18 @@ export function TicketRevealModal({
     );
     qrReveal.value = withDelay(QR_DELAY, withTiming(1, { duration: QR_MS, easing: qrEasing }));
     ui.value = withDelay(DONE_MS, withTiming(1, { duration: 250 }));
-  }, [visible, reduceMotion, translateY, opacity, bg, slot, feed, qrReveal, settle, ui]);
+
+    // Sonidos sincronizados con la línea de tiempo de la animación.
+    const timers = [
+      setTimeout(sounds.feed, FEED_DELAY),
+      setTimeout(sounds.qr, QR_DELAY),
+      setTimeout(sounds.confirm, DONE_MS),
+    ];
+    return () => {
+      for (const id of timers) clearTimeout(id);
+      sounds.stop();
+    };
+  }, [visible, reduceMotion, sounds, translateY, opacity, bg, slot, feed, qrReveal, settle, ui]);
 
   const tick = () => onTick?.();
   useAnimatedReaction(

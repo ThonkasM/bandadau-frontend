@@ -15,11 +15,18 @@ const config: ExpoConfig = {
     typedRoutes: true,
     reactCompiler: true,
   },
+  locales: {
+    es: './locales/ios/es.json',
+    en: './locales/ios/en.json',
+  },
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.bandadau.app',
     appleTeamId: process.env.EXPO_APPLE_TEAM_ID ?? '7MWYA8BMK6',
     associatedDomains: [`applinks:app.${BASE_DOMAIN}`],
+    infoPlist: {
+      CFBundleAllowMixedLocalizations: true,
+    },
     icon: {
       light: './assets/brand/icon-1024.png',
       dark: './assets/brand/icon-1024-dark.png',
@@ -54,6 +61,8 @@ const config: ExpoConfig = {
     'expo-secure-store',
     'expo-system-ui',
     'expo-web-browser',
+    'expo-image-picker',
+    'expo-audio',
     [
       'expo-splash-screen',
       {
