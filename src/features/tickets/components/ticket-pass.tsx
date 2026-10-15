@@ -24,6 +24,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 import type { Ticket } from '@/features/tickets/types';
+import { useDeviceTilt } from '@/hooks/use-device-tilt';
 import { useTokens } from '@/theme/theme-provider';
 
 const RATIO = 892 / 1215;
@@ -62,6 +63,7 @@ export function TicketPass({
   ticket,
   qr,
   interactive = false,
+  motion = false,
   animateIn = false,
   onPress,
   onPressQr,
@@ -70,6 +72,7 @@ export function TicketPass({
   ticket: Ticket;
   qr?: string;
   interactive?: boolean;
+  motion?: boolean;
   animateIn?: boolean;
   onPress?: () => void;
   onPressQr?: () => void;
@@ -85,6 +88,8 @@ export function TicketPass({
   const rx = useSharedValue(0);
   const ry = useSharedValue(0);
   const enter = useSharedValue(animateIn ? 800 : 0);
+  const useMotion = motion && Platform.OS !== 'web';
+  useDeviceTilt(rx, ry, interactive && useMotion);
 
   useEffect(() => {
     if (animateIn) enter.value = withSpring(0, { damping: 14, stiffness: 80, mass: 1 });
@@ -98,7 +103,7 @@ export function TicketPass({
   };
 
   const pan = Gesture.Pan()
-    .enabled(interactive)
+    .enabled(interactive && !useMotion)
     .onUpdate((event) => {
       ry.value = Math.max(-1, Math.min(1, (event.x - wv.value / 2) / (wv.value / 2))) * 12;
       rx.value = Math.max(-1, Math.min(1, (hv.value / 2 - event.y) / (hv.value / 2))) * 12;

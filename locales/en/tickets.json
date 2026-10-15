@@ -24,7 +24,8 @@
     "ticket": "Ticket",
     "admission": "Admission time",
     "where": "Where",
-    "a11y": "Ticket for {event}"
+    "a11y": "Ticket for {event}",
+    "tiltHint": "Tilt to see it in 3D"
   },
   "status": {
     "ISSUED": "Valid",

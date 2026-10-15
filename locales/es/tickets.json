@@ -24,7 +24,8 @@
     "ticket": "Entrada",
     "admission": "Hora de admisión",
     "where": "Dónde",
-    "a11y": "Entrada para {event}"
+    "a11y": "Entrada para {event}",
+    "tiltHint": "Inclínalo para verlo en 3D"
   },
   "status": {
     "ISSUED": "Válida",

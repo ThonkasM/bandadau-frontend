@@ -6,25 +6,31 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { FeedList } from '@/components/ui/feed-list';
-import { useMyTickets } from '@/features/tickets/api';
+import { useMyTickets, useTicket } from '@/features/tickets/api';
 import { TicketPass } from '@/features/tickets/components/ticket-pass';
+import { TicketPassModal } from '@/features/tickets/components/ticket-pass-modal';
 import type { Ticket } from '@/features/tickets/types';
+import { useDeviceType } from '@/hooks/use-device-type';
 import { useTokens } from '@/theme/theme-provider';
 
 type Tab = 'available' | 'used';
 
-/** UC-12 · My tickets: available vs used, Eventbrite-style ticket cards. */
+/** UC-12 · My tickets: available vs used, Wallet-style passes (2 columns on web). */
 export default function TicketsScreen() {
   const tokens = useTokens();
   const { t } = useTranslation('tickets');
   const { t: ta } = useTranslation('app');
   const router = useRouter();
+  const { isWeb, width } = useDeviceType();
   const list = useMyTickets();
   const [tab, setTab] = useState<Tab>('available');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const detail = useTicket(selectedId ?? undefined);
 
   const items = list.items.filter((ticket) =>
     tab === 'available' ? ticket.status === 'ISSUED' : ticket.status !== 'ISSUED',
   );
+  const columns = isWeb && width >= 760 ? 2 : 1;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'available', label: t('tabs.available') },
@@ -79,11 +85,13 @@ export default function TicketsScreen() {
         <FeedList<Ticket>
           style={styles.list}
           data={items}
+          numColumns={columns}
+          columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
             <TicketPass
               ticket={item}
               style={styles.ticket}
-              onPress={() => router.push(`/tickets/${item.id}`)}
+              onPress={() => setSelectedId(item.id)}
             />
           )}
           keyExtractor={(item) => item.id}
@@ -99,6 +107,14 @@ export default function TicketsScreen() {
           )}
         />
       )}
+
+      {detail.data ? (
+        <TicketPassModal
+          visible={Boolean(selectedId)}
+          ticket={detail.data}
+          onClose={() => setSelectedId(null)}
+        />
+      ) : null}
     </Screen>
   );
 }
@@ -109,7 +125,8 @@ const styles = StyleSheet.create({
   tabLabel: { fontSize: 14.5, fontWeight: '700' },
   tabUnderline: { position: 'absolute', bottom: 0, height: 3, width: '46%', borderRadius: 2 },
   list: { flex: 1, marginTop: 12 },
-  ticket: { marginBottom: 16 },
+  row: { gap: 12 },
+  ticket: { flex: 1, marginBottom: 16 },
   center: { marginTop: 24 },
   message: { fontSize: 15, marginTop: 16, textAlign: 'center' },
   retry: { borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 12 },
