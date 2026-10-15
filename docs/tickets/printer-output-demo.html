@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo · Boca de impresora térmica</title>
+<style>
+  :root { color-scheme: dark; --accent: #62e6bd; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: radial-gradient(ellipse at 50% 42%, #202525 0%, #111414 42%, #080909 78%);
+    color: #f2f4f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 24px;
+  }
+  .app { width: min(720px, 100%); text-align: center; }
+  .eyebrow { color: #9ba7a3; text-transform: uppercase; letter-spacing: .18em; font-size: 11px; font-weight: 700; }
+  h1 { margin: 10px 0 8px; font-size: clamp(22px, 4vw, 32px); letter-spacing: -.035em; }
+  .sub { margin: 0 auto; max-width: 440px; color: #a6afac; font-size: 14px; line-height: 1.55; }
+  .stage {
+    position: relative; width: min(500px, 100%); height: 365px; margin: 38px auto 24px;
+    display: flex; justify-content: center; align-items: flex-start;
+    perspective: 900px;
+  }
+  .printer-body {
+    position: absolute; top: 12px; width: 100%; height: 106px; z-index: 4;
+    border-radius: 23px;
+    background: linear-gradient(180deg, #3a3d3d 0%, #292c2c 18%, #171919 76%, #252828 100%);
+    border: 1px solid #4b4e4e;
+    box-shadow: 0 18px 35px #0008, inset 0 1px 0 #ffffff18, inset 0 -2px 0 #0008;
+  }
+  .printer-body::before {
+    content: ""; position: absolute; inset: 1px 16px auto; height: 1px;
+    background: linear-gradient(90deg, transparent, #ffffff36, transparent);
+  }
+  .slot-rim {
+    position: absolute; left: 5.5%; right: 5.5%; top: 37px; height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #050606, #111313 50%, #030404);
+    border: 1px solid #090a0a;
+    box-shadow: inset 0 3px 5px #000, 0 1px 0 #ffffff0b;
+    overflow: hidden;
+  }
+  .roller {
+    position: absolute; top: 0; left: 2%; width: 96%; height: 10px;
+    border-radius: 0 0 5px 5px;
+    background: linear-gradient(180deg, #070808 0%, #525656 68%, #161818 100%);
+    box-shadow: 0 3px 5px #000b;
+  }
+  .paper-window {
+    position: absolute; top: 57px; left: 10%; width: 80%; height: 240px;
+    overflow: hidden; z-index: 2;
+    mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+  }
+  .ticket {
+    position: absolute; top: 0; left: 0; width: 100%; min-height: 290px;
+    padding: 20px 24px 25px; color: #242727; text-align: left;
+    background: #f5f3ec;
+    clip-path: polygon(0 0,100% 0,100% 97.5%,97% 100%,94% 97.5%,91% 100%,88% 97.5%,85% 100%,82% 97.5%,79% 100%,76% 97.5%,73% 100%,70% 97.5%,67% 100%,64% 97.5%,61% 100%,58% 97.5%,55% 100%,52% 97.5%,49% 100%,46% 97.5%,43% 100%,40% 97.5%,37% 100%,34% 97.5%,31% 100%,28% 97.5%,25% 100%,22% 97.5%,19% 100%,16% 97.5%,13% 100%,10% 97.5%,7% 100%,4% 97.5%,0 100%);
+    box-shadow: 0 4px 12px #0004;
+    transform: translateY(-228px);
+  }
+  .ticket-head { display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #aeb2aa; padding-bottom:12px; }
+  .brand { font-size: 11px; letter-spacing:.16em; font-weight:900; }
+  .stamp { border:1px solid #737a73; border-radius:4px; padding:4px 6px; font-size:8px; letter-spacing:.1em; }
+  .ticket h2 { margin: 16px 0 5px; font-size: 21px; letter-spacing:-.04em; }
+  .muted { color:#6d746d; font-size:10px; }
+  .line { display:flex; justify-content:space-between; gap:16px; padding:8px 0; border-bottom:1px dotted #c5c8c0; font-size:11px; }
+  .total { display:flex; justify-content:space-between; margin-top:13px; font-weight:900; font-size:14px; }
+  .qr { width:62px; height:62px; margin:15px auto 0; background:
+    linear-gradient(90deg, #202525 8px, transparent 8px 12px, #202525 12px 16px, transparent 16px 21px, #202525 21px 25px, transparent 25px),
+    linear-gradient(#202525 8px, transparent 8px 12px, #202525 12px 16px, transparent 16px 21px, #202525 21px 25px, transparent 25px);
+    background-size:29px 29px; border:6px solid #f5f3ec; outline:1px solid #202525; }
+  .controls { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+  button {
+    border:1px solid #3c4844; background:#202725; color:#eaf5f1; border-radius:999px;
+    padding:11px 17px; font:600 13px inherit; cursor:pointer; transition:background .2s, transform .2s;
+  }
+  button:hover { background:#2b3732; transform:translateY(-1px); }
+  button.primary { background:var(--accent); color:#10221c; border-color:transparent; }
+  .hint { min-height:20px; margin-top:15px; color:#85918c; font-size:12px; }
+  .stage.printing .ticket { animation: feed 3.3s cubic-bezier(.2,.75,.2,1) forwards; }
+  .stage.printing .paper-window { animation: paperJitter .12s steps(2,end) infinite; }
+  .stage.printing .roller { animation: rollerGlow .18s ease-in-out infinite alternate; }
+  @keyframes feed {
+    0% { transform:translateY(-228px); }
+    10% { transform:translateY(-210px); }
+    18% { transform:translateY(-180px); }
+    27% { transform:translateY(-145px); }
+    39% { transform:translateY(-110px); }
+    50% { transform:translateY(-78px); }
+    62% { transform:translateY(-45px); }
+    74% { transform:translateY(-15px); }
+    86%,100% { transform:translateY(0); }
+  }
+  @keyframes paperJitter { 0% { transform:translateX(0); } 50% { transform:translateX(.5px); } 100% { transform:translateX(-.5px); } }
+  @keyframes rollerGlow { from { filter:brightness(.85); } to { filter:brightness(1.35); } }
+  @media (prefers-reduced-motion: reduce) {
+    .stage.printing .ticket, .stage.printing .paper-window, .stage.printing .roller { animation-duration:.01ms; animation-iteration-count:1; }
+  }
+</style>
+</head>
+<body>
+  <main class="app">
+    <div class="eyebrow">UI concept · thermal printer</div>
+    <h1>Boca de salida de ticket</h1>
+    <p class="sub">Un prototipo visual en HTML/CSS para evaluar la profundidad de la ranura y cómo el papel emerge desde el interior.</p>
+    <section class="stage" id="stage" aria-label="Demostración de impresión de ticket">
+      <div class="paper-window">
+        <article class="ticket" id="ticket">
+          <div class="ticket-head"><div class="brand">MAMINCO</div><div class="stamp">COMPROBANTE</div></div>
+          <h2>Pedido confirmado</h2>
+          <div class="muted">N.º 000184 · 15 OCT 2026 · 03:35</div>
+          <div class="line"><span>Menú del día</span><strong>Bs 38,00</strong></div>
+          <div class="line"><span>Jugo natural</span><strong>Bs 12,00</strong></div>
+          <div class="line"><span>Servicio</span><strong>Bs 3,00</strong></div>
+          <div class="total"><span>TOTAL</span><span>Bs 53,00</span></div>
+          <div class="qr" aria-label="Representación decorativa de QR"></div>
+          <p class="muted" style="text-align:center;margin-top:12px">Gracias por tu visita</p>
+        </article>
+      </div>
+      <div class="printer-body" aria-hidden="true">
+        <div class="slot-rim"><div class="roller"></div></div>
+      </div>
+    </section>
+    <div class="controls">
+      <button class="primary" id="printBtn">▶ Imprimir ticket</button>
+      <button id="resetBtn">↺ Reiniciar</button>
+    </div>
+    <div class="hint" id="hint">Pulsa «Imprimir ticket» para reproducir la salida escalonada.</div>
+  </main>
+<script>
+  const stage = document.getElementById('stage');
+  const ticket = document.getElementById('ticket');
+  const hint = document.getElementById('hint');
+  function reset() {
+    stage.classList.remove('printing');
+    // Reinicia la animación CSS de forma fiable.
+    void ticket.offsetWidth;
+    ticket.style.transform = 'translateY(-228px)';
+    hint.textContent = 'Listo para imprimir.';
+  }
+  document.getElementById('printBtn').addEventListener('click', () => {
+    reset();
+    requestAnimationFrame(() => {
+      ticket.style.transform = '';
+      stage.classList.add('printing');
+      hint.textContent = 'Imprimiendo… el papel avanza en pequeños tirones.';
+    });
+  });
+  document.getElementById('resetBtn').addEventListener('click', reset);
+  ticket.addEventListener('animationend', () => {
+    hint.textContent = 'Ticket impreso. Puedes reiniciar y volver a probar.';
+  });
+</script>
+</body>
+</html>
