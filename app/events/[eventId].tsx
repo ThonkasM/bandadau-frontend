@@ -1,4 +1,4 @@
-import { formatCredits, formatDate, type Locale } from '@bandada/i18n';
+import { errorMessage, formatCredits, formatDate, type Locale } from '@bandada/i18n';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
@@ -7,8 +7,8 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
+import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
 import { useEvent, useRegisterToEvent, useRegistration } from '@/features/events/api';
-import { PaymentModal, type PaymentPhase } from '@/features/events/components/payment-modal';
 import { newUuid } from '@/lib/ids';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -97,13 +97,33 @@ export default function EventDetailScreen() {
       <PaymentModal
         visible={modalVisible}
         phase={phase}
-        registration={reg ?? null}
         onClose={() => setDismissed(true)}
-        onRetry={startRegister}
-        onViewTicket={() => {
-          setDismissed(true);
-          if (reg?.ticketId) router.push(`/tickets/${reg.ticketId}`);
-          else router.push('/tickets');
+        copy={{
+          processing: {
+            title: t('payment.processingTitle'),
+            subtitle:
+              data.priceCredits > 0 ? t('payment.debiting', { count: data.priceCredits }) : undefined,
+            steps: [t('payment.step1'), t('payment.step2'), t('payment.step3')],
+            note: t('payment.dontClose'),
+          },
+          confirmed: {
+            title: t('payment.confirmedTitle'),
+            subtitle: t('payment.confirmedSubtitle'),
+            primaryLabel: t('payment.viewTicket'),
+            onPrimary: () => {
+              setDismissed(true);
+              if (reg?.ticketId) router.push(`/tickets/${reg.ticketId}`);
+              else router.push('/tickets');
+            },
+            secondaryLabel: t('payment.close'),
+          },
+          failed: {
+            title: t('payment.failedTitle'),
+            message: errorMessage(reg?.failureReason ?? undefined, locale),
+            primaryLabel: t('payment.retry'),
+            onPrimary: startRegister,
+            secondaryLabel: t('payment.close'),
+          },
         }}
       />
     </Screen>

@@ -1,22 +1,40 @@
-import { errorMessage, type Locale } from '@bandada/i18n';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useTheme, useTokens } from '@/theme/theme-provider';
 
-import type { Registration } from '../types';
-
 export type PaymentPhase = 'processing' | 'confirmed' | 'failed';
+
+export interface PaymentCopy {
+  processing: {
+    title: string;
+    subtitle?: string;
+    steps: [string, string, string];
+    note?: string;
+  };
+  confirmed: {
+    title: string;
+    subtitle?: string;
+    primaryLabel: string;
+    onPrimary: () => void;
+    secondaryLabel?: string;
+  };
+  failed: {
+    title: string;
+    message?: string;
+    primaryLabel: string;
+    onPrimary: () => void;
+    secondaryLabel?: string;
+  };
+}
 
 const STEP_MS = 900;
 const STEP_COUNT = 3;
 
-/** Animated reserve → debit → issue checklist (mounts only while processing). */
-function PaymentSteps() {
+/** Animated reserve → charge → settle checklist (mounts only while processing). */
+function PaymentSteps({ labels }: { labels: [string, string, string] }) {
   const tokens = useTokens();
-  const { t } = useTranslation('events');
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -24,11 +42,9 @@ function PaymentSteps() {
     return () => clearInterval(timer);
   }, []);
 
-  const steps = [t('payment.step1'), t('payment.step2'), t('payment.step3')];
-
   return (
     <View style={styles.steps}>
-      {steps.map((label, i) => (
+      {labels.map((label, i) => (
         <View key={label} style={styles.stepRow}>
           <MaterialCommunityIcons
             name={i < step ? 'check-circle' : i === step ? 'progress-clock' : 'circle-outline'}
@@ -50,31 +66,30 @@ function PaymentSteps() {
 }
 
 /**
- * UC-12: simulated payment/registration SAGA. Shows a loader with the
- * reserve → debit → issue steps while polling the registration, then the
- * outcome (ticket issued or failure reason).
+ * Generic simulated-payment modal: a loader with steps while the (server-side)
+ * operation runs, then the outcome (success or failure). Used by event
+ * registration (UC-12) and wallet top-up (UC-15).
  */
 export function PaymentModal({
   visible,
   phase,
-  registration,
+  copy,
   onClose,
-  onViewTicket,
-  onRetry,
 }: {
   visible: boolean;
   phase: PaymentPhase;
-  registration: Registration | null;
+  copy: PaymentCopy;
   onClose: () => void;
-  onViewTicket: () => void;
-  onRetry: () => void;
 }) {
   const tokens = useTokens();
   const { effective } = useTheme();
-  const { t, i18n } = useTranslation('events');
-  const locale = i18n.language as Locale;
-  const price = registration?.priceCredits ?? 0;
   const scrim = effective === 'dark' ? tokens.color.bg.canvas : tokens.color.bg.inverse;
+
+  const outcome = phase === 'confirmed' ? copy.confirmed : copy.failed;
+  const detail = phase === 'confirmed' ? copy.confirmed.subtitle : copy.failed.message;
+  const outcomeIcon = phase === 'confirmed' ? 'check-circle' : 'alert-circle';
+  const outcomeColor =
+    phase === 'confirmed' ? tokens.color.feedback.success.fg : tokens.color.feedback.danger.fg;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -93,71 +108,41 @@ export function PaymentModal({
             <>
               <ActivityIndicator size="large" color={tokens.color.action.primary.bg} />
               <Text style={[styles.title, { color: tokens.color.text.primary }]}>
-                {t('payment.processingTitle')}
+                {copy.processing.title}
               </Text>
-              {price > 0 ? (
+              {copy.processing.subtitle ? (
                 <Text style={[styles.subtitle, { color: tokens.color.text.muted }]}>
-                  {t('payment.debiting', { count: price })}
+                  {copy.processing.subtitle}
                 </Text>
               ) : null}
-              <PaymentSteps />
-              <Text style={[styles.hint, { color: tokens.color.text.muted }]}>
-                {t('payment.dontClose')}
-              </Text>
-            </>
-          ) : phase === 'confirmed' ? (
-            <>
-              <MaterialCommunityIcons
-                name="check-circle"
-                size={56}
-                color={tokens.color.feedback.success.fg}
-              />
-              <Text style={[styles.title, { color: tokens.color.text.primary }]}>
-                {t('payment.confirmedTitle')}
-              </Text>
-              <Text style={[styles.subtitle, { color: tokens.color.text.muted }]}>
-                {t('payment.confirmedSubtitle')}
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={onViewTicket}
-                style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}
-              >
-                <Text style={[styles.buttonLabel, { color: tokens.color.action.primary.fg }]}>
-                  {t('payment.viewTicket')}
+              <PaymentSteps labels={copy.processing.steps} />
+              {copy.processing.note ? (
+                <Text style={[styles.hint, { color: tokens.color.text.muted }]}>
+                  {copy.processing.note}
                 </Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" onPress={onClose} style={styles.linkBtn}>
-                <Text style={[styles.link, { color: tokens.color.text.muted }]}>
-                  {t('payment.close')}
-                </Text>
-              </Pressable>
+              ) : null}
             </>
           ) : (
             <>
-              <MaterialCommunityIcons
-                name="alert-circle"
-                size={56}
-                color={tokens.color.feedback.danger.fg}
-              />
+              <MaterialCommunityIcons name={outcomeIcon} size={56} color={outcomeColor} />
               <Text style={[styles.title, { color: tokens.color.text.primary }]}>
-                {t('payment.failedTitle')}
+                {outcome.title}
               </Text>
-              <Text style={[styles.subtitle, { color: tokens.color.text.muted }]}>
-                {errorMessage(registration?.failureReason ?? undefined, locale)}
-              </Text>
+              {detail ? (
+                <Text style={[styles.subtitle, { color: tokens.color.text.muted }]}>{detail}</Text>
+              ) : null}
               <Pressable
                 accessibilityRole="button"
-                onPress={onRetry}
+                onPress={outcome.onPrimary}
                 style={[styles.button, { backgroundColor: tokens.color.action.primary.bg }]}
               >
                 <Text style={[styles.buttonLabel, { color: tokens.color.action.primary.fg }]}>
-                  {t('payment.retry')}
+                  {outcome.primaryLabel}
                 </Text>
               </Pressable>
               <Pressable accessibilityRole="button" onPress={onClose} style={styles.linkBtn}>
                 <Text style={[styles.link, { color: tokens.color.text.muted }]}>
-                  {t('payment.close')}
+                  {outcome.secondaryLabel}
                 </Text>
               </Pressable>
             </>

@@ -10,5 +10,20 @@
     "TOPUP": "Top-up",
     "DEBIT": "Spend",
     "REFUND": "Refund"
+  },
+  "topup": {
+    "processingTitle": "Processing your top-up",
+    "charging": "{count, plural, one {Charging # credit} other {Charging # credits}}",
+    "step1": "Creating the payment order",
+    "step2": "Confirming the payment",
+    "step3": "Crediting your credits",
+    "dontClose": "Don't close this screen.",
+    "confirmedTitle": "Top-up successful!",
+    "confirmedSubtitle": "{count, plural, one {# credit was added} other {# credits were added}}",
+    "done": "Done",
+    "failedTitle": "Couldn't complete",
+    "failedMessage": "The payment wasn't processed. Please try again.",
+    "retry": "Retry",
+    "close": "Close"
   }
 }

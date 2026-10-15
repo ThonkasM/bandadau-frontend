@@ -6,11 +6,15 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 
 import { Screen } from '@/components/screens/screen';
 import { FeedList } from '@/components/ui/feed-list';
+import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
 import { useCreateTopUp, useLedger, useMyWallet, useSimulatePayment } from '@/features/wallet/api';
 import { LedgerRow } from '@/features/wallet/components/ledger-row';
 import { type LedgerEntry, TOPUP_PACKAGES, type TopUpPackage } from '@/features/wallet/types';
 import { newUuid } from '@/lib/ids';
 import { useTokens } from '@/theme/theme-provider';
+
+const MIN_PROCESSING_MS = 1900;
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** UC-15/16 · Wallet: balance, top-up packages, movements (mockup, wired to wallet-service). */
 export default function WalletScreen() {
@@ -22,18 +26,30 @@ export default function WalletScreen() {
   const createTopUp = useCreateTopUp();
   const simulate = useSimulatePayment();
   const [pkg, setPkg] = useState<TopUpPackage>('CREDITS_50');
+  const [payPhase, setPayPhase] = useState<PaymentPhase>('processing');
+  const [payVisible, setPayVisible] = useState(false);
   const idempotencyKey = useRef(newUuid());
 
-  const onRecharge = () => {
-    createTopUp.mutate(
-      { package: pkg, idempotencyKey: idempotencyKey.current },
-      {
-        onSuccess: (topUp) => {
-          idempotencyKey.current = newUuid();
-          simulate.mutateAsync(topUp.topUpId).catch(() => undefined);
-        },
-      },
-    );
+  const selectedCredits = TOPUP_PACKAGES.find((option) => option.id === pkg)?.credits ?? 0;
+
+  const onRecharge = async () => {
+    idempotencyKey.current = newUuid();
+    setPayPhase('processing');
+    setPayVisible(true);
+    const started = Date.now();
+    const settle = () => wait(Math.max(0, MIN_PROCESSING_MS - (Date.now() - started)));
+    try {
+      const topUp = await createTopUp.mutateAsync({
+        package: pkg,
+        idempotencyKey: idempotencyKey.current,
+      });
+      await simulate.mutateAsync(topUp.topUpId);
+      await settle();
+      setPayPhase('confirmed');
+    } catch {
+      await settle();
+      setPayPhase('failed');
+    }
   };
 
   return (
@@ -106,6 +122,33 @@ export default function WalletScreen() {
           renderEmpty={() => <Text style={{ color: tokens.color.text.muted }}>{t('empty')}</Text>}
         />
       )}
+
+      <PaymentModal
+        visible={payVisible}
+        phase={payPhase}
+        onClose={() => setPayVisible(false)}
+        copy={{
+          processing: {
+            title: t('topup.processingTitle'),
+            subtitle: t('topup.charging', { count: selectedCredits }),
+            steps: [t('topup.step1'), t('topup.step2'), t('topup.step3')],
+            note: t('topup.dontClose'),
+          },
+          confirmed: {
+            title: t('topup.confirmedTitle'),
+            subtitle: t('topup.confirmedSubtitle', { count: selectedCredits }),
+            primaryLabel: t('topup.done'),
+            onPrimary: () => setPayVisible(false),
+          },
+          failed: {
+            title: t('topup.failedTitle'),
+            message: t('topup.failedMessage'),
+            primaryLabel: t('topup.retry'),
+            onPrimary: onRecharge,
+            secondaryLabel: t('topup.close'),
+          },
+        }}
+      />
     </Screen>
   );
 }

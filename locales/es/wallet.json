@@ -10,5 +10,20 @@
     "TOPUP": "Recarga",
     "DEBIT": "Consumo",
     "REFUND": "Reembolso"
+  },
+  "topup": {
+    "processingTitle": "Procesando tu recarga",
+    "charging": "{count, plural, one {Cargando # crédito} other {Cargando # créditos}}",
+    "step1": "Creando la orden de pago",
+    "step2": "Confirmando el pago",
+    "step3": "Acreditando tus créditos",
+    "dontClose": "No cierres esta pantalla.",
+    "confirmedTitle": "¡Recarga exitosa!",
+    "confirmedSubtitle": "{count, plural, one {Se acreditó # crédito} other {Se acreditaron # créditos}}",
+    "done": "Listo",
+    "failedTitle": "No se pudo completar",
+    "failedMessage": "El pago no se procesó. Intenta de nuevo.",
+    "retry": "Reintentar",
+    "close": "Cerrar"
   }
 }
