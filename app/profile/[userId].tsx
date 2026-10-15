@@ -52,6 +52,7 @@ export default function UserPostsScreen() {
 
   return (
     <Screen padded={false}>
+      <View style={styles.fill}>
       <AppHeader title={params.name ?? t('posts')} />
 
       <View style={styles.row}>
@@ -100,11 +101,13 @@ export default function UserPostsScreen() {
         visible={Boolean(activePost)}
         onClose={() => setActivePost(null)}
       />
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1, minHeight: 0 },
   row: {
     flex: 1,
     minHeight: 0,
@@ -112,7 +115,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 24,
     paddingHorizontal: 16,
-    paddingTop: 12,
   },
   column: { flex: 1, minHeight: 0 },
   list: { flex: 1, minHeight: 0 },
