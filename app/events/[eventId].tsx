@@ -19,11 +19,11 @@ import { useTokens } from '@/theme/theme-provider';
 export default function EventDetailScreen() {
   const tokens = useTokens();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const { t, i18n } = useTranslation('events');
   const { t: ta } = useTranslation('app');
   const locale = i18n.language as Locale;
-  const event = useEvent(id);
+  const event = useEvent(eventId);
   const register = useRegisterToEvent();
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const registration = useRegistration(registrationId);

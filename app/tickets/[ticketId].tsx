@@ -12,9 +12,9 @@ import { useTokens } from '@/theme/theme-provider';
 /** UC-12 · Ticket detail (Eventbrite-style) with a tap-to-enlarge QR. */
 export default function TicketDetailScreen() {
   const tokens = useTokens();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { ticketId } = useLocalSearchParams<{ ticketId: string }>();
   const { t } = useTranslation('tickets');
-  const ticket = useTicket(id);
+  const ticket = useTicket(ticketId);
   const [qrOpen, setQrOpen] = useState(false);
 
   if (ticket.isLoading) {
