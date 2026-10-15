@@ -69,7 +69,10 @@ export function useRegisterToEvent() {
         method: 'POST',
         idempotencyKey,
       }),
-    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.events.root() }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.events.root() });
+      void client.invalidateQueries({ queryKey: queryKeys.registrations.root() });
+    },
   });
 }
 

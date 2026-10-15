@@ -12,7 +12,8 @@ import { useTokens } from '@/theme/theme-provider';
 /** Props shared by the platform-specific event detail views. */
 export interface EventDetailViewProps {
   event: Event;
-  confirmed: boolean;
+  /** The user already has a registration/ticket for this event (no re-purchase). */
+  registered: boolean;
   onParticipate: () => void;
   onViewTickets: () => void;
 }
@@ -75,12 +76,12 @@ export function EventPrice({ event, locale }: { event: Event; locale: Locale }) 
 }
 
 export function EventCta({
-  confirmed,
+  registered,
   onParticipate,
   onViewTickets,
-}: Pick<EventDetailViewProps, 'confirmed' | 'onParticipate' | 'onViewTickets'>) {
+}: Pick<EventDetailViewProps, 'registered' | 'onParticipate' | 'onViewTickets'>) {
   const { t } = useTranslation('events');
-  return confirmed ? (
+  return registered ? (
     <Button label={t('viewTickets')} variant="secondary" onPress={onViewTickets} />
   ) : (
     <Button label={t('register')} onPress={onParticipate} />

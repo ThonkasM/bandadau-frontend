@@ -16,7 +16,7 @@ import { useTokens } from '@/theme/theme-provider';
 /** Native event detail: single column, full-bleed hero and a fixed bottom CTA bar. */
 export default function EventDetailView({
   event,
-  confirmed,
+  registered,
   onParticipate,
   onViewTickets,
 }: EventDetailViewProps) {
@@ -49,7 +49,7 @@ export default function EventDetailView({
         <EventPrice event={event} locale={locale} />
         <View style={styles.cta}>
           <EventCta
-            confirmed={confirmed}
+            registered={registered}
             onParticipate={onParticipate}
             onViewTickets={onViewTickets}
           />

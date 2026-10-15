@@ -1,4 +1,5 @@
 import { errorMessage, type Locale } from '@bandada/i18n';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,11 +8,17 @@ import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
-import { useEvent, useRegisterToEvent, useRegistration } from '@/features/events/api';
+import {
+  useEvent,
+  useMyRegistrations,
+  useRegisterToEvent,
+  useRegistration,
+} from '@/features/events/api';
 import EventDetailView from '@/features/events/components/event-detail-view';
 import { useTicket } from '@/features/tickets/api';
 import { TicketRevealModal } from '@/features/tickets/components/ticket-reveal-modal';
 import { newUuid } from '@/lib/ids';
+import { queryKeys } from '@/lib/query-keys';
 import { useTokens } from '@/theme/theme-provider';
 
 /** UC-12 · Event detail + register: simulated payment SAGA → ticket reveal. */
@@ -24,6 +31,8 @@ export default function EventDetailScreen() {
   const locale = i18n.language as Locale;
   const event = useEvent(eventId);
   const register = useRegisterToEvent();
+  const client = useQueryClient();
+  const myRegistrations = useMyRegistrations();
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const registration = useRegistration(registrationId);
   const reg = registration.data;
@@ -51,6 +60,12 @@ export default function EventDetailScreen() {
 
   const data = event.data;
 
+  // Already has a live registration for this event → no re-purchase.
+  const alreadyRegistered = myRegistrations.items.some(
+    (r) => r.eventId === data.id && r.status !== 'FAILED' && r.status !== 'CANCELLED',
+  );
+  const registered = confirmed || alreadyRegistered;
+
   const revealVisible = !dismissed && confirmed && Boolean(revealed.data);
   const paymentVisible =
     !dismissed && !revealVisible && (register.isPending || register.isError || Boolean(registrationId));
@@ -69,6 +84,9 @@ export default function EventDetailScreen() {
 
   const saveTicket = () => {
     setDismissed(true);
+    // Refresh the lists so the new ticket/registration shows up immediately.
+    void client.invalidateQueries({ queryKey: queryKeys.tickets.root() });
+    void client.invalidateQueries({ queryKey: queryKeys.registrations.root() });
     router.push('/tickets');
   };
 
@@ -76,7 +94,7 @@ export default function EventDetailScreen() {
     <Screen title={t('title')} showBack padded={false}>
       <EventDetailView
         event={data}
-        confirmed={confirmed}
+        registered={registered}
         onParticipate={() => startRegister(true)}
         onViewTickets={() => router.push('/tickets')}
       />

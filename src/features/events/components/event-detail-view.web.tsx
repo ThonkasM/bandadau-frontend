@@ -19,7 +19,7 @@ const PANEL_WIDTH = 400;
 /** Web event detail: hero on the left, info + CTA panel on the right. */
 export default function EventDetailView({
   event,
-  confirmed,
+  registered,
   onParticipate,
   onViewTickets,
 }: EventDetailViewProps) {
@@ -47,7 +47,7 @@ export default function EventDetailView({
             <EventPrice event={event} locale={locale} />
           </View>
           <EventCta
-            confirmed={confirmed}
+            registered={registered}
             onParticipate={onParticipate}
             onViewTickets={onViewTickets}
           />
