@@ -15,7 +15,6 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import QRCode from 'react-native-qrcode-svg';
 import Animated, {
-  Easing,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
@@ -52,6 +51,15 @@ const MONO = Platform.select({
 });
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+/** Cuántas bandas discretas recorre la impresión (más = más fino). */
+const PRINT_STEPS = 14;
+
+/** Easing cuantizado: el valor avanza a saltos (sensación de impresora). */
+function printEasing(t: number) {
+  'worklet';
+  return Math.min(1, Math.floor(t * PRINT_STEPS) / PRINT_STEPS);
+}
 
 /** Card outline: rounded corners + a semi-elliptical notch at the top center (Wallet style). */
 function passPath(w: number, h: number, r = 22) {
@@ -132,7 +140,7 @@ export function TicketPass({
     }
     if (size.w === 0) return;
     print.value = 0;
-    print.value = withDelay(380, withTiming(1, { duration: 620, easing: Easing.out(Easing.cubic) }));
+    print.value = withDelay(380, withTiming(1, { duration: 760, easing: printEasing }));
   }, [animateIn, size.w, print]);
 
   const onLayout = (event: LayoutChangeEvent) => {
