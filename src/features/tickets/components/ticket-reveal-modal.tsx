@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
+  Easing,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -16,11 +17,13 @@ import type { TicketDetail } from '@/features/tickets/types';
 import { useTokens } from '@/theme/theme-provider';
 
 const OFFSCREEN = -820;
-const SAVE_THRESHOLD = 120;
+const SAVE_THRESHOLD = 110;
+const LEAVE_MS = 280;
 
 /**
  * UC-12 · Post-purchase reveal: the freshly issued ticket drops in with a spring
- * and can be swiped down to "save" it into My tickets (Eventbrite-style).
+ * (its QR "prints" top-to-bottom) and can be swiped down to save it into My
+ * tickets. On save the overlay fades + slides out, then navigates.
  */
 export function TicketRevealModal({
   visible,
@@ -35,30 +38,41 @@ export function TicketRevealModal({
   const { t } = useTranslation('tickets');
   const translateY = useSharedValue(OFFSCREEN);
   const opacity = useSharedValue(0);
+  const bg = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
       translateY.value = OFFSCREEN;
       opacity.value = 0;
+      bg.value = 0;
       translateY.value = withSpring(0, { damping: 16, stiffness: 130 });
       opacity.value = withTiming(1, { duration: 240 });
+      bg.value = withTiming(1, { duration: 220 });
     }
-  }, [visible, translateY, opacity]);
+  }, [visible, translateY, opacity, bg]);
+
+  const leave = (after: () => void) => {
+    translateY.value = withTiming(900, { duration: LEAVE_MS, easing: Easing.in(Easing.cubic) });
+    opacity.value = withTiming(0, { duration: LEAVE_MS });
+    bg.value = withTiming(0, { duration: LEAVE_MS }, (finished) => {
+      'worklet';
+      if (finished) runOnJS(after)();
+    });
+  };
 
   const pan = Gesture.Pan()
     .onUpdate((event) => {
       translateY.value = Math.max(0, event.translationY);
     })
     .onEnd((event) => {
-      if (event.translationY > SAVE_THRESHOLD || event.velocityY > 800) {
-        translateY.value = withTiming(900, { duration: 220 });
-        opacity.value = withTiming(0, { duration: 220 });
-        runOnJS(onSave)();
+      if (event.translationY > SAVE_THRESHOLD || event.velocityY > 700) {
+        runOnJS(leave)(onSave);
       } else {
         translateY.value = withSpring(0, { damping: 16, stiffness: 130 });
       }
     });
 
+  const overlayStyle = useAnimatedStyle(() => ({ opacity: bg.value }));
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
     opacity: opacity.value,
@@ -67,7 +81,8 @@ export function TicketRevealModal({
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onSave}>
       <GestureHandlerRootView style={styles.root}>
-        <View style={[styles.overlay, { backgroundColor: tokens.color.bg.canvas }]}>
+        <Animated.View
+          style={[styles.overlay, { backgroundColor: tokens.color.bg.canvas }, overlayStyle]}>
           <Animated.View style={[styles.content, cardStyle]}>
             <Text style={[styles.title, { color: tokens.color.text.primary }]}>
               {t('reveal.title')}
@@ -83,19 +98,23 @@ export function TicketRevealModal({
             </GestureDetector>
 
             <View style={styles.hintRow}>
-              <MaterialCommunityIcons name="gesture-swipe-down" size={18} color={tokens.color.text.muted} />
+              <MaterialCommunityIcons
+                name="gesture-swipe-down"
+                size={18}
+                color={tokens.color.text.muted}
+              />
               <Text style={[styles.hint, { color: tokens.color.text.muted }]}>
                 {t('reveal.swipeToSave')}
               </Text>
             </View>
 
-            <Pressable onPress={onSave} accessibilityRole="button" hitSlop={8}>
+            <Pressable onPress={() => leave(onSave)} accessibilityRole="button" hitSlop={8}>
               <Text style={[styles.saveLink, { color: tokens.color.text.link }]}>
                 {t('reveal.save')}
               </Text>
             </Pressable>
           </Animated.View>
-        </View>
+        </Animated.View>
       </GestureHandlerRootView>
     </Modal>
   );

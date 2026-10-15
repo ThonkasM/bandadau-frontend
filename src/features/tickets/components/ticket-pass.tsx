@@ -15,13 +15,16 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import QRCode from 'react-native-qrcode-svg';
 import Animated, {
+  Easing,
   FadeInDown,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withSpring,
-  ZoomIn,
+  withTiming,
 } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, { Circle, ClipPath, Defs, G, LinearGradient, Path, RadialGradient, Stop } from 'react-native-svg';
 
 import { BandadaMark, BandadaWordmark } from '@/components/brand/BandadaLogo';
 import type { Ticket } from '@/features/tickets/types';
@@ -30,11 +33,17 @@ import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
 const RATIO = 892 / 1215;
+const PERSPECTIVE = 800;
+const MAX_TILT_DEG = 14; // mismo valor que MAX_DEG en use-device-tilt.native.ts
+const SPRING_FOLLOW = { damping: 20, stiffness: 200, mass: 0.5 }; // seguir al dedo/cursor
+const SPRING_REST = { damping: 14, stiffness: 120, mass: 0.8 }; // volver a la posición neutra
 const MONO = Platform.select({
   ios: 'Menlo',
   android: 'monospace',
   default: 'ui-monospace, Menlo, monospace',
 });
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /** Card outline: rounded corners + a semi-elliptical notch at the top center (Wallet style). */
 function passPath(w: number, h: number, r = 22) {
@@ -58,7 +67,8 @@ function passPath(w: number, h: number, r = 22) {
 
 /**
  * Eventbrite/Apple-Wallet style ticket: notched card with gradient, staggered
- * entrance, 3D tilt (drag + device motion) and QR. Tokenized (light + dark).
+ * entrance, 3D tilt (drag / hover on web / device motion) with a moving sheen, and QR.
+ * Tokenized (light + dark).
  */
 export function TicketPass({
   ticket,
@@ -85,18 +95,35 @@ export function TicketPass({
   const brand = useBrand();
   const { t, i18n } = useTranslation('tickets');
   const locale = i18n.language as Locale;
-  const gradientId = useId().replace(/:/g, 'p');
+  // React 19.1+ devuelve ids como «r0»: dejar solo [a-zA-Z0-9] para que url(#id) sea válido.
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const gradientId = `${uid}g`;
+  const sheenId = `${uid}s`;
+  const clipId = `${uid}c`;
   const [size, setSize] = useState({ w: 0, h: 0 });
   const wv = useSharedValue(1);
   const hv = useSharedValue(1);
   const rx = useSharedValue(0);
   const ry = useSharedValue(0);
+  const dragging = useSharedValue(false);
   const enter = useSharedValue(animateIn ? 800 : 0);
-  useDeviceTilt(rx, ry, interactive && motion);
+  // 1 = QR fully "printed"; animates 0 → 1 as a top-to-bottom wipe.
+  const print = useSharedValue(animateIn ? 0 : 1);
+  useDeviceTilt(rx, ry, interactive && motion, dragging);
 
   useEffect(() => {
     if (animateIn) enter.value = withSpring(0, { damping: 14, stiffness: 80, mass: 1 });
   }, [animateIn, enter]);
+
+  useEffect(() => {
+    if (!animateIn) {
+      print.value = 1;
+      return;
+    }
+    if (size.w === 0) return;
+    print.value = 0;
+    print.value = withDelay(150, withTiming(1, { duration: 440, easing: Easing.out(Easing.cubic) }));
+  }, [animateIn, size.w, print]);
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -105,167 +132,237 @@ export function TicketPass({
     hv.value = height;
   };
 
+  const applyTilt = (x: number, y: number) => {
+    'worklet';
+    const ny = Math.max(-1, Math.min(1, (x - wv.value / 2) / (wv.value / 2)));
+    const nx = Math.max(-1, Math.min(1, (hv.value / 2 - y) / (hv.value / 2)));
+    ry.value = withSpring(ny * MAX_TILT_DEG, SPRING_FOLLOW);
+    rx.value = withSpring(nx * MAX_TILT_DEG, SPRING_FOLLOW);
+  };
+  const resetTilt = () => {
+    'worklet';
+    rx.value = withSpring(0, SPRING_REST);
+    ry.value = withSpring(0, SPRING_REST);
+  };
+
   const pan = Gesture.Pan()
     .enabled(interactive)
-    .onUpdate((event) => {
-      ry.value = Math.max(-1, Math.min(1, (event.x - wv.value / 2) / (wv.value / 2))) * 12;
-      rx.value = Math.max(-1, Math.min(1, (hv.value / 2 - event.y) / (hv.value / 2))) * 12;
+    .onStart(() => {
+      dragging.value = true;
     })
-    .onEnd(() => {
-      rx.value = withSpring(0);
-      ry.value = withSpring(0);
+    .onUpdate((event) => applyTilt(event.x, event.y))
+    .onFinalize(() => {
+      dragging.value = false;
+      resetTilt();
     });
+  // En web el cursor inclina el ticket sin necesidad de hacer click.
+  const hover = Gesture.Hover()
+    .enabled(interactive && Platform.OS === 'web')
+    .onUpdate((event) => applyTilt(event.x, event.y))
+    .onEnd(() => resetTilt());
+  const gesture = Gesture.Simultaneous(pan, hover);
 
+  // `perspective` va PRIMERO: así la proyección se aplica a toda la cadena de transformaciones.
   const cardStyle = useAnimatedStyle(() => ({
     transform: [
+      { perspective: PERSPECTIVE },
       { translateY: enter.value },
-      { perspective: 900 },
       { rotateX: `${rx.value}deg` },
       { rotateY: `${ry.value}deg` },
     ],
   }));
 
+  // Brillo que se desplaza con la inclinación: es lo que hace "leer" el 3D.
+  const sheenProps = useAnimatedProps(() => ({
+    cx: wv.value * (0.5 - (ry.value / MAX_TILT_DEG) * 0.5),
+    cy: hv.value * (0.3 + (rx.value / MAX_TILT_DEG) * 0.25),
+    opacity: Math.min(1, (Math.hypot(rx.value, ry.value) / MAX_TILT_DEG) * 1.2),
+  }));
+
   const { w, h } = size;
   const padX = w * 0.075;
   const qrBox = w * qrScale;
+  const qrSize = qrBox - w * 0.04;
+  const clipStyle = useAnimatedStyle(() => ({ height: print.value * qrSize }));
+  const scanStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: print.value * qrSize }],
+    opacity: 1 - print.value,
+  }));
   const enterDelay = (ms: number) => (animateIn ? FadeInDown.delay(ms).springify() : undefined);
   const eventName = ticket.eventTitle ?? t('ticket');
 
-  const card = (
-    <Animated.View
-      onLayout={onLayout}
-      style={[styles.card, cardStyle]}
-      accessible
-      accessibilityLabel={t('pass.a11y', { event: eventName })}>
-      {w > 0 ? (
-        <Svg width={w} height={h} style={StyleSheet.absoluteFill}>
-          <Defs>
-            <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={tokens.color.pass.bg} />
-              <Stop offset="0.55" stopColor={tokens.color.pass.bg} />
-              <Stop offset="1" stopColor={tokens.color.pass['bg-2']} />
-            </LinearGradient>
-          </Defs>
-          <Path d={passPath(w, h)} fill={`url(#${gradientId})`} />
-        </Svg>
-      ) : null}
+  // `stage` NO se transforma: mide el layout y recibe los gestos. Solo `card` (hijo) rota.
+  // Si el GestureDetector envolviera la vista que rota, las coordenadas del toque se
+  // medirían sobre el plano ya girado y el efecto vibraría/saltaría en los bordes.
+  const stage = (
+    <View onLayout={onLayout} style={styles.stage} collapsable={false}>
+      <Animated.View
+        style={[StyleSheet.absoluteFill, cardStyle]}
+        accessible
+        accessibilityLabel={t('pass.a11y', { event: eventName })}>
+        {w > 0 ? (
+          <Svg width={w} height={h} style={StyleSheet.absoluteFill}>
+            <Defs>
+              <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor={tokens.color.pass.bg} />
+                <Stop offset="0.55" stopColor={tokens.color.pass.bg} />
+                <Stop offset="1" stopColor={tokens.color.pass['bg-2']} />
+              </LinearGradient>
+              <RadialGradient id={sheenId} cx="50%" cy="50%" r="50%">
+                <Stop offset="0" stopColor="#ffffff" stopOpacity="0.6" />
+                <Stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+              </RadialGradient>
+              <ClipPath id={clipId}>
+                <Path d={passPath(w, h)} />
+              </ClipPath>
+            </Defs>
+            <Path
+              d={passPath(w, h)}
+              fill={`url(#${gradientId})`}
+              stroke={tokens.color.border.default}
+              strokeWidth={1}
+            />
+            <G clipPath={`url(#${clipId})`}>
+              <AnimatedCircle r={w * 0.75} fill={`url(#${sheenId})`} animatedProps={sheenProps} />
+            </G>
+          </Svg>
+        ) : null}
 
-      {w > 0 ? (
-        <View
-          style={{
-            flex: 1,
-            paddingHorizontal: padX,
-            paddingTop: h * 0.07,
-            paddingBottom: h * 0.05,
-          }}>
-          <Animated.View entering={enterDelay(250)} style={styles.header}>
-            <View style={styles.brandRow}>
-              <BandadaMark size={26} color={brand.color} accent={brand.accent} />
-              <BandadaWordmark width={92} color={brand.color} accent={brand.accent} />
-            </View>
-            <View style={styles.alignEnd}>
-              {ticket.eventStartsAt ? (
-                <>
-                  <Text style={[styles.time, { color: tokens.color.pass.muted }]}>
-                    {formatTime(ticket.eventStartsAt, locale)}
-                  </Text>
-                  <Text style={[styles.date, { color: tokens.color.pass.fg }]}>
-                    {formatDate(ticket.eventStartsAt, locale, 'medium')}
-                  </Text>
-                </>
-              ) : null}
-            </View>
-          </Animated.View>
-
-          <Animated.View entering={enterDelay(350)} style={styles.field}>
-            <Text style={[styles.label, { color: tokens.color.pass.muted }]}>{t('pass.event')}</Text>
-            <Text style={[styles.valueBig, { color: tokens.color.pass.fg }]}>{eventName}</Text>
-          </Animated.View>
-
-          <Animated.View entering={enterDelay(450)} style={[styles.field, styles.two]}>
-            <View style={styles.flex}>
-              <Text style={[styles.label, { color: tokens.color.pass.muted }]}>
-                {t('pass.ticket')}
-              </Text>
-              <Text style={[styles.value, { color: tokens.color.pass.fg }]}>
-                {t(`status.${ticket.status}`)}
-              </Text>
-            </View>
-            <View>
-              <Text style={[styles.label, { color: tokens.color.pass.muted }]}>
-                {t('pass.admission')}
-              </Text>
-              <Text style={[styles.value, { color: tokens.color.pass.fg }]}>
-                {ticket.eventStartsAt ? formatTime(ticket.eventStartsAt, locale) : ''}
-              </Text>
-            </View>
-          </Animated.View>
-
-          <Animated.View entering={enterDelay(550)} style={styles.field}>
-            <Text style={[styles.label, { color: tokens.color.pass.muted }]}>{t('pass.where')}</Text>
-            <Text style={[styles.address, { color: tokens.color.pass.fg }]} numberOfLines={2}>
-              {ticket.venue ?? ''}
-            </Text>
-          </Animated.View>
-
-          <View style={styles.qrArea}>
-            <Animated.View
-              entering={animateIn ? ZoomIn.delay(750).springify().damping(10) : undefined}
-              style={[
-                styles.qrBox,
-                {
-                  width: qrBox,
-                  height: qrBox,
-                  padding: w * 0.02,
-                  backgroundColor: tokens.color.qr.bg,
-                },
-              ]}>
-              {qr ? (
-                <Pressable
-                  onPress={onPressQr}
-                  disabled={!onPressQr}
-                  accessibilityRole={onPressQr ? 'button' : undefined}
-                  accessibilityLabel={t('tapToEnlarge')}>
-                  <QRCode
-                    value={qr}
-                    size={qrBox - w * 0.04}
-                    backgroundColor={tokens.color.qr.bg}
-                    color={tokens.color.qr.fg}
-                  />
-                </Pressable>
-              ) : (
-                <ActivityIndicator color={tokens.color.qr.fg} />
-              )}
+        {w > 0 ? (
+          <View
+            style={{
+              flex: 1,
+              paddingHorizontal: padX,
+              paddingTop: h * 0.07,
+              paddingBottom: h * 0.05,
+            }}>
+            <Animated.View entering={enterDelay(110)} style={styles.header}>
+              <View style={styles.brandRow}>
+                <BandadaMark size={26} color={brand.color} accent={brand.accent} />
+                <BandadaWordmark width={92} color={brand.color} accent={brand.accent} />
+              </View>
+              <View style={styles.alignEnd}>
+                {ticket.eventStartsAt ? (
+                  <>
+                    <Text style={[styles.time, { color: tokens.color.pass.muted }]}>
+                      {formatTime(ticket.eventStartsAt, locale)}
+                    </Text>
+                    <Text style={[styles.date, { color: tokens.color.pass.fg }]}>
+                      {formatDate(ticket.eventStartsAt, locale, 'medium')}
+                    </Text>
+                  </>
+                ) : null}
+              </View>
             </Animated.View>
-          </View>
 
-          <View style={[styles.icon, { left: w * 0.05, bottom: h * 0.035 }]}>
-            <BandadaMark size={30} color={brand.color} accent={brand.accent} />
+            <Animated.View entering={enterDelay(160)} style={styles.field}>
+              <Text style={[styles.label, { color: tokens.color.pass.muted }]}>{t('pass.event')}</Text>
+              <Text style={[styles.valueBig, { color: tokens.color.pass.fg }]}>{eventName}</Text>
+            </Animated.View>
+
+            <Animated.View entering={enterDelay(210)} style={[styles.field, styles.two]}>
+              <View style={styles.flex}>
+                <Text style={[styles.label, { color: tokens.color.pass.muted }]}>
+                  {t('pass.ticket')}
+                </Text>
+                <Text style={[styles.value, { color: tokens.color.pass.fg }]}>
+                  {t(`status.${ticket.status}`)}
+                </Text>
+              </View>
+              <View>
+                <Text style={[styles.label, { color: tokens.color.pass.muted }]}>
+                  {t('pass.admission')}
+                </Text>
+                <Text style={[styles.value, { color: tokens.color.pass.fg }]}>
+                  {ticket.eventStartsAt ? formatTime(ticket.eventStartsAt, locale) : ''}
+                </Text>
+              </View>
+            </Animated.View>
+
+            <Animated.View entering={enterDelay(260)} style={styles.field}>
+              <Text style={[styles.label, { color: tokens.color.pass.muted }]}>{t('pass.where')}</Text>
+              <Text style={[styles.address, { color: tokens.color.pass.fg }]} numberOfLines={2}>
+                {ticket.venue ?? ''}
+              </Text>
+            </Animated.View>
+
+            <View style={styles.qrArea}>
+              <View
+                style={[
+                  styles.qrBox,
+                  {
+                    width: qrBox,
+                    height: qrBox,
+                    padding: w * 0.02,
+                    backgroundColor: tokens.color.qr.bg,
+                  },
+                ]}>
+                {qr ? (
+                  <>
+                    <Animated.View
+                      style={[{ width: qrSize, height: qrSize, overflow: 'hidden' }, clipStyle]}>
+                      <Pressable
+                        onPress={onPressQr}
+                        disabled={!onPressQr}
+                        accessibilityRole={onPressQr ? 'button' : undefined}
+                        accessibilityLabel={t('tapToEnlarge')}>
+                        <QRCode
+                          value={qr}
+                          size={qrSize}
+                          backgroundColor={tokens.color.qr.bg}
+                          color={tokens.color.qr.fg}
+                        />
+                      </Pressable>
+                    </Animated.View>
+                    <Animated.View
+                      pointerEvents="none"
+                      style={[
+                        styles.scanline,
+                        {
+                          top: w * 0.02,
+                          left: w * 0.02,
+                          width: qrSize,
+                          backgroundColor: tokens.color.brand.accent,
+                        },
+                        scanStyle,
+                      ]}
+                    />
+                  </>
+                ) : (
+                  <ActivityIndicator color={tokens.color.qr.fg} />
+                )}
+              </View>
+            </View>
+
+            <View style={[styles.icon, { left: w * 0.05, bottom: h * 0.035 }]}>
+              <BandadaMark size={30} color={brand.color} accent={brand.accent} />
+            </View>
           </View>
-        </View>
-      ) : null}
-    </Animated.View>
+        ) : null}
+      </Animated.View>
+    </View>
   );
 
   if (interactive) {
     return (
-      <View style={style}>
-        <GestureDetector gesture={pan}>{card}</GestureDetector>
+      <View style={[styles.wrapper, style]}>
+        <GestureDetector gesture={gesture}>{stage}</GestureDetector>
       </View>
     );
   }
   if (onPress) {
     return (
-      <Pressable onPress={onPress} accessibilityRole="button" style={style}>
-        {card}
+      <Pressable onPress={onPress} accessibilityRole="button" style={[styles.wrapper, style]}>
+        {stage}
       </Pressable>
     );
   }
-  return <View style={style}>{card}</View>;
+  return <View style={[styles.wrapper, style]}>{stage}</View>;
 }
 
 const styles = StyleSheet.create({
-  card: { width: '100%', maxWidth: 360, aspectRatio: RATIO, alignSelf: 'center' },
+  wrapper: { width: '100%', alignItems: 'center' },
+  stage: { width: '100%', maxWidth: 360, aspectRatio: RATIO, alignSelf: 'center' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   alignEnd: { alignItems: 'flex-end' },
@@ -280,5 +377,6 @@ const styles = StyleSheet.create({
   address: { fontSize: 14, lineHeight: 19 },
   qrArea: { flex: 1, justifyContent: 'flex-end', alignItems: 'center' },
   qrBox: { borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  scanline: { position: 'absolute', height: 2, borderRadius: 1 },
   icon: { position: 'absolute', width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
 });
