@@ -7,7 +7,7 @@ import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { FeedList } from '@/components/ui/feed-list';
 import { useMyTickets, useTicket } from '@/features/tickets/api';
-import { TicketPass } from '@/features/tickets/components/ticket-pass';
+import { TicketPassListItem } from '@/features/tickets/components/ticket-pass-list-item';
 import { TicketPassModal } from '@/features/tickets/components/ticket-pass-modal';
 import type { Ticket } from '@/features/tickets/types';
 import { useDeviceType } from '@/hooks/use-device-type';
@@ -88,7 +88,7 @@ export default function TicketsScreen() {
           numColumns={columns}
           columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
-            <TicketPass
+            <TicketPassListItem
               ticket={item}
               style={styles.ticket}
               onPress={() => setSelectedId(item.id)}

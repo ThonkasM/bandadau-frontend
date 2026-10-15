@@ -1,8 +1,8 @@
 import { formatDate, formatTime, type Locale } from '@bandada/i18n';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ActivityIndicator,
   type LayoutChangeEvent,
   Platform,
   Pressable,
@@ -23,12 +23,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
+import { BandadaMark, BandadaWordmark } from '@/components/brand/BandadaLogo';
 import type { Ticket } from '@/features/tickets/types';
 import { useDeviceTilt } from '@/hooks/use-device-tilt';
 import { useTokens } from '@/theme/theme-provider';
+import { useBrand } from '@/theme/use-brand';
 
 const RATIO = 892 / 1215;
-const BRAND_NAME = 'bandada';
 const MONO = Platform.select({
   ios: 'Menlo',
   android: 'monospace',
@@ -57,11 +58,12 @@ function passPath(w: number, h: number, r = 22) {
 
 /**
  * Eventbrite/Apple-Wallet style ticket: notched card with gradient, staggered
- * entrance, 3D tilt (interactive) and QR. Tokenized (light + dark) and i18n.
+ * entrance, 3D tilt (drag + device motion) and QR. Tokenized (light + dark).
  */
 export function TicketPass({
   ticket,
   qr,
+  qrScale = 0.42,
   interactive = false,
   motion = false,
   animateIn = false,
@@ -71,6 +73,7 @@ export function TicketPass({
 }: {
   ticket: Ticket;
   qr?: string;
+  qrScale?: number;
   interactive?: boolean;
   motion?: boolean;
   animateIn?: boolean;
@@ -79,6 +82,7 @@ export function TicketPass({
   style?: StyleProp<ViewStyle>;
 }) {
   const tokens = useTokens();
+  const brand = useBrand();
   const { t, i18n } = useTranslation('tickets');
   const locale = i18n.language as Locale;
   const gradientId = useId().replace(/:/g, 'p');
@@ -88,8 +92,7 @@ export function TicketPass({
   const rx = useSharedValue(0);
   const ry = useSharedValue(0);
   const enter = useSharedValue(animateIn ? 800 : 0);
-  const useMotion = motion && Platform.OS !== 'web';
-  useDeviceTilt(rx, ry, interactive && useMotion);
+  useDeviceTilt(rx, ry, interactive && motion);
 
   useEffect(() => {
     if (animateIn) enter.value = withSpring(0, { damping: 14, stiffness: 80, mass: 1 });
@@ -103,7 +106,7 @@ export function TicketPass({
   };
 
   const pan = Gesture.Pan()
-    .enabled(interactive && !useMotion)
+    .enabled(interactive)
     .onUpdate((event) => {
       ry.value = Math.max(-1, Math.min(1, (event.x - wv.value / 2) / (wv.value / 2))) * 12;
       rx.value = Math.max(-1, Math.min(1, (hv.value / 2 - event.y) / (hv.value / 2))) * 12;
@@ -124,10 +127,9 @@ export function TicketPass({
 
   const { w, h } = size;
   const padX = w * 0.075;
-  const qrBox = w * 0.42;
+  const qrBox = w * qrScale;
   const enterDelay = (ms: number) => (animateIn ? FadeInDown.delay(ms).springify() : undefined);
   const eventName = ticket.eventTitle ?? t('ticket');
-  const markLetter = BRAND_NAME.charAt(0).toUpperCase();
 
   const card = (
     <Animated.View
@@ -158,12 +160,8 @@ export function TicketPass({
           }}>
           <Animated.View entering={enterDelay(250)} style={styles.header}>
             <View style={styles.brandRow}>
-              <View style={[styles.mark, { backgroundColor: tokens.color.brand.primary }]}>
-                <Text style={[styles.markText, { color: tokens.color.action.primary.fg }]}>
-                  {markLetter}
-                </Text>
-              </View>
-              <Text style={[styles.brand, { color: tokens.color.brand.primary }]}>{BRAND_NAME}</Text>
+              <BandadaMark size={26} color={brand.color} accent={brand.accent} />
+              <BandadaWordmark width={92} color={brand.color} accent={brand.accent} />
             </View>
             <View style={styles.alignEnd}>
               {ticket.eventStartsAt ? (
@@ -215,7 +213,12 @@ export function TicketPass({
               entering={animateIn ? ZoomIn.delay(750).springify().damping(10) : undefined}
               style={[
                 styles.qrBox,
-                { width: qrBox, height: qrBox, padding: w * 0.02, backgroundColor: tokens.color.qr.bg },
+                {
+                  width: qrBox,
+                  height: qrBox,
+                  padding: w * 0.02,
+                  backgroundColor: tokens.color.qr.bg,
+                },
               ]}>
               {qr ? (
                 <Pressable
@@ -231,21 +234,13 @@ export function TicketPass({
                   />
                 </Pressable>
               ) : (
-                <Pressable
-                  onPress={onPress}
-                  accessibilityRole="button"
-                  style={styles.qrEmpty}>
-                  <MaterialCommunityIcons name="qrcode" size={44} color={tokens.color.pass.muted} />
-                  <Text style={[styles.qrEmptyText, { color: tokens.color.pass.muted }]}>
-                    {t('viewQr')}
-                  </Text>
-                </Pressable>
+                <ActivityIndicator color={tokens.color.qr.fg} />
               )}
             </Animated.View>
           </View>
 
           <View style={[styles.icon, { left: w * 0.05, bottom: h * 0.035 }]}>
-            <Text style={[styles.markText, { color: tokens.color.brand.primary }]}>{markLetter}</Text>
+            <BandadaMark size={30} color={brand.color} accent={brand.accent} />
           </View>
         </View>
       ) : null}
@@ -273,9 +268,6 @@ const styles = StyleSheet.create({
   card: { width: '100%', maxWidth: 360, aspectRatio: RATIO, alignSelf: 'center' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  mark: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  markText: { fontWeight: '800', fontSize: 15 },
-  brand: { fontSize: 22, fontWeight: '800' },
   alignEnd: { alignItems: 'flex-end' },
   time: { fontFamily: MONO, fontSize: 13 },
   date: { fontFamily: MONO, fontSize: 17 },
@@ -288,14 +280,5 @@ const styles = StyleSheet.create({
   address: { fontSize: 14, lineHeight: 19 },
   qrArea: { flex: 1, justifyContent: 'flex-end', alignItems: 'center' },
   qrBox: { borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  qrEmpty: { alignItems: 'center', gap: 4 },
-  qrEmptyText: { fontSize: 12, fontWeight: '600' },
-  icon: {
-    position: 'absolute',
-    width: 30,
-    height: 30,
-    borderRadius: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  icon: { position: 'absolute', width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
 });

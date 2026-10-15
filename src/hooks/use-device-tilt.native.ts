@@ -23,19 +23,23 @@ export function useDeviceTilt(
     let subscription: { remove: () => void } | null = null;
     let cancelled = false;
 
-    DeviceMotion.setUpdateInterval(50);
-    DeviceMotion.isAvailableAsync()
-      .then((available) => {
-        if (!available || cancelled) return;
-        subscription = DeviceMotion.addListener(({ rotation }) => {
-          if (!rotation) return;
-          const { beta, gamma } = rotation;
-          if (!baseline) baseline = { beta, gamma };
-          rx.value = clamp(toDeg(beta - baseline.beta) * SCALE, -MAX_DEG, MAX_DEG);
-          ry.value = clamp(toDeg(gamma - baseline.gamma) * SCALE, -MAX_DEG, MAX_DEG);
-        });
-      })
-      .catch(() => undefined);
+    try {
+      DeviceMotion.setUpdateInterval(50);
+      DeviceMotion.isAvailableAsync()
+        .then((available) => {
+          if (!available || cancelled) return;
+          subscription = DeviceMotion.addListener(({ rotation }) => {
+            if (!rotation) return;
+            const { beta, gamma } = rotation;
+            if (!baseline) baseline = { beta, gamma };
+            rx.value = clamp(toDeg(beta - baseline.beta) * SCALE, -MAX_DEG, MAX_DEG);
+            ry.value = clamp(toDeg(gamma - baseline.gamma) * SCALE, -MAX_DEG, MAX_DEG);
+          });
+        })
+        .catch(() => undefined);
+    } catch {
+      // expo-sensors native module not linked yet (dev client needs a rebuild).
+    }
 
     return () => {
       cancelled = true;

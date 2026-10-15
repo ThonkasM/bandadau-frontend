@@ -1,17 +1,18 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { TicketPass } from '@/features/tickets/components/ticket-pass';
+import { TicketQrModal } from '@/features/tickets/components/ticket-qr-modal';
 import type { TicketDetail } from '@/features/tickets/types';
 import { useTheme, useTokens } from '@/theme/theme-provider';
 
 /**
  * UC-12 · Overlaid ticket: the pass shown on top of the list, tappable to tilt
- * (device motion on native, drag on web).
+ * (device motion on native, drag on web). Tapping the QR opens it full-screen.
  */
 export function TicketPassModal({
   visible,
@@ -26,6 +27,7 @@ export function TicketPassModal({
   const { effective } = useTheme();
   const { t } = useTranslation(['tickets', 'app']);
   const opacity = useSharedValue(0);
+  const [qrOpen, setQrOpen] = useState(false);
 
   useEffect(() => {
     opacity.value = visible ? withTiming(1, { duration: 200 }) : 0;
@@ -44,7 +46,14 @@ export function TicketPassModal({
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={t('app:close')} />
 
           <View style={styles.center} pointerEvents="box-none">
-            <TicketPass ticket={ticket} qr={ticket.qrPayload} interactive motion />
+            <TicketPass
+              ticket={ticket}
+              qr={ticket.qrPayload}
+              qrScale={0.5}
+              interactive
+              motion
+              onPressQr={() => setQrOpen(true)}
+            />
             <Text style={[styles.hint, { color: tokens.color.text.inverse }]}>
               {t('pass.tiltHint')}
             </Text>
@@ -59,6 +68,8 @@ export function TicketPassModal({
             <MaterialCommunityIcons name="close" size={22} color={tokens.color.text.primary} />
           </Pressable>
         </View>
+
+        <TicketQrModal visible={qrOpen} ticket={ticket} onClose={() => setQrOpen(false)} />
       </GestureHandlerRootView>
     </Modal>
   );
