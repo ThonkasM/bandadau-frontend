@@ -25,7 +25,7 @@ import { useTokens } from '@/theme/theme-provider';
 
 const SAVE_THRESHOLD = 110;
 const LEAVE_MS = 280;
-const PRINTER_H = 44;
+const PRINTER_H = 64;
 const GLOW_H = 16;
 
 // Línea de tiempo (ms)
@@ -296,13 +296,13 @@ const styles = StyleSheet.create({
   head: { alignItems: 'center', gap: 10, marginBottom: 14 },
   title: { fontSize: 22, fontWeight: '900', textAlign: 'center' },
   subtitle: { fontSize: 14, textAlign: 'center' },
-  ticketWrap: { width: '100%' },
+  ticketWrap: { width: '100%', marginTop: 44 },
   window: { overflow: 'hidden' },
   slot: {
     position: 'absolute',
-    top: -18,
-    left: -14,
-    right: -14,
+    top: -(PRINTER_H - 4),
+    left: -12,
+    right: -12,
     height: PRINTER_H,
     zIndex: 2,
     justifyContent: 'center',
