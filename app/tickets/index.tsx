@@ -7,7 +7,7 @@ import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { FeedList } from '@/components/ui/feed-list';
 import { useMyTickets } from '@/features/tickets/api';
-import { TicketView } from '@/features/tickets/components/ticket-view';
+import { TicketPass } from '@/features/tickets/components/ticket-pass';
 import type { Ticket } from '@/features/tickets/types';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -80,7 +80,7 @@ export default function TicketsScreen() {
           style={styles.list}
           data={items}
           renderItem={({ item }) => (
-            <TicketView
+            <TicketPass
               ticket={item}
               style={styles.ticket}
               onPress={() => router.push(`/tickets/${item.id}`)}
