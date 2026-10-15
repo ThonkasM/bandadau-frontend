@@ -34,7 +34,7 @@ export function buildHeaders(options: RequestOptions, correlationId: string): Re
     'X-Bandada-Client': 'native',
     ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
     ...(options.locale ? { 'Accept-Language': options.locale } : {}),
-    ...(options.auth && options.accessToken
+    ...(options.auth !== false && options.accessToken
       ? { Authorization: `Bearer ${options.accessToken}` }
       : {}),
     ...(options.idempotent || options.idempotencyKey
