@@ -1,6 +1,6 @@
 import { errorMessage, type Locale } from '@bandada/i18n';
 import { useQueryClient } from '@tanstack/react-query';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
@@ -19,12 +19,14 @@ import { useTicket } from '@/features/tickets/api';
 import { TicketRevealModal } from '@/features/tickets/components/ticket-reveal-modal';
 import { newUuid } from '@/lib/ids';
 import { queryKeys } from '@/lib/query-keys';
+import { useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
 
 /** UC-12 · Event detail + register: simulated payment SAGA → ticket reveal. */
 export default function EventDetailScreen() {
   const tokens = useTokens();
   const router = useRouter();
+  const sessionStatus = useSessionStore((s) => s.status);
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const { t, i18n } = useTranslation('events');
   const { t: ta } = useTranslation('app');
@@ -40,6 +42,9 @@ export default function EventDetailScreen() {
   const revealed = useTicket(reg?.ticketId ?? undefined);
   const [dismissed, setDismissed] = useState(false);
   const idempotencyKey = useRef(newUuid());
+
+  // Route guard: anonymous users go to welcome (the detail lives in the root stack).
+  if (sessionStatus === 'anonymous') return <Redirect href="/(auth)/welcome" />;
 
   if (event.isLoading) {
     return (

@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 import { env } from '@/lib/env';
 import { randomIdempotencyKey } from '@/lib/idempotency';
 
@@ -31,7 +33,8 @@ export function buildHeaders(options: RequestOptions, correlationId: string): Re
   const headers: Record<string, string> = {
     Accept: 'application/json',
     'X-Correlation-Id': correlationId,
-    'X-Bandada-Client': 'native',
+    // `web` makes the backend set the HttpOnly refresh cookie (`bandada_rt`).
+    'X-Bandada-Client': Platform.OS === 'web' ? 'web' : 'native',
     ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
     ...(options.locale ? { 'Accept-Language': options.locale } : {}),
     ...(options.auth !== false && options.accessToken
