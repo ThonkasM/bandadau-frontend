@@ -1,10 +1,10 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useGoBack } from '@/hooks/use-go-back';
 import { useTokens } from '@/theme/theme-provider';
 
 export interface ScreenProps {
@@ -20,8 +20,8 @@ export interface ScreenProps {
 /** Base screen: canvas background, safe top inset and an optional title (+ back button). */
 export function Screen({ title, subtitle, padded = true, showBack = false, children }: ScreenProps) {
   const tokens = useTokens();
-  const router = useRouter();
   const { t } = useTranslation('app');
+  const goBack = useGoBack();
 
   return (
     <SafeAreaView
@@ -32,7 +32,7 @@ export function Screen({ title, subtitle, padded = true, showBack = false, child
           showBack ? (
             <View style={styles.titleRow}>
               <Pressable
-                onPress={() => router.back()}
+                onPress={goBack}
                 accessibilityRole="button"
                 accessibilityLabel={t('back')}
                 hitSlop={8}

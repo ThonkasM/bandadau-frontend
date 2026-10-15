@@ -1,9 +1,9 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
+import { useGoBack } from '@/hooks/use-go-back';
 import { useTokens } from '@/theme/theme-provider';
 
 export interface AppHeaderProps {
@@ -20,9 +20,9 @@ export interface AppHeaderProps {
  */
 export function AppHeader({ title, onBack, right, style }: AppHeaderProps) {
   const tokens = useTokens();
-  const router = useRouter();
   const { t } = useTranslation('app');
-  const handleBack = onBack ?? (() => router.back());
+  const goBack = useGoBack();
+  const handleBack = onBack ?? goBack;
 
   return (
     <View style={[styles.header, { borderBottomColor: tokens.color.border.default }, style]}>

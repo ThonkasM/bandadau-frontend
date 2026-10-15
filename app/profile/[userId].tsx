@@ -23,7 +23,8 @@ import { useTokens } from '@/theme/theme-provider';
 
 const WEB_COLUMN_WIDTH = 480;
 const RAIL_MIN_WIDTH = 1200;
-const MAX_REALIGNS = 6;
+const LIST_TOP_PADDING = 12;
+const MAX_REALIGNS = 12;
 
 /** Instagram-like user feed: posts of one user (opened from the profile grid). */
 export default function UserPostsScreen() {
@@ -35,14 +36,27 @@ export default function UserPostsScreen() {
   const showRail = Platform.OS === 'web' && width >= RAIL_MIN_WIDTH;
   const [activePost, setActivePost] = useState<Post | null>(null);
   const listRef = useRef<FlatList<FeedItem>>(null);
+  const heights = useRef<Record<string, number>>({});
   const targetIndex = useRef<number | null>(null);
   const realigns = useRef(0);
 
+  // Exact offset from the measured card heights (works on web, where
+  // `scrollToIndex` needs `getItemLayout` and otherwise lands off).
   const scrollToTarget = useCallback(() => {
     const index = targetIndex.current;
-    if (index === null || index < 0) return;
-    listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false });
-  }, []);
+    if (index === null || index < 0 || !listRef.current) return;
+    let offset = LIST_TOP_PADDING;
+    for (let i = 0; i < index; i += 1) {
+      const height = heights.current[posts.items[i]?.post.id ?? ''];
+      if (height === undefined) {
+        // Not measured yet → approximate; `onContentSizeChange` will realign.
+        listRef.current.scrollToOffset({ offset: index * 320, animated: false });
+        return;
+      }
+      offset += height;
+    }
+    listRef.current.scrollToOffset({ offset, animated: false });
+  }, [posts.items]);
 
   // Jump straight to the tapped post (no animation). If it's the most recent
   // post (first item), just show the feed from the start.
@@ -54,12 +68,11 @@ export default function UserPostsScreen() {
       return;
     }
     targetIndex.current = index;
-    const timer = setTimeout(scrollToTarget, 100);
+    const timer = setTimeout(scrollToTarget, 80);
     return () => clearTimeout(timer);
   }, [params.postId, posts.items, scrollToTarget]);
 
-  // Images change the card heights as they load, so the offset shifts. Re-align
-  // the target whenever the content size changes (until it stabilizes).
+  // Images change the card heights as they load; realign until it stabilizes.
   const realign = useCallback(() => {
     if (targetIndex.current === null || targetIndex.current < 0) return;
     if (realigns.current >= MAX_REALIGNS) return;
@@ -82,7 +95,12 @@ export default function UserPostsScreen() {
                 style={styles.list}
                 data={posts.items}
                 renderItem={({ item }) => (
-                  <PostCard item={item} onOpenComments={() => setActivePost(item.post)} />
+                  <View
+                    onLayout={(event) => {
+                      heights.current[item.post.id] = event.nativeEvent.layout.height;
+                    }}>
+                    <PostCard item={item} onOpenComments={() => setActivePost(item.post)} />
+                  </View>
                 )}
                 keyExtractor={(item) => item.post.id}
                 hasMore={posts.hasMore}
@@ -92,13 +110,6 @@ export default function UserPostsScreen() {
                 onRefresh={posts.refresh}
                 contentContainerStyle={styles.listContent}
                 onContentSizeChange={realign}
-                onScrollToIndexFailed={({ index, averageItemLength }) => {
-                  listRef.current?.scrollToOffset({
-                    offset: index * averageItemLength,
-                    animated: false,
-                  });
-                  setTimeout(scrollToTarget, 120);
-                }}
                 renderEmpty={() => (
                   <Text style={[styles.message, { color: tokens.color.text.muted }]}>
                     {t('postsEmpty')}
@@ -133,7 +144,7 @@ const styles = StyleSheet.create({
   },
   column: { flex: 1, minHeight: 0 },
   list: { flex: 1, minHeight: 0 },
-  listContent: { paddingTop: 12 },
+  listContent: { paddingTop: LIST_TOP_PADDING },
   center: { marginTop: 24 },
   message: { textAlign: 'center', margin: 24 },
 });

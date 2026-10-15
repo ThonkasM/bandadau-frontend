@@ -8,6 +8,7 @@ import { openAdminPanel } from '@/auth/handoff';
 import { logout } from '@/auth/session';
 import { Screen } from '@/components/screens/screen';
 import { useUpdatePreferences } from '@/features/auth/api';
+import { useGoBack } from '@/hooks/use-go-back';
 import { usePreferencesStore } from '@/stores/preferences.store';
 import { hasPanelAccess, useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
@@ -18,6 +19,7 @@ export default function SettingsScreen() {
   const tokens = useTokens();
   const { t, i18n } = useTranslation('nav');
   const router = useRouter();
+  const goBack = useGoBack();
   const user = useSessionStore((s) => s.user);
   const theme = usePreferencesStore((s) => s.theme);
   const setTheme = usePreferencesStore((s) => s.setTheme);
@@ -92,7 +94,7 @@ export default function SettingsScreen() {
         </Pressable>
       )}
 
-      <Pressable onPress={() => router.back()} style={styles.link}>
+      <Pressable onPress={goBack} style={styles.link}>
         <Text style={{ color: tokens.color.text.link }}>{t('backToApp')}</Text>
       </Pressable>
     </Screen>

@@ -1,10 +1,10 @@
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
 import { useMyProfile, useUpdateProfile } from '@/features/profile/api';
+import { useGoBack } from '@/hooks/use-go-back';
 import { useTokens } from '@/theme/theme-provider';
 
 /** UC-04: edit academic profile. `universityId` is read-only (server-owned). */
@@ -12,7 +12,7 @@ export default function EditProfileScreen() {
   const tokens = useTokens();
   const { t } = useTranslation('profile');
   const { t: ta } = useTranslation('app');
-  const router = useRouter();
+  const goBack = useGoBack();
   const current = useMyProfile();
   const update = useUpdateProfile();
 
@@ -36,7 +36,7 @@ export default function EditProfileScreen() {
           .map((value) => value.trim())
           .filter(Boolean),
       },
-      { onSuccess: () => router.back() },
+      { onSuccess: goBack },
     );
   };
 
