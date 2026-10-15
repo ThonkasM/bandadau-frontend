@@ -8,6 +8,7 @@ export default [
       '.expo/**',
       'node_modules/**',
       'coverage/**',
+      'docs/**',
       'expo-env.d.ts',
       'tailwind.config.js',
       'babel.config.js',

@@ -1,7 +1,16 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import * as Haptics from 'expo-haptics';
 import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type LayoutChangeEvent, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  type LayoutChangeEvent,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -88,6 +97,7 @@ export function TicketRevealModal({
   const settle = useSharedValue(0); // pulso al terminar de imprimir
   const ui = useSharedValue(0); // pista y "guardar"
   const winH = useSharedValue(700); // alto de la ventana (se mide en layout)
+  const leaving = useSharedValue(false); // true mientras sale: evita el tick de umbral
 
   useEffect(() => {
     if (!visible) return;
@@ -99,6 +109,7 @@ export function TicketRevealModal({
     qrReveal.value = 0;
     settle.value = 0;
     ui.value = 0;
+    leaving.value = false;
 
     bg.value = withTiming(1, { duration: 220 });
     opacity.value = withTiming(1, { duration: 240 });
@@ -133,7 +144,7 @@ export function TicketRevealModal({
       for (const id of timers) clearTimeout(id);
       sounds.stop();
     };
-  }, [visible, reduceMotion, sounds, translateY, opacity, bg, slot, feed, qrReveal, settle, ui]);
+  }, [visible, reduceMotion, sounds, translateY, opacity, bg, slot, feed, qrReveal, settle, ui, leaving]);
 
   const tick = () => onTick?.();
   useAnimatedReaction(
@@ -143,7 +154,21 @@ export function TicketRevealModal({
     },
   );
 
+  // Tick suave (sonido + háptica) al cruzar el umbral mientras se arrastra: soltar = guardar.
+  const armedTick = () => {
+    sounds.armed();
+    if (Platform.OS !== 'web') Haptics.selectionAsync().catch(() => undefined);
+  };
+  useAnimatedReaction(
+    () => translateY.value > SAVE_THRESHOLD,
+    (armed, wasArmed) => {
+      if (armed && !wasArmed && !leaving.value) runOnJS(armedTick)();
+    },
+  );
+
   const leave = (after: () => void) => {
+    leaving.value = true;
+    sounds.save();
     translateY.value = withTiming(900, { duration: LEAVE_MS, easing: Easing.in(Easing.cubic) });
     opacity.value = withTiming(0, { duration: LEAVE_MS });
     bg.value = withTiming(0, { duration: LEAVE_MS }, (finished) => {
