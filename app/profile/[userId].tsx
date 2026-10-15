@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -23,6 +23,7 @@ import { useTokens } from '@/theme/theme-provider';
 
 const WEB_COLUMN_WIDTH = 480;
 const RAIL_MIN_WIDTH = 1200;
+const MAX_REALIGNS = 6;
 
 /** Instagram-like user feed: posts of one user (opened from the profile grid). */
 export default function UserPostsScreen() {
@@ -34,73 +35,87 @@ export default function UserPostsScreen() {
   const showRail = Platform.OS === 'web' && width >= RAIL_MIN_WIDTH;
   const [activePost, setActivePost] = useState<Post | null>(null);
   const listRef = useRef<FlatList<FeedItem>>(null);
-  const scrolled = useRef(false);
+  const targetIndex = useRef<number | null>(null);
+  const realigns = useRef(0);
 
-  // Jump straight to the tapped post (no scroll animation). If it's the most
-  // recent post (first item), just show the feed from the start.
+  const scrollToTarget = useCallback(() => {
+    const index = targetIndex.current;
+    if (index === null || index < 0) return;
+    listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false });
+  }, []);
+
+  // Jump straight to the tapped post (no animation). If it's the most recent
+  // post (first item), just show the feed from the start.
   useEffect(() => {
-    if (scrolled.current || !params.postId || posts.items.length === 0) return;
+    if (targetIndex.current !== null || !params.postId || posts.items.length === 0) return;
     const index = posts.items.findIndex((item) => item.post.id === params.postId);
-    scrolled.current = true;
-    if (index <= 0) return;
-    const timer = setTimeout(() => {
-      // `viewPosition: 0` aligns the card's top with the top of the list (its start).
-      listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false });
-    }, 100);
+    if (index <= 0) {
+      targetIndex.current = -1;
+      return;
+    }
+    targetIndex.current = index;
+    const timer = setTimeout(scrollToTarget, 100);
     return () => clearTimeout(timer);
-  }, [params.postId, posts.items]);
+  }, [params.postId, posts.items, scrollToTarget]);
+
+  // Images change the card heights as they load, so the offset shifts. Re-align
+  // the target whenever the content size changes (until it stabilizes).
+  const realign = useCallback(() => {
+    if (targetIndex.current === null || targetIndex.current < 0) return;
+    if (realigns.current >= MAX_REALIGNS) return;
+    realigns.current += 1;
+    scrollToTarget();
+  }, [scrollToTarget]);
 
   return (
     <Screen padded={false}>
       <View style={styles.fill}>
-      <AppHeader title={params.name ?? t('posts')} />
+        <AppHeader title={params.name ?? t('posts')} />
 
-      <View style={styles.row}>
-        <View style={[styles.column, showRail && { maxWidth: WEB_COLUMN_WIDTH }]}>
-          {posts.loading ? (
-            <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
-          ) : (
-            <FeedList<FeedItem>
-              listRef={listRef}
-              style={styles.list}
-              data={posts.items}
-              renderItem={({ item }) => (
-                <PostCard item={item} onOpenComments={() => setActivePost(item.post)} />
-              )}
-              keyExtractor={(item) => item.post.id}
-              hasMore={posts.hasMore}
-              loadingMore={posts.loadingMore}
-              refreshing={posts.refreshing}
-              onEndReached={posts.loadMore}
-              onRefresh={posts.refresh}
-              contentContainerStyle={styles.listContent}
-              onScrollToIndexFailed={({ index, averageItemLength }) => {
-                // Estimate, then retry once the list has measured the target item.
-                listRef.current?.scrollToOffset({
-                  offset: index * averageItemLength,
-                  animated: false,
-                });
-                setTimeout(() => {
-                  listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false });
-                }, 120);
-              }}
-              renderEmpty={() => (
-                <Text style={[styles.message, { color: tokens.color.text.muted }]}>
-                  {t('postsEmpty')}
-                </Text>
-              )}
-            />
-          )}
+        <View style={styles.row}>
+          <View style={[styles.column, showRail && { maxWidth: WEB_COLUMN_WIDTH }]}>
+            {posts.loading ? (
+              <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
+            ) : (
+              <FeedList<FeedItem>
+                listRef={listRef}
+                style={styles.list}
+                data={posts.items}
+                renderItem={({ item }) => (
+                  <PostCard item={item} onOpenComments={() => setActivePost(item.post)} />
+                )}
+                keyExtractor={(item) => item.post.id}
+                hasMore={posts.hasMore}
+                loadingMore={posts.loadingMore}
+                refreshing={posts.refreshing}
+                onEndReached={posts.loadMore}
+                onRefresh={posts.refresh}
+                contentContainerStyle={styles.listContent}
+                onContentSizeChange={realign}
+                onScrollToIndexFailed={({ index, averageItemLength }) => {
+                  listRef.current?.scrollToOffset({
+                    offset: index * averageItemLength,
+                    animated: false,
+                  });
+                  setTimeout(scrollToTarget, 120);
+                }}
+                renderEmpty={() => (
+                  <Text style={[styles.message, { color: tokens.color.text.muted }]}>
+                    {t('postsEmpty')}
+                  </Text>
+                )}
+              />
+            )}
+          </View>
+
+          {showRail ? <FeedRightRail /> : null}
         </View>
 
-        {showRail ? <FeedRightRail /> : null}
-      </View>
-
-      <CommentsPanel
-        post={activePost}
-        visible={Boolean(activePost)}
-        onClose={() => setActivePost(null)}
-      />
+        <CommentsPanel
+          post={activePost}
+          visible={Boolean(activePost)}
+          onClose={() => setActivePost(null)}
+        />
       </View>
     </Screen>
   );

@@ -40,6 +40,8 @@ export interface FeedListProps<T> {
   /** Imperative ref (e.g. to `scrollToIndex` to a specific item). */
   listRef?: React.Ref<FlatList<T>>;
   onScrollToIndexFailed?: (info: { index: number; averageItemLength: number }) => void;
+  /** Fires when the list content size changes (e.g. images finish loading). */
+  onContentSizeChange?: () => void;
 }
 
 /**
@@ -72,6 +74,7 @@ export function FeedList<T>({
   columnWrapperStyle,
   listRef,
   onScrollToIndexFailed,
+  onContentSizeChange,
 }: FeedListProps<T>) {
   const insets = useSafeAreaInsets();
   const tokens = useTokens();
@@ -119,6 +122,7 @@ export function FeedList<T>({
     scrollEventThrottle: 16,
     onScroll: collapseOnScroll,
     onScrollToIndexFailed,
+    onContentSizeChange,
     ...(numColumns && numColumns > 1
       ? { numColumns, columnWrapperStyle: columnWrapperStyle ?? { gap: 12 } }
       : {}),
