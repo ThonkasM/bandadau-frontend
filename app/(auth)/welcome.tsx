@@ -51,9 +51,11 @@ export default function WelcomeScreen() {
             />
           </View>
 
-          <Pressable onPress={onGuest} style={styles.guestLink}>
-            <Text variant="link">{t('welcome.guest')}</Text>
-          </Pressable>
+          {__DEV__ ? (
+            <Pressable onPress={onGuest} style={styles.guestLink}>
+              <Text variant="link">{t('welcome.guest')}</Text>
+            </Pressable>
+          ) : null}
 
           <Text variant="caption" style={styles.center}>
             {t('welcome.terms')}

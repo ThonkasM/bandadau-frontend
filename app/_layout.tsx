@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { restoreSession } from '@/auth/session';
 import { BandadaSplash } from '@/components/brand/BandadaLogo';
 import GlobalSidebar from '@/components/navigation/global-sidebar';
 import { SIDEBAR_WIDTH } from '@/constants/layout';
@@ -46,7 +47,6 @@ function RootLayoutInner() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="settings/index" options={{ presentation: 'modal' }} />
           </Stack>
         </View>
       </View>
@@ -70,6 +70,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     initI18n().finally(() => setReady(true));
+    // Cold start: restore the session (native refresh token / web HttpOnly cookie).
+    void restoreSession();
   }, []);
 
   const showSplash = !ready || !splashDone;
