@@ -4,5 +4,19 @@
   "registered": "Registered! Check your tickets.",
   "empty": "No upcoming events.",
   "error": "We couldn't load the events.",
-  "seats": "{count, plural, =0 {No seats} one {# seat} other {# seats}}"
+  "seats": "{count, plural, =0 {No seats} one {# seat} other {# seats}}",
+  "payment": {
+    "processingTitle": "Processing your registration",
+    "debiting": "{count, plural, one {Debiting # credit} other {Debiting # credits}}",
+    "step1": "Reserving your seat",
+    "step2": "Debiting credits",
+    "step3": "Issuing your ticket",
+    "dontClose": "Don't close this screen.",
+    "confirmedTitle": "Registration confirmed!",
+    "confirmedSubtitle": "Your ticket is ready.",
+    "viewTicket": "View my ticket",
+    "failedTitle": "Couldn't complete",
+    "retry": "Retry",
+    "close": "Close"
+  }
 }

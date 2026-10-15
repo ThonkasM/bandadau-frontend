@@ -24,6 +24,19 @@ export function useEvent(id: string | undefined) {
   });
 }
 
+/** UC-12: poll a registration while the SAGA is in progress (PENDING). */
+export function useRegistration(id: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.registrations.byId(id ?? ''),
+    queryFn: () => apiRequest<Registration>(`/api/v1/registrations/${id}`),
+    enabled: Boolean(id),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'PENDING' || status === 'CANCELLATION_PENDING' ? 1000 : false;
+    },
+  });
+}
+
 /** UC-12: register to an event (♻️, SAGA server-side). */
 export function useRegisterToEvent() {
   const client = useQueryClient();

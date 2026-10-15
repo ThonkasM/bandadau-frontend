@@ -71,19 +71,27 @@ export function mockEvent(id: string): Event | undefined {
   return EVENTS.find((event) => event.id === id);
 }
 
-export function mockRegister(eventId: string): Registration {
-  const event = mockEvent(eventId) ?? EVENTS[0]!;
+const REG_EVENTS = new Map<string, string>();
+const REG_CALLS = new Map<string, number>();
+const CONFIRM_AFTER = 3;
+
+function buildRegistration(
+  id: string,
+  event: Event,
+  status: Registration['status'],
+  ticketId: string | null,
+): Registration {
   return {
-    id: '0192f3d0-0000-7000-8000-0000000000aa',
+    id,
     eventId: event.id,
     userId: '0192f3b0-0000-7000-8000-000000000001',
-    status: 'CONFIRMED',
+    status,
     priceCredits: event.priceCredits,
-    ticketId: '0192f3e0-0000-7000-8000-0000000000bb',
+    ticketId,
     failureReason: null,
     createdAt: NOW,
     updatedAt: NOW,
-    confirmedAt: NOW,
+    confirmedAt: status === 'CONFIRMED' ? NOW : null,
     cancelledAt: null,
     event: {
       id: event.id,
@@ -92,4 +100,28 @@ export function mockRegister(eventId: string): Registration {
       startsAt: event.startsAt,
     },
   };
+}
+
+/** UC-12: start a registration (SAGA begins in PENDING). */
+export function mockRegister(eventId: string): Registration {
+  const event = mockEvent(eventId) ?? EVENTS[0]!;
+  const id = '0192f3d0-0000-7000-8000-0000000000aa';
+  REG_EVENTS.set(id, event.id);
+  REG_CALLS.set(id, 0);
+  return buildRegistration(id, event, 'PENDING', null);
+}
+
+/** UC-12: poll a registration; after a few calls the simulated SAGA confirms. */
+export function mockRegistration(registrationId: string): Registration {
+  const eventId = REG_EVENTS.get(registrationId) ?? EVENTS[1]!.id;
+  const event = mockEvent(eventId) ?? EVENTS[1]!;
+  const calls = (REG_CALLS.get(registrationId) ?? 0) + 1;
+  REG_CALLS.set(registrationId, calls);
+  const confirmed = calls >= CONFIRM_AFTER;
+  return buildRegistration(
+    registrationId,
+    event,
+    confirmed ? 'CONFIRMED' : 'PENDING',
+    confirmed ? '0192f3e0-0000-7000-8000-0000000000bb' : null,
+  );
 }

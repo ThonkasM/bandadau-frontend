@@ -2,7 +2,7 @@ import type { TopUpPackage } from '@/features/wallet/types';
 import { env } from '@/lib/env';
 
 import { mockComments, mockCreateComment } from './comments';
-import { mockEvent, mockEvents, mockRegister } from './events';
+import { mockEvent, mockEvents, mockRegister, mockRegistration } from './events';
 import { mockFeed } from './feed';
 import { mockGroups } from './groups';
 import { mockNotifications } from './notifications';
@@ -46,7 +46,12 @@ const routes: MockRoute[] = [
   {
     method: 'POST',
     match: /^\/api\/v1\/events\/[^/]+\/registrations$/,
-    handle: (path) => ({ status: 201, body: mockRegister(path.split('/').slice(-2)[0] ?? '') }),
+    handle: (path) => ({ status: 202, body: mockRegister(path.split('/').slice(-2)[0] ?? '') }),
+  },
+  {
+    method: 'GET',
+    match: /^\/api\/v1\/registrations\/[^/]+$/,
+    handle: (path) => ok(mockRegistration(path.split('/').filter(Boolean).slice(-1)[0] ?? '')),
   },
   // Wallet
   { method: 'GET', match: '/api/v1/wallet/me', handle: () => ok(mockWallet()) },

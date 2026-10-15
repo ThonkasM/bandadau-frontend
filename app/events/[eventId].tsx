@@ -1,25 +1,30 @@
 import { formatCredits, formatDate, type Locale } from '@bandada/i18n';
 import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import { useRef } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
-import { useEvent, useRegisterToEvent } from '@/features/events/api';
+import { useEvent, useRegisterToEvent, useRegistration } from '@/features/events/api';
+import { PaymentModal, type PaymentPhase } from '@/features/events/components/payment-modal';
 import { newUuid } from '@/lib/ids';
 import { useTokens } from '@/theme/theme-provider';
 
-/** UC-12 · Event detail + register (mockup, wired to events-service). */
+/** UC-12 · Event detail + register (simulated payment SAGA, wired to events-service). */
 export default function EventDetailScreen() {
   const tokens = useTokens();
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation('events');
   const { t: ta } = useTranslation('app');
   const locale = i18n.language as Locale;
   const event = useEvent(id);
   const register = useRegisterToEvent();
+  const [registrationId, setRegistrationId] = useState<string | null>(null);
+  const registration = useRegistration(registrationId);
+  const [dismissed, setDismissed] = useState(false);
   const idempotencyKey = useRef(newUuid());
 
   if (event.isLoading) {
@@ -39,7 +44,29 @@ export default function EventDetailScreen() {
   }
 
   const data = event.data;
+  const reg = registration.data;
+  const confirmed = reg?.status === 'CONFIRMED';
   const price = data.priceCredits === 0 ? ta('free') : formatCredits(data.priceCredits, locale);
+
+  const phase: PaymentPhase = register.isError
+    ? 'failed'
+    : register.isPending || !reg || reg.status === 'PENDING'
+      ? 'processing'
+      : reg.status === 'CONFIRMED'
+        ? 'confirmed'
+        : 'failed';
+  const modalVisible =
+    !dismissed && (register.isPending || register.isError || Boolean(registrationId));
+
+  const startRegister = () => {
+    idempotencyKey.current = newUuid();
+    setRegistrationId(null);
+    setDismissed(false);
+    register.mutate(
+      { eventId: data.id, idempotencyKey: idempotencyKey.current },
+      { onSuccess: (r) => setRegistrationId(r.id) },
+    );
+  };
 
   return (
     <Screen title={data.title} showBack>
@@ -60,18 +87,25 @@ export default function EventDetailScreen() {
           <Text style={{ color: tokens.color.text.muted }}>{t('seats', { count: data.seatsAvailable })}</Text>
         </View>
 
-        {register.data ? (
+        {confirmed ? (
           <Text style={{ color: tokens.color.feedback.success.fg }}>{t('registered')}</Text>
         ) : (
-          <Button
-            label={t('register')}
-            loading={register.isPending}
-            onPress={() =>
-              register.mutate({ eventId: data.id, idempotencyKey: idempotencyKey.current })
-            }
-          />
+          <Button label={t('register')} onPress={startRegister} />
         )}
       </ScrollView>
+
+      <PaymentModal
+        visible={modalVisible}
+        phase={phase}
+        registration={reg ?? null}
+        onClose={() => setDismissed(true)}
+        onRetry={startRegister}
+        onViewTicket={() => {
+          setDismissed(true);
+          if (reg?.ticketId) router.push(`/tickets/${reg.ticketId}`);
+          else router.push('/tickets');
+        }}
+      />
     </Screen>
   );
 }
