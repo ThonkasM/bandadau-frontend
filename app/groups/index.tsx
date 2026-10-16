@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
@@ -14,6 +15,7 @@ export default function GroupsScreen() {
   const tokens = useTokens();
   const { t } = useTranslation('groups');
   const { t: ta } = useTranslation('app');
+  const router = useRouter();
   const list = useGroups();
   const join = useJoinGroup();
 
@@ -23,7 +25,7 @@ export default function GroupsScreen() {
         label={t('create')}
         icon="account-multiple-plus"
         variant="secondary"
-        onPress={() => undefined}
+        onPress={() => router.push('/groups/create')}
       />
       {list.loading ? (
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
@@ -41,7 +43,11 @@ export default function GroupsScreen() {
           style={styles.list}
           data={list.items}
           renderItem={({ item }) => (
-            <GroupCard group={item} onJoin={() => join.mutate(item.id)} />
+            <GroupCard
+              group={item}
+              onJoin={() => join.mutate(item.id)}
+              onPress={() => router.push(`/groups/${item.id}`)}
+            />
           )}
           keyExtractor={(item) => item.id}
           hasMore={list.hasMore}

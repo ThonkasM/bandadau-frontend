@@ -7,16 +7,20 @@ import { useTokens } from '@/theme/theme-provider';
 export function GroupCard({
   group,
   onJoin,
+  onPress,
 }: {
   group: Group;
   onJoin?: () => void;
+  onPress?: () => void;
 }) {
   const tokens = useTokens();
   const { t } = useTranslation('groups');
   const member = group.myMembership?.status === 'ACTIVE';
 
   return (
-    <View
+    <Pressable
+      onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
       style={[
         styles.card,
         { backgroundColor: tokens.color.bg.surface, borderColor: tokens.color.border.default },
@@ -40,7 +44,7 @@ export function GroupCard({
           <Text style={{ color: tokens.color.action.primary.fg }}>{t('join')}</Text>
         </Pressable>
       )}
-    </View>
+    </Pressable>
   );
 }
 
