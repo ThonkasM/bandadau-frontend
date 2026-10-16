@@ -86,12 +86,15 @@ export function useSetReaction() {
   });
 }
 
-/** UC-07: remove my reaction (DELETE). Optimistic with rollback. */
+/**
+ * UC-07: remove my reaction (DELETE → `204`, no body per contract). Optimistic with rollback; the
+ * optimistic state is already final, so there is no server state to apply on success.
+ */
 export function useRemoveReaction() {
   const client = useQueryClient();
-  return useMutation<ReactionState, Error, { postId: string }, { prev?: FeedData }>({
+  return useMutation<void, Error, { postId: string }, { prev?: FeedData }>({
     mutationFn: ({ postId }) =>
-      apiRequest<ReactionState>(`/api/v1/posts/${postId}/reactions/me`, { method: 'DELETE' }),
+      apiRequest<void>(`/api/v1/posts/${postId}/reactions/me`, { method: 'DELETE' }),
     onMutate: async ({ postId }) => {
       await client.cancelQueries({ queryKey: queryKeys.feed.root() });
       const prev = client.getQueryData<FeedData>(queryKeys.feed.home());
@@ -108,6 +111,5 @@ export function useRemoveReaction() {
     onError: (_error, _vars, context) => {
       if (context?.prev) client.setQueryData(queryKeys.feed.home(), context.prev);
     },
-    onSuccess: (state) => applyReactionState(client, state),
   });
 }
