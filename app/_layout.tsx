@@ -24,6 +24,7 @@ import { initI18n } from '@/i18n';
 import { queryClient } from '@/lib/query-client';
 import { queryPersister } from '@/lib/query-persister';
 import { registerServiceWorker } from '@/lib/service-worker';
+import { usePushRegistration } from '@/notifications/use-push-registration';
 import { processOutboxItem } from '@/offline/handlers';
 import { startOutboxSync } from '@/offline/sync';
 import { ThemeProvider, useTheme, useTokens } from '@/theme/theme-provider';
@@ -62,6 +63,7 @@ function RootLayoutInner() {
 
 function ThemedRoot() {
   const tokens = useTokens();
+  usePushRegistration();
   return (
     <View style={[styles.app, { backgroundColor: tokens.color.bg.canvas }]}>
       <RootLayoutInner />
