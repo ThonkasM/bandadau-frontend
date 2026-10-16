@@ -74,7 +74,7 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
         { role: 'system', content: promptSystem('flashcards', locale) },
         { role: 'user', content: input },
       ];
-      const first = await llm.generate(messages, { maxTokens: 768, temperature: 0.2 });
+      const first = await llm.generate(messages, { maxTokens: 1024, temperature: 0.2 });
       const deck = parseAnyFlashcardDeck(first);
       if (deck) return deck;
       // One strict retry before giving up (UC-17 §5.4 step 3).
@@ -84,7 +84,7 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
           { role: 'assistant', content: first },
           { role: 'user', content: FLASHCARD_RETRY[locale] },
         ],
-        { maxTokens: 768, temperature: 0 },
+        { maxTokens: 1024, temperature: 0 },
       );
       return parseAnyFlashcardDeck(retry);
     },

@@ -14,7 +14,7 @@
   "summaryTitle": "Resumen",
   "disclaimer": "Generado en tu dispositivo, puede contener errores.",
   "basicMode": "Modo básico: resumen extractivo en el dispositivo (sin modelo).",
-  "flashcardsFailed": "No se pudieron generar tarjetas; prueba con un texto más corto.",
+  "flashcardsFailed": "No se pudieron generar tarjetas para este texto. Prueba de nuevo o con un texto más corto.",
   "flip": "Toca para voltear",
   "model": {
     "title": "Modelo en el dispositivo",

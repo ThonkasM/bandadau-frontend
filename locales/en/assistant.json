@@ -14,7 +14,7 @@
   "summaryTitle": "Summary",
   "disclaimer": "Generated on your device, may contain mistakes.",
   "basicMode": "Basic mode: on-device extractive summary (no model).",
-  "flashcardsFailed": "Could not generate cards; try a shorter text.",
+  "flashcardsFailed": "Could not generate cards for this text. Try again or with a shorter text.",
   "flip": "Tap to flip",
   "model": {
     "title": "On-device model",

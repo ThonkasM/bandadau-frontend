@@ -57,6 +57,35 @@ export function parseFlashcardDeck(raw: string): FlashcardDeck | null {
 const QUESTION_LINE = /^\s*(?:p|q|pregunta|question)\s*[:.)-]\s*(.+)$/i;
 const ANSWER_LINE = /^\s*(?:r|a|respuesta|answer)\s*[:.)-]\s*(.+)$/i;
 
+function decodeJsonString(value: string): string {
+  try {
+    return JSON.parse(`"${value}"`) as string;
+  } catch {
+    return value;
+  }
+}
+
+// Matches one card object regardless of the surrounding JSON being valid, truncated or comma-broken,
+// accepting `q`/`front`/`question` and `a`/`back`/`answer` (models disagree on the keys).
+const CARD_OBJECT_RE =
+  /\{\s*"(?:q|front|question)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"(?:a|back|answer)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/gi;
+
+/**
+ * Repairs the common small-model failures: truncated JSON, trailing commas or `front`/`back` keys.
+ * Extracts every complete card object individually, so a broken tail does not lose the good cards.
+ */
+export function repairFlashcardDeck(raw: string): FlashcardDeck | null {
+  const cards: Flashcard[] = [];
+  for (const match of raw.matchAll(CARD_OBJECT_RE)) {
+    const q = decodeJsonString(match[1] ?? '').trim();
+    const a = decodeJsonString(match[2] ?? '').trim();
+    if (q && a) cards.push({ q, a: a.slice(0, 300) });
+  }
+  if (cards.length === 0) return null;
+  const parsed = FlashcardDeckSchema.safeParse({ cards: cards.slice(0, 10) });
+  return parsed.success ? parsed.data : null;
+}
+
 /**
  * Tolerant fallback (UC-17 §9a): some small models answer with `P:`/`R:` lines instead of JSON.
  * Pairs each question line with the next answer line.
@@ -81,7 +110,7 @@ export function parseFlashcardsFromLines(raw: string): FlashcardDeck | null {
   return parsed.success ? parsed.data : null;
 }
 
-/** JSON first, then the tolerant line format (UC-17 §5.4 / §9a). */
+/** Strict JSON → repaired JSON → tolerant `P:`/`R:` lines (UC-17 §5.4 / §9a). */
 export function parseAnyFlashcardDeck(raw: string): FlashcardDeck | null {
-  return parseFlashcardDeck(raw) ?? parseFlashcardsFromLines(raw);
+  return parseFlashcardDeck(raw) ?? repairFlashcardDeck(raw) ?? parseFlashcardsFromLines(raw);
 }

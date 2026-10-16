@@ -1,4 +1,10 @@
-import { extractJsonObject, parseAnyFlashcardDeck, parseFlashcardDeck, parseFlashcardsFromLines } from './flashcards';
+import {
+  extractJsonObject,
+  parseAnyFlashcardDeck,
+  parseFlashcardDeck,
+  parseFlashcardsFromLines,
+  repairFlashcardDeck,
+} from './flashcards';
 
 describe('extractJsonObject', () => {
   it('extracts a balanced object surrounded by prose', () => {
@@ -57,5 +63,24 @@ describe('parseAnyFlashcardDeck', () => {
   it('prefers JSON but falls back to lines', () => {
     expect(parseAnyFlashcardDeck('{"cards":[{"q":"a","a":"b"}]}')?.cards).toHaveLength(1);
     expect(parseAnyFlashcardDeck('P: a\nR: b')?.cards).toHaveLength(1);
+  });
+});
+
+describe('repairFlashcardDeck', () => {
+  it('recovers the complete cards from truncated JSON', () => {
+    const raw = '{"cards":[{"q":"a","a":"b"},{"q":"c","a":"d"},{"q":"e","a":"f';
+    expect(repairFlashcardDeck(raw)?.cards).toEqual([
+      { q: 'a', a: 'b' },
+      { q: 'c', a: 'd' },
+    ]);
+  });
+
+  it('accepts front/back keys and escaped quotes', () => {
+    const raw = '{"cards":[{"front":"¿Qué es \\"BotW\\"?","back":"Un juego"}]}';
+    expect(repairFlashcardDeck(raw)?.cards).toEqual([{ q: '¿Qué es "BotW"?', a: 'Un juego' }]);
+  });
+
+  it('returns null when there are no card objects', () => {
+    expect(repairFlashcardDeck('solo texto')).toBeNull();
   });
 });

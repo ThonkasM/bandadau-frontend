@@ -94,6 +94,11 @@ export default function AssistantScreen() {
   };
 
   const onFlashcards = async () => {
+    // Flashcards need the on-device model; the extractive mode cannot produce them.
+    if (status.kind !== 'ready') {
+      setNotice(t('model.notDownloaded'));
+      return;
+    }
     setBusy('cards');
     setCards([]);
     setSummary('');
