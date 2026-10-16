@@ -13,7 +13,12 @@ export async function applyAuthSession(tokens: AuthTokens): Promise<void> {
 
 /** Restores the session on cold start (native: stored refresh; web: HttpOnly cookie). */
 export async function restoreSession(): Promise<void> {
-  const ok = await refreshSession();
+  let ok = false;
+  try {
+    ok = await refreshSession();
+  } catch {
+    ok = false;
+  }
   if (!ok) useSessionStore.getState().setStatus('anonymous');
 }
 

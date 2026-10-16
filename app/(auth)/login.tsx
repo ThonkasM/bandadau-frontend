@@ -25,8 +25,11 @@ export default function LoginScreen() {
 
   const errorMessage = useMemo(() => {
     const error = login.error;
-    return error instanceof ApiError ? error.localizedMessage(i18n.language as Locale) : null;
-  }, [login.error, i18n.language]);
+    if (!error) return null;
+    return error instanceof ApiError
+      ? error.localizedMessage(i18n.language as Locale)
+      : t('login.networkError');
+  }, [login.error, i18n.language, t]);
 
   const onSubmit = () => {
     const parsed = loginSchema.safeParse({ email, password });

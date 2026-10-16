@@ -22,7 +22,11 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  override componentDidCatch(): void {
+  override componentDidCatch(error: unknown): void {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('[ErrorBoundary]', error);
+    }
     // TODO: forward to the error reporter (OTel/Sentry) once wired (E-1).
   }
 

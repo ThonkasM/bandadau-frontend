@@ -54,11 +54,17 @@ async function doRefresh(): Promise<string | null> {
   const refreshToken = await getRefreshToken();
   if (Platform.OS !== 'web' && !refreshToken) return null;
 
-  const res = await rawFetch(
-    '/api/v1/auth/refresh',
-    { method: 'POST', body: refreshToken ? { refreshToken } : {}, locale: currentLocale() },
-    null,
-  );
+  let res: Response;
+  try {
+    res = await rawFetch(
+      '/api/v1/auth/refresh',
+      { method: 'POST', body: refreshToken ? { refreshToken } : {}, locale: currentLocale() },
+      null,
+    );
+  } catch {
+    // Backend unreachable (offline / wrong URL) → treat as no session, don't crash.
+    return null;
+  }
 
   if (!res.ok) {
     await clearRefreshToken();
