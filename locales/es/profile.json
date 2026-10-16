@@ -1,5 +1,6 @@
 {
   "edit": "Editar perfil",
+  "create": "Crear publicación",
   "error": "No pudimos cargar tu perfil.",
   "displayName": "Nombre visible",
   "career": "Carrera",
@@ -18,8 +19,7 @@
     "header": "Menú",
     "tickets": "Mis entradas",
     "registrations": "Mis inscripciones",
-  "edit": "Editar perfil",
-  "create": "Crear publicación",
+    "edit": "Editar perfil",
     "settings": "Configuración",
     "openPanel": "Abrir panel",
     "logout": "Cerrar sesión"

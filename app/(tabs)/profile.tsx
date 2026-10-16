@@ -102,7 +102,7 @@ export default function ProfileScreen() {
         </View>
 
         <Pressable
-          onPress={() => router.push('/(tabs)/create')}
+          onPress={() => router.push('/create')}
           accessibilityRole="button"
           accessibilityLabel={tp('create')}
           style={[styles.createButton, { backgroundColor: tokens.color.action.primary.bg }]}>

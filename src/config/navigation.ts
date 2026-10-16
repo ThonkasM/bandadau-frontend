@@ -40,7 +40,7 @@ export const NAV_ROUTES: NavRoute[] = [
   {
     name: 'create',
     labelKey: 'create',
-    href: '/(tabs)/create',
+    href: '/create',
     icon: 'plus-circle-outline',
     iconActive: 'plus-circle',
     match: ['/create'],
