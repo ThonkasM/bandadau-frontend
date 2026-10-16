@@ -27,5 +27,6 @@
     "square": "Cuadrada 1:1"
   },
   "publish": "Publicar",
-  "mockNote": "Mockup: publicar se conecta en la fase de integración."
+  "publishError": "No pudimos publicar. Intenta de nuevo.",
+  "groupRequired": "Elige un grupo para publicar solo ahí."
 }

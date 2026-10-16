@@ -27,5 +27,6 @@
     "square": "Square 1:1"
   },
   "publish": "Publish",
-  "mockNote": "Mockup: publishing is wired during the integration phase."
+  "publishError": "We couldn't publish. Please try again.",
+  "groupRequired": "Pick a group to post only there."
 }

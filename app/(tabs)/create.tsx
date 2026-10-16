@@ -1,3 +1,5 @@
+import type { Locale } from '@bandada/i18n';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -8,23 +10,86 @@ import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
+import {
+  uploadMedia,
+  useCompleteUpload,
+  useCreateUpload,
+  usePublishPost,
+} from '@/features/create/api';
 import { MediaPicker } from '@/features/create/components/media-picker';
 import { MAX_TEXT_LENGTH, type MediaItem, type Visibility } from '@/features/create/types';
+import { ApiError } from '@/lib/api-error';
+import { newClientId } from '@/lib/ids';
 import { useTokens } from '@/theme/theme-provider';
 
 const HASHTAG = /#[\p{L}\d_]{2,50}/gu;
 
-/** UC-05 · Compose post (media → visibility → text; publish is wired in integration). */
+/** UC-05 · Compose post: media → visibility → text, then publish (upload + create). */
 export default function CreateScreen() {
   const tokens = useTokens();
-  const { t } = useTranslation('create');
+  const { t, i18n } = useTranslation('create');
+  const locale = i18n.language as Locale;
+  const router = useRouter();
+  const createUpload = useCreateUpload();
+  const completeUpload = useCompleteUpload();
+  const publish = usePublishPost();
+
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [visibility, setVisibility] = useState<Visibility>('PUBLIC');
   const [text, setText] = useState('');
+  const [publishing, setPublishing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const counter = `${text.length}/${MAX_TEXT_LENGTH}`;
   const hashtags = text.match(HASHTAG) ?? [];
-  const canPublish = text.trim().length > 0 || media.length > 0;
+  const canPublish = (text.trim().length > 0 || media.length > 0) && !publishing;
+
+  const sizeOf = async (item: MediaItem): Promise<number> => {
+    if (item.fileSize) return item.fileSize;
+    const blob = await (await fetch(item.uri)).blob();
+    return blob.size;
+  };
+
+  const onPublish = async () => {
+    if (!canPublish) return;
+    if (visibility === 'GROUP') {
+      setError(t('groupRequired'));
+      return;
+    }
+    setError(null);
+    setPublishing(true);
+    try {
+      const mediaIds: string[] = [];
+      for (const item of media) {
+        const kind = item.kind === 'video' ? 'VIDEO' : 'IMAGE';
+        const mimeType = item.mimeType ?? (kind === 'VIDEO' ? 'video/mp4' : 'image/jpeg');
+        const id = await uploadMedia(
+          {
+            kind,
+            mimeType,
+            sizeBytes: await sizeOf(item),
+            durationSeconds: item.durationMs ? item.durationMs / 1000 : undefined,
+          },
+          item.uri,
+          { createUpload: createUpload.mutateAsync, completeUpload: completeUpload.mutateAsync },
+        );
+        mediaIds.push(id);
+      }
+      await publish.mutateAsync({
+        clientId: newClientId(),
+        text: text.trim(),
+        mediaIds,
+        visibility,
+      });
+      setText('');
+      setMedia([]);
+      router.push('/(tabs)/feed');
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.localizedMessage(locale) : t('publishError'));
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   return (
     <Screen title={t('title')}>
@@ -76,10 +141,19 @@ export default function CreateScreen() {
             ) : null}
           </View>
 
-          <Button label={t('publish')} icon="send" disabled={!canPublish} onPress={() => undefined} />
-          <Text variant="caption" style={{ color: tokens.color.text.muted }}>
-            {t('mockNote')}
-          </Text>
+          {error ? (
+            <Text variant="caption" color={tokens.color.feedback.danger.fg}>
+              {error}
+            </Text>
+          ) : null}
+
+          <Button
+            label={t('publish')}
+            icon="send"
+            disabled={!canPublish}
+            loading={publishing}
+            onPress={onPublish}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
