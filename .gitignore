@@ -9,7 +9,8 @@ node_modules/
 dist/
 build/
 coverage/
-.idea/
+test-results/
+playwright-report/.idea/
 .vscode/*
 !.vscode/extensions.json
 *.log
