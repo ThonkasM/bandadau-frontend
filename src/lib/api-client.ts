@@ -6,6 +6,7 @@ import { ApiError } from '@/lib/api-error';
 import { buildHeaders, buildUrl, type RequestOptions } from '@/lib/http';
 import { randomIdempotencyKey } from '@/lib/idempotency';
 import { newCorrelationId } from '@/lib/ids';
+import { withRefreshLock } from '@/lib/refresh-lock';
 import { resolveMock } from '@/mocks';
 import { usePreferencesStore } from '@/stores/preferences.store';
 import { useSessionStore } from '@/stores/session.store';
@@ -43,7 +44,9 @@ let refreshInFlight: Promise<string | null> | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
   if (!refreshInFlight) {
-    refreshInFlight = doRefresh().finally(() => {
+    // In web, `withRefreshLock` also coordinates with other tabs (one rotating
+    // cookie shared across tabs); on native it is a pass-through.
+    refreshInFlight = withRefreshLock(doRefresh).finally(() => {
       refreshInFlight = null;
     });
   }
