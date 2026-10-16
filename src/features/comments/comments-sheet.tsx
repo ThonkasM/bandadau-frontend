@@ -32,8 +32,10 @@ export default function CommentsSheet({ post, visible, onClose }: CommentsPanelP
   const insets = useSafeAreaInsets();
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const comments = useComments(post?.id);
-  const threads = useMemo(() => groupThreads(comments.items), [comments.items]);
+  const threads = groupThreads(comments.items);
 
+  // Justificado (B-9): referencia estable para `usePresentableSheet` (gorhom); el compilador no
+  // garantiza identidad de callbacks para la librería nativa.
   const handleClose = useCallback(() => {
     setReplyTo(null);
     onClose();
@@ -41,6 +43,7 @@ export default function CommentsSheet({ post, visible, onClose }: CommentsPanelP
 
   const { ref, onDismiss, onChange } = usePresentableSheet(visible, handleClose);
 
+  // Justificado (B-9): `backdropComponent` y `backgroundStyle` los consume gorhom; estables por render.
   const backdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop

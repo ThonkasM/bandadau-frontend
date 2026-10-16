@@ -2,7 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import * as Haptics from 'expo-haptics';
 import { PlatformPressable } from 'expo-router/react-navigation';
 import { useTabTrigger } from 'expo-router/ui';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Platform, StyleSheet, type ViewStyle } from 'react-native';
 import Animated, {
   interpolate,
@@ -38,6 +38,7 @@ export interface FloatingTabBarProps {
 export function FloatingTabBar({ children, hidden = false }: FloatingTabBarProps) {
   const insets = useSafeAreaInsets();
   const tokens = useTokens();
+  // Justificado (B-9): `createStyles(tokens)` es costoso y solo depende de los tokens.
   const styles = useMemo(() => createStyles(tokens), [tokens]);
   const collapsed = useTabBarCollapse();
   const reducedMotion = useReducedMotion();
@@ -70,6 +71,8 @@ export interface FloatingTabButtonProps {
   label: string;
 }
 
+// Justificado (B-9): `memo` evita re-renderizar cada botón cuando cambia el tab activo;
+// `createStyles(tokens)` solo depende de los tokens.
 export const FloatingTabButton = memo(function FloatingTabButton({
   name,
   icon,
@@ -82,11 +85,11 @@ export const FloatingTabButton = memo(function FloatingTabButton({
   const active = Boolean(triggerProps.isFocused);
   const tint = active ? tokens.color.action.primary.bg : tokens.color.text.muted;
 
-  const handlePressIn = useCallback(() => {
+  const handlePressIn = () => {
     if (!active && Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-  }, [active]);
+  };
 
   // `href: null` keeps `PlatformPressable` from rendering an `<a>` and calling
   // `preventDefault()` (which made `TabTrigger` bail on web); we call

@@ -1,5 +1,5 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -23,7 +23,7 @@ function CommentsModal({ post, visible, onClose }: CommentsPanelProps) {
   const { t } = useTranslation('comments');
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const comments = useComments(post?.id);
-  const threads = useMemo(() => groupThreads(comments.items), [comments.items]);
+  const threads = groupThreads(comments.items);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>

@@ -31,6 +31,8 @@ export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
   const [view, setView] = useState<MenuView>('menu');
 
   // Closing always returns to the root menu, so the next open starts there.
+  // Justificado (B-9): `close` y `backdrop` son referencias estables para `usePresentableSheet` (gorhom);
+  // `backgroundStyle` deriva de tokens y se pasa al sheet.
   const close = useCallback(() => {
     setView('menu');
     onClose();

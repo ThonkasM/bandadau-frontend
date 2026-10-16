@@ -45,6 +45,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyTheme(effective, document as never);
   }
 
+  // Justificado (B-9): `value` y `themeVars` deben conservar identidad para no re-renderizar a todos
+  // los consumidores de contexto cuando el proveedor se re-renderiza por estado no relacionado.
   const value = useMemo<ThemeContextValue>(
     () => ({ preference, effective, setPreference }),
     [preference, effective, setPreference],

@@ -1,6 +1,6 @@
 import { type Href,usePathname } from 'expo-router';
 import { TabList, Tabs,TabSlot, TabTrigger } from 'expo-router/ui';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet } from 'react-native';
 
@@ -33,13 +33,10 @@ export function CustomTabs({ showBar = true }: CustomTabsProps) {
 function CustomTabsNavigator({ showBar }: { showBar: boolean }) {
   const { t } = useTranslation('nav');
   const pathname = usePathname();
-  const routes = useMemo(() => tabRoutes(), []);
+  const routes = tabRoutes();
   const collapsed = useTabBarCollapse();
 
-  const tabsOptions = useMemo(
-    () => ({ backBehavior: Platform.OS === 'web' ? ('history' as const) : undefined }),
-    [],
-  );
+  const tabsOptions = { backBehavior: Platform.OS === 'web' ? ('history' as const) : undefined };
 
   // Each screen starts with the bar expanded.
   useEffect(() => {

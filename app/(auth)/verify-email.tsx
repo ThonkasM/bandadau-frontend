@@ -1,6 +1,6 @@
 import type { Locale } from '@bandada/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet } from 'react-native';
 
@@ -31,10 +31,8 @@ export default function VerifyEmailScreen() {
     return () => clearTimeout(timer);
   }, [seconds]);
 
-  const errorMessage = useMemo(() => {
-    const error = verify.error;
-    return error instanceof ApiError ? error.localizedMessage(i18n.language as Locale) : null;
-  }, [verify.error, i18n.language]);
+  const error = verify.error;
+  const errorMessage = error instanceof ApiError ? error.localizedMessage(i18n.language as Locale) : null;
 
   const submitCode = (value: string) => {
     const parsed = verifyEmailSchema.safeParse({ email, code: value });

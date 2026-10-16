@@ -1,6 +1,6 @@
 import type { Locale } from '@bandada/i18n';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
@@ -31,14 +31,9 @@ export default function RegisterScreen() {
   const [clientError, setClientError] = useState<string | null>(null);
   const idempotencyKey = useRef(newUuid());
 
-  const selected = useMemo(
-    () => universities.data?.items.find((u) => u.id === universityId),
-    [universities.data, universityId],
-  );
-  const serverError = useMemo(() => {
-    const error = register.error;
-    return error instanceof ApiError ? error.localizedMessage(i18n.language as Locale) : null;
-  }, [register.error, i18n.language]);
+  const selected = universities.data?.items.find((u) => u.id === universityId);
+  const error = register.error;
+  const serverError = error instanceof ApiError ? error.localizedMessage(i18n.language as Locale) : null;
 
   const onSubmit = () => {
     setClientError(null);

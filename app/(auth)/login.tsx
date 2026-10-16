@@ -1,6 +1,6 @@
 import type { Locale } from '@bandada/i18n';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet } from 'react-native';
 
@@ -23,13 +23,12 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const errorMessage = useMemo(() => {
-    const error = login.error;
-    if (!error) return null;
-    return error instanceof ApiError
+  const error = login.error;
+  const errorMessage = error
+    ? error instanceof ApiError
       ? error.localizedMessage(i18n.language as Locale)
-      : t('login.networkError');
-  }, [login.error, i18n.language, t]);
+      : t('login.networkError')
+    : null;
 
   const onSubmit = () => {
     const parsed = loginSchema.safeParse({ email, password });
