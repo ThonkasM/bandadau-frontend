@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
+import { ProgressModal, type ProgressPhase } from '@/components/ui/progress-modal';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import {
@@ -46,6 +47,9 @@ export default function CreateScreen() {
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [queuedNotice, setQueuedNotice] = useState(false);
+  const [phase, setPhase] = useState<ProgressPhase | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [step, setStep] = useState(0);
 
   const counter = `${text.length}/${MAX_TEXT_LENGTH}`;
   const hashtags = text.match(HASHTAG) ?? [];
@@ -66,12 +70,16 @@ export default function CreateScreen() {
     setError(null);
     setQueuedNotice(false);
     setPublishing(true);
+    setPhase('processing');
+    setProgress(0);
+    setStep(0);
     const clientId = newClientId();
     const idempotencyKey = randomIdempotencyKey();
     const trimmed = text.trim();
     let mediaIds: string[] = [];
     try {
-      for (const item of media) {
+      setStep(1);
+      for (const [index, item] of media.entries()) {
         const kind = item.kind === 'video' ? 'VIDEO' : 'IMAGE';
         const mimeType = item.mimeType ?? (kind === 'VIDEO' ? 'video/mp4' : 'image/jpeg');
         const id = await uploadMedia(
@@ -83,16 +91,20 @@ export default function CreateScreen() {
           },
           item.uri,
           { createUpload: createUpload.mutateAsync, completeUpload: completeUpload.mutateAsync },
+          (ratio) => setProgress(media.length > 0 ? (index + ratio) / media.length : ratio),
         );
         mediaIds.push(id);
       }
+      setStep(2);
       await publish.mutateAsync({ clientId, text: trimmed, mediaIds, visibility, idempotencyKey });
+      setStep(3);
       setText('');
       setMedia([]);
-      router.push('/(tabs)/feed');
+      setPhase('done');
     } catch (caught) {
       if (caught instanceof ApiError) {
         setError(caught.localizedMessage(locale));
+        setPhase('failed');
       } else {
         // Offline / network error → queue it (sent when connectivity returns).
         mediaIds = [];
@@ -107,6 +119,7 @@ export default function CreateScreen() {
           createdAt: new Date().toISOString(),
         }).catch(() => undefined);
         setQueuedNotice(true);
+        setPhase(null);
         setText('');
         setMedia([]);
       }
@@ -186,6 +199,40 @@ export default function CreateScreen() {
           />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <ProgressModal
+        visible={phase !== null}
+        phase={phase ?? 'processing'}
+        title={t('progress.title')}
+        subtitle={
+          media.length > 0
+            ? t('progress.uploading', { percent: Math.round(progress * 100) })
+            : undefined
+        }
+        progress={media.length > 0 ? progress : undefined}
+        steps={[t('progress.stepPrepare'), t('progress.stepUpload'), t('progress.stepPublish')]}
+        step={step}
+        done={{
+          title: t('progress.doneTitle'),
+          subtitle: t('progress.doneSubtitle'),
+          primaryLabel: t('progress.viewFeed'),
+          onPrimary: () => {
+            setPhase(null);
+            router.push('/(tabs)/feed');
+          },
+        }}
+        failed={{
+          title: t('progress.errorTitle'),
+          subtitle: error ?? undefined,
+          primaryLabel: t('progress.retry'),
+          onPrimary: () => {
+            setPhase(null);
+            void onPublish();
+          },
+          secondaryLabel: t('progress.close'),
+        }}
+        onClose={() => setPhase(null)}
+      />
     </Screen>
   );
 }

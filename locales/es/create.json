@@ -27,6 +27,19 @@
     "square": "Cuadrada 1:1"
   },
   "publish": "Publicar",
+  "progress": {
+    "title": "Publicando tu publicación",
+    "uploading": "Subiendo contenido… {percent}%",
+    "stepPrepare": "Preparando",
+    "stepUpload": "Subiendo contenido",
+    "stepPublish": "Publicando",
+    "doneTitle": "¡Publicado!",
+    "doneSubtitle": "Tu publicación ya está en el feed.",
+    "viewFeed": "Ver en el feed",
+    "errorTitle": "No se pudo publicar",
+    "retry": "Reintentar",
+    "close": "Cerrar"
+  },
   "publishError": "No pudimos publicar. Intenta de nuevo.",
   "queued": "Sin conexión: tu publicación se enviará al reconectar.",
   "groupRequired": "Elige un grupo para publicar solo ahí."

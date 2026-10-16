@@ -1,5 +1,6 @@
 import type { media, social } from '@bandada/contracts-ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Platform } from 'react-native';
 
 import { apiRequest } from '@/lib/api-client';
 import { ApiError } from '@/lib/api-error';
@@ -57,15 +58,37 @@ export function useMedia(mediaId: string | null | undefined) {
  * UC-05: PUT the file bytes to the presigned URL. Uses the same headers the signature
  * was computed with (they must not change).
  */
-export async function uploadToPresignedUrl(ticket: UploadTicket, fileUri: string): Promise<void> {
-  const file = await fetch(fileUri);
-  const blob = await file.blob();
-  const response = await fetch(ticket.uploadUrl, {
-    method: ticket.uploadMethod,
+export async function uploadToPresignedUrl(
+  ticket: UploadTicket,
+  fileUri: string,
+  onProgress?: (ratio: number) => void,
+): Promise<void> {
+  if (Platform.OS === 'web') {
+    // Web: fetch the blob and PUT it (fetch does not report upload progress).
+    const file = await fetch(fileUri);
+    const blob = await file.blob();
+    const response = await fetch(ticket.uploadUrl, {
+      method: ticket.uploadMethod,
+      headers: ticket.uploadHeaders,
+      body: blob,
+    });
+    if (!response.ok) throw new Error(`UPLOAD_FAILED_${response.status}`);
+    onProgress?.(1);
+    return;
+  }
+  // Native: `createUploadTask` streams the file and reports real progress.
+  const { File } = await import('expo-file-system');
+  const task = new File(fileUri).createUploadTask(ticket.uploadUrl, {
+    httpMethod: ticket.uploadMethod as 'PUT',
     headers: ticket.uploadHeaders,
-    body: blob,
+    onProgress: ({ bytesSent, totalBytes }) =>
+      onProgress?.(totalBytes > 0 ? bytesSent / totalBytes : 0),
   });
-  if (!response.ok) throw new Error(`UPLOAD_FAILED_${response.status}`);
+  const result = await task.uploadAsync();
+  if (!result || result.status < 200 || result.status >= 300) {
+    throw new Error(`UPLOAD_FAILED_${result?.status ?? 0}`);
+  }
+  onProgress?.(1);
 }
 
 /** UC-05: create the post (♻️; `clientId` UUIDv7 dedupes offline retries). */
@@ -123,9 +146,10 @@ export async function uploadMedia(
     createUpload: (input: CreateUploadInput) => Promise<UploadTicket>;
     completeUpload: (mediaId: string) => Promise<MediaAsset>;
   },
+  onProgress?: (ratio: number) => void,
 ): Promise<string> {
   const ticket = await deps.createUpload(input);
-  await uploadToPresignedUrl(ticket, fileUri);
+  await uploadToPresignedUrl(ticket, fileUri, onProgress);
   await deps.completeUpload(ticket.mediaId);
   await waitForModeration(ticket.mediaId);
   return ticket.mediaId;

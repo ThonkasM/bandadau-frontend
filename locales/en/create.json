@@ -27,6 +27,19 @@
     "square": "Square 1:1"
   },
   "publish": "Publish",
+  "progress": {
+    "title": "Publishing your post",
+    "uploading": "Uploading content… {percent}%",
+    "stepPrepare": "Preparing",
+    "stepUpload": "Uploading content",
+    "stepPublish": "Publishing",
+    "doneTitle": "Published!",
+    "doneSubtitle": "Your post is now in the feed.",
+    "viewFeed": "View in feed",
+    "errorTitle": "Could not publish",
+    "retry": "Retry",
+    "close": "Close"
+  },
   "publishError": "We couldn't publish. Please try again.",
   "queued": "Offline: your post will be sent when you're back online.",
   "groupRequired": "Pick a group to post only there."
