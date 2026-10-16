@@ -8,6 +8,7 @@
   "interests": "Interests (comma separated)",
   "posts": "Posts",
   "followers": "Followers",
+  "follow": "Follow",
   "following": "Following",
   "savedEmpty": "You haven't saved any posts yet.",
   "postsEmpty": "No posts yet.",

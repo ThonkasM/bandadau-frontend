@@ -10,5 +10,18 @@
   "previous": "Anterior",
   "next": "Siguiente",
   "suggestions": "Sugerencias para ti",
-  "follow": "Seguir"
+  "follow": "Seguir",
+  "report": {
+    "title": "Denunciar contenido",
+    "done": "Denuncia enviada",
+    "cancel": "Cancelar",
+    "reason": {
+      "SPAM": "Spam",
+      "HARASSMENT": "Acoso",
+      "NSFW": "Contenido inapropiado",
+      "VIOLENCE": "Violencia",
+      "MISINFORMATION": "Información falsa",
+      "OTHER": "Otro"
+    }
+  }
 }

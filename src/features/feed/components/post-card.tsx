@@ -1,5 +1,6 @@
 import { formatRelative, type Locale } from '@bandada/i18n';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -8,6 +9,7 @@ import type { FeedItem } from '@/features/feed/types';
 import { useTokens } from '@/theme/theme-provider';
 
 import { PostCarousel } from './post-carousel';
+import { ReportSheet } from './report-sheet';
 
 /** Bandada post card: modern chrome, Instagram-style content (carousel, actions, caption). */
 export function PostCard({
@@ -23,6 +25,7 @@ export function PostCard({
   const { post } = item;
   const setReaction = useSetReaction();
   const removeReaction = useRemoveReaction();
+  const [reportOpen, setReportOpen] = useState(false);
 
   const initial = post.author.displayName.slice(0, 1).toUpperCase();
   const relative = formatRelative(post.createdAt, locale);
@@ -57,7 +60,11 @@ export function PostCard({
           </Text>
           <Text style={[styles.time, { color: tokens.color.text.muted }]}>{relative}</Text>
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('save')} style={styles.more}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('report.title')}
+          onPress={() => setReportOpen(true)}
+          style={styles.more}>
           <MaterialCommunityIcons
             name="dots-horizontal"
             size={22}
@@ -94,6 +101,13 @@ export function PostCard({
           </Pressable>
         ) : null}
       </View>
+
+      <ReportSheet
+        visible={reportOpen}
+        targetType="POST"
+        targetId={post.id}
+        onClose={() => setReportOpen(false)}
+      />
     </View>
   );
 }

@@ -10,5 +10,18 @@
   "previous": "Previous",
   "next": "Next",
   "suggestions": "Suggestions for you",
-  "follow": "Follow"
+  "follow": "Follow",
+  "report": {
+    "title": "Report content",
+    "done": "Report sent",
+    "cancel": "Cancel",
+    "reason": {
+      "SPAM": "Spam",
+      "HARASSMENT": "Harassment",
+      "NSFW": "Inappropriate content",
+      "VIOLENCE": "Violence",
+      "MISINFORMATION": "Misinformation",
+      "OTHER": "Other"
+    }
+  }
 }

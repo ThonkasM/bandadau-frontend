@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   type FlatList,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -19,7 +20,8 @@ import { FeedSkeleton } from '@/features/feed/components/feed-skeleton';
 import { PostCard } from '@/features/feed/components/post-card';
 import { PostCardSkeleton } from '@/features/feed/components/post-card-skeleton';
 import type { FeedItem, Post } from '@/features/feed/types';
-import { useUserPosts } from '@/features/profile/api';
+import { useProfile, useUserPosts } from '@/features/profile/api';
+import { useFollow, useUnfollow } from '@/features/social/api';
 import { useTokens } from '@/theme/theme-provider';
 
 const WEB_COLUMN_WIDTH = 480;
@@ -33,6 +35,14 @@ export default function UserPostsScreen() {
   const { t } = useTranslation('profile');
   const params = useLocalSearchParams<{ userId: string; name?: string; postId?: string }>();
   const posts = useUserPosts(params.userId);
+  const profile = useProfile(params.userId);
+  const follow = useFollow(params.userId);
+  const unfollow = useUnfollow(params.userId);
+  const following = profile.data?.followedByMe ?? false;
+  const onToggleFollow = () => {
+    if (following) unfollow.mutate();
+    else follow.mutate();
+  };
   const { width } = useWindowDimensions();
   const showRail = Platform.OS === 'web' && width >= RAIL_MIN_WIDTH;
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -85,6 +95,36 @@ export default function UserPostsScreen() {
     <Screen padded={false}>
       <View style={styles.fill}>
         <AppHeader title={params.name ?? t('posts')} />
+
+        {profile.data ? (
+          <View style={[styles.followBar, { borderBottomColor: tokens.color.border.default }]}>
+            <Text style={[styles.followName, { color: tokens.color.text.primary }]}>
+              {profile.data.displayName}
+            </Text>
+            <Pressable
+              onPress={onToggleFollow}
+              disabled={follow.isPending || unfollow.isPending}
+              accessibilityRole="button"
+              style={[
+                styles.followBtn,
+                {
+                  backgroundColor: following
+                    ? tokens.color.action.secondary.bg
+                    : tokens.color.action.primary.bg,
+                },
+              ]}>
+              <Text
+                style={{
+                  color: following
+                    ? tokens.color.action.secondary.fg
+                    : tokens.color.action.primary.fg,
+                  fontWeight: '700',
+                }}>
+                {following ? t('following') : t('follow')}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         <View style={styles.row}>
           <View style={[styles.column, showRail && { maxWidth: WEB_COLUMN_WIDTH }]}>
@@ -148,4 +188,15 @@ const styles = StyleSheet.create({
   list: { flex: 1, minHeight: 0 },
   listContent: { paddingTop: LIST_TOP_PADDING },
   message: { textAlign: 'center', margin: 24 },
+  followBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  followName: { fontSize: 16, fontWeight: '800', flex: 1 },
+  followBtn: { borderRadius: 10, paddingHorizontal: 18, paddingVertical: 9 },
 });

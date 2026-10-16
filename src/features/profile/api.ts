@@ -15,6 +15,15 @@ export function useMyProfile() {
   });
 }
 
+/** UC-04/UC-08: another student's profile (follow button state). */
+export function useProfile(userId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.profile.byId(userId ?? ''),
+    queryFn: () => apiRequest<Profile>(`/api/v1/profiles/${userId}`),
+    enabled: Boolean(userId),
+  });
+}
+
 export function useUpdateProfile() {
   const client = useQueryClient();
   return useMutation<Profile, Error, UpdateProfileRequest>({

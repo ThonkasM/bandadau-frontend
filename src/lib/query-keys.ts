@@ -47,4 +47,8 @@ export const queryKeys = {
     root: () => ['comments'] as const,
     forPost: (postId: string) => ['comments', postId] as const,
   },
+  follows: {
+    root: () => ['follows'] as const,
+    suggestions: () => ['follows', 'suggestions'] as const,
+  },
 } as const;
