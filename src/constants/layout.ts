@@ -15,3 +15,6 @@ export const SIDEBAR_WIDTH = 248;
 
 /** Below this width the floating tabs replace the web sidebar. */
 export const SIDEBAR_BREAKPOINT = 1024;
+
+/** Minimum touch target (a11y) for icon-only controls, in points. */
+export const TOUCH_TARGET = 44;

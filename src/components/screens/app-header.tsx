@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
+import { TOUCH_TARGET } from '@/constants/layout';
 import { useGoBack } from '@/hooks/use-go-back';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -54,13 +55,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   back: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: TOUCH_TARGET,
+    height: TOUCH_TARGET,
+    borderRadius: TOUCH_TARGET / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pressed: { opacity: 0.6 },
   title: { flex: 1, fontSize: 18, fontWeight: '800' },
-  right: { minWidth: 40, alignItems: 'flex-end' },
+  right: { minWidth: TOUCH_TARGET, alignItems: 'flex-end' },
 });
