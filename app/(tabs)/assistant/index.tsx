@@ -2,12 +2,13 @@ import type { Locale } from '@bandada/i18n';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { createLocalLlm, type LlmStatus, type LocalModelInfo } from '@/ai/local-llm';
 import { checkDownload } from '@/ai/model-manager';
 import { formatBytes } from '@/ai/model-store';
-import { createStudyAssistant,MAX_INPUT_CHARS } from '@/ai/study-assistant';
+import { createStudyAssistant, MAX_INPUT_CHARS } from '@/ai/study-assistant';
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
@@ -148,11 +149,70 @@ export default function AssistantScreen() {
 
   return (
     <Screen title={t('title')} subtitle={t('subtitle')}>
-      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        bottomOffset={24}
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: tokens.color.bg.surface,
+              borderColor: tokens.color.border.default,
+            },
+          ]}
+        >
+          <View style={styles.cardTitle}>
+            <MaterialCommunityIcons name="chip" size={16} color={tokens.color.text.secondary} />
+            <Text variant="label">{t('model.title')}</Text>
+          </View>
+          {modelCard}
+          {notice ? (
+            <Text variant="caption" color={tokens.color.feedback.danger.fg}>
+              {notice}
+            </Text>
+          ) : null}
+        </View>
+
+        <TextField
+          value={text}
+          onChangeText={setText}
+          placeholder={t('placeholder')}
+          multiline
+          maxLength={MAX_INPUT_CHARS}
+          style={styles.composer}
+        />
+        <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+          {t('counter', { used: text.length, max: MAX_INPUT_CHARS })}
+        </Text>
+
+        {busy === 'summary' ? (
+          <Button label={t('stop')} icon="stop" onPress={onStop} />
+        ) : (
+          <View style={styles.row}>
+            <Button
+              label={t('summarize')}
+              icon="text-box-outline"
+              onPress={onSummarize}
+              disabled={!text.trim()}
+            />
+            {assistant.canGenerateFlashcards ? (
+              <Button
+                label={t('flashcards')}
+                icon="cards-outline"
+                onPress={onFlashcards}
+                disabled={!text.trim()}
+                loading={busy === 'cards'}
+              />
+            ) : null}
+          </View>
+        )}
+
+        {summary ? (
           <View
             style={[
               styles.card,
@@ -160,92 +220,38 @@ export default function AssistantScreen() {
                 backgroundColor: tokens.color.bg.surface,
                 borderColor: tokens.color.border.default,
               },
-            ]}>
-            <View style={styles.cardTitle}>
-              <MaterialCommunityIcons name="chip" size={16} color={tokens.color.text.secondary} />
-              <Text variant="label">{t('model.title')}</Text>
-            </View>
-            {modelCard}
-            {notice ? (
-              <Text variant="caption" color={tokens.color.feedback.danger.fg}>
-                {notice}
-              </Text>
-            ) : null}
-          </View>
-
-          <TextField
-            value={text}
-            onChangeText={setText}
-            placeholder={t('placeholder')}
-            multiline
-            maxLength={MAX_INPUT_CHARS}
-            style={styles.composer}
-          />
-          <Text variant="caption" style={{ color: tokens.color.text.muted }}>
-            {t('counter', { used: text.length, max: MAX_INPUT_CHARS })}
-          </Text>
-
-          {busy === 'summary' ? (
-            <Button label={t('stop')} icon="stop" onPress={onStop} />
-          ) : (
-            <View style={styles.row}>
-              <Button
-                label={t('summarize')}
-                icon="text-box-outline"
-                onPress={onSummarize}
-                disabled={!text.trim()}
-              />
-              {assistant.canGenerateFlashcards ? (
-                <Button
-                  label={t('flashcards')}
-                  icon="cards-outline"
-                  onPress={onFlashcards}
-                  disabled={!text.trim()}
-                  loading={busy === 'cards'}
-                />
-              ) : null}
-            </View>
-          )}
-
-          {summary ? (
-            <View
-              style={[
-                styles.card,
-                {
-                  backgroundColor: tokens.color.bg.surface,
-                  borderColor: tokens.color.border.default,
-                },
-              ]}>
-              <Text variant="label">{t('summaryTitle')}</Text>
-              <Text>{summary}</Text>
-              <Text variant="caption" style={{ color: tokens.color.text.muted }}>
-                {t('disclaimer')}
-              </Text>
-            </View>
-          ) : null}
-
-          {failed ? (
-            <Text variant="caption" color={tokens.color.feedback.danger.fg}>
-              {t('flashcardsFailed')}
+            ]}
+          >
+            <Text variant="label">{t('summaryTitle')}</Text>
+            <Text>{summary}</Text>
+            <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+              {t('disclaimer')}
             </Text>
-          ) : null}
+          </View>
+        ) : null}
 
-          {cards.length > 0 ? (
-            <View style={styles.cards}>
-              {cards.map((card, index) => (
-                <Pressable
-                  key={`${index}-${card.q}`}
-                  onPress={() => setFlipped(flipped === index ? null : index)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('flip')}
-                  style={[styles.flashcard, { backgroundColor: tokens.color.bg.muted }]}>
-                  <Text variant="body">{flipped === index ? card.a : card.q}</Text>
-                </Pressable>
-              ))}
-            </View>
-          ) : null}
-        </ScrollView>
-      </KeyboardAvoidingView>
+        {failed ? (
+          <Text variant="caption" color={tokens.color.feedback.danger.fg}>
+            {t('flashcardsFailed')}
+          </Text>
+        ) : null}
+
+        {cards.length > 0 ? (
+          <View style={styles.cards}>
+            {cards.map((card, index) => (
+              <Pressable
+                key={`${index}-${card.q}`}
+                onPress={() => setFlipped(flipped === index ? null : index)}
+                accessibilityRole="button"
+                accessibilityLabel={t('flip')}
+                style={[styles.flashcard, { backgroundColor: tokens.color.bg.muted }]}
+              >
+                <Text variant="body">{flipped === index ? card.a : card.q}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }
