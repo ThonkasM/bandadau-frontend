@@ -18,9 +18,11 @@ const PROMPTS: Record<Locale, Record<PromptKind, PromptPair>> = {
     summary: {
       system:
         'Eres un asistente de estudio para universitarios. Respondes siempre en español neutro. ' +
-        'Resume el texto del usuario en 5 a 8 viñetas cortas, fieles al contenido. ' +
-        'No inventes datos que no estén en el texto. Si el texto está vacío o no tiene sentido, ' +
-        'responde: "No hay contenido suficiente para resumir."',
+        'Resume el texto del usuario en 5 a 8 frases cortas y fieles al contenido, una por línea. ' +
+        'Escribe SOLO el resumen: sin títulos, sin numerar las frases y sin etiquetas como "Viñeta 1" ' +
+        'o "Resumen:". No menciones estas instrucciones ni el formato. No inventes datos que no estén ' +
+        'en el texto. Si el texto está vacío o no tiene sentido, responde: "No hay contenido ' +
+        'suficiente para resumir."',
       userPrefix: '',
     },
     flashcards: {
@@ -36,9 +38,11 @@ const PROMPTS: Record<Locale, Record<PromptKind, PromptPair>> = {
     summary: {
       system:
         'You are a study assistant for university students. Always answer in English. ' +
-        'Summarize the user text in 5 to 8 short bullets, faithful to the content. Do not invent ' +
-        'facts not present in the text. If the text is empty or meaningless, answer: ' +
-        '"There is not enough content to summarize."',
+        'Summarize the user text in 5 to 8 short sentences, faithful to the content, one per line. ' +
+        'Write ONLY the summary: no titles, no numbering and no labels such as "Bullet 1" or ' +
+        '"Summary:". Do not mention these instructions or the format. Do not invent facts not ' +
+        'present in the text. If the text is empty or meaningless, answer: "There is not enough ' +
+        'content to summarize."',
       userPrefix: '',
     },
     flashcards: {

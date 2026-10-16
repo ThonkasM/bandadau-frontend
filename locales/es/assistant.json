@@ -16,6 +16,10 @@
   "basicMode": "Modo básico: resumen extractivo en el dispositivo (sin modelo).",
   "flashcardsFailed": "No se pudieron generar tarjetas para este texto. Prueba de nuevo o con un texto más corto.",
   "flip": "Toca para voltear",
+  "card": {
+    "question": "Pregunta",
+    "answer": "Respuesta"
+  },
   "model": {
     "title": "Modelo en el dispositivo",
     "notDownloaded": "Descarga el modelo (una vez, por Wi-Fi) para resúmenes con IA y flashcards. Sin él se usa el resumen extractivo.",

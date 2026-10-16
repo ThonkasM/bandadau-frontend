@@ -16,6 +16,10 @@
   "basicMode": "Basic mode: on-device extractive summary (no model).",
   "flashcardsFailed": "Could not generate cards for this text. Try again or with a shorter text.",
   "flip": "Tap to flip",
+  "card": {
+    "question": "Question",
+    "answer": "Answer"
+  },
   "model": {
     "title": "On-device model",
     "notDownloaded": "Download the model once (over Wi-Fi) for AI summaries and flashcards. Without it, the extractive summary is used.",

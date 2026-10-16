@@ -12,6 +12,7 @@ import { createStudyAssistant, MAX_INPUT_CHARS } from '@/ai/study-assistant';
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
+import { FlashcardView } from '@/features/assistant/components/flashcard-view';
 import { TextEditorSheet } from '@/features/assistant/components/text-editor-sheet';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -265,21 +266,20 @@ export default function AssistantScreen() {
           </Text>
         ) : null}
 
-        {cards.length > 0 ? (
-          <View style={styles.cards}>
-            {cards.map((card, index) => (
-              <Pressable
-                key={`${index}-${card.q}`}
-                onPress={() => setFlipped(flipped === index ? null : index)}
-                accessibilityRole="button"
-                accessibilityLabel={t('flip')}
-                style={[styles.flashcard, { backgroundColor: tokens.color.bg.muted }]}
-              >
-                <Text variant="body">{flipped === index ? card.a : card.q}</Text>
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
+          {cards.length > 0 ? (
+            <View style={styles.cards}>
+              {cards.map((card, index) => (
+                <FlashcardView
+                  key={`${index}-${card.q}`}
+                  question={card.q}
+                  answer={card.a}
+                  flipped={flipped === index}
+                  position={`${index + 1}/${cards.length}`}
+                  onFlip={() => setFlipped(flipped === index ? null : index)}
+                />
+              ))}
+            </View>
+          ) : null}
       </KeyboardAwareScrollView>
 
       <TextEditorSheet
@@ -302,5 +302,4 @@ const styles = StyleSheet.create({
   composerFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   row: { flexDirection: 'row', gap: 12, flexWrap: 'wrap', alignItems: 'center' },
   cards: { gap: 10 },
-  flashcard: { borderRadius: 14, padding: 16, minHeight: 88, justifyContent: 'center' },
 });
