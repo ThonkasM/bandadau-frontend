@@ -1,3 +1,4 @@
+import type { Locale } from '@bandada/i18n';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +7,7 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { useCreateComment } from '@/features/comments/api';
 import type { Comment } from '@/features/comments/types';
+import { ApiError } from '@/lib/api-error';
 import { useTokens } from '@/theme/theme-provider';
 
 /** Composer for a comment or a reply. `InputComponent` lets the native sheet use `BottomSheetTextInput`. */
@@ -21,9 +23,14 @@ export function CommentComposer({
   InputComponent?: typeof TextInput;
 }) {
   const tokens = useTokens();
-  const { t } = useTranslation('comments');
+  const { t, i18n } = useTranslation('comments');
   const [text, setText] = useState('');
   const create = useCreateComment(postId);
+  const error = create.error
+    ? create.error instanceof ApiError
+      ? create.error.localizedMessage(i18n.language as Locale)
+      : t('error')
+    : null;
 
   const submit = () => {
     const value = text.trim();
@@ -50,6 +57,11 @@ export function CommentComposer({
             <Text variant="link">{t('cancel')}</Text>
           </Pressable>
         </View>
+      ) : null}
+      {error ? (
+        <Text variant="caption" color={tokens.color.feedback.danger.fg}>
+          {error}
+        </Text>
       ) : null}
       <View style={styles.row}>
         <InputComponent

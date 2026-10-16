@@ -9,5 +9,6 @@
   "cancel": "Cancelar",
   "empty": "Sé el primero en comentar.",
   "loading": "Cargando comentarios…",
+  "error": "No pudimos enviar el comentario. Intenta de nuevo.",
   "close": "Cerrar"
 }
