@@ -54,6 +54,15 @@ describe('parseFlashcardsFromLines (tolerant fallback, UC-17 §9a)', () => {
     expect(parseFlashcardsFromLines(raw)?.cards).toHaveLength(1);
   });
 
+  it('parses numbered / markdown labeled lines', () => {
+    const raw =
+      '1. Pregunta: ¿Qué es el sol?\nRespuesta: Una estrella.\n\n### Pregunta 2: ¿Y la luna?\n- Respuesta: Un satélite.';
+    expect(parseFlashcardsFromLines(raw)?.cards).toEqual([
+      { q: '¿Qué es el sol?', a: 'Una estrella.' },
+      { q: '¿Y la luna?', a: 'Un satélite.' },
+    ]);
+  });
+
   it('returns null when there is nothing to pair', () => {
     expect(parseFlashcardsFromLines('texto sin tarjetas')).toBeNull();
   });

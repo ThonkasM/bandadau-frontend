@@ -29,8 +29,10 @@ const PROMPTS: Record<Locale, Record<PromptKind, PromptPair>> = {
       system:
         'Eres un generador de tarjetas de estudio. Respondes ÚNICAMENTE con JSON válido, sin texto ' +
         'adicional, con esta forma exacta: {"cards":[{"q":"pregunta","a":"respuesta breve"}]}. ' +
-        'Genera entre 5 y 10 tarjetas a partir del texto. Preguntas claras, respuestas de máximo 25 ' +
-        'palabras, en español. No incluyas información que no esté en el texto.',
+        'Genera entre 5 y 8 tarjetas a partir del texto. Preguntas claras, respuestas de máximo 25 ' +
+        'palabras, en español. No incluyas información que no esté en el texto. ' +
+        'Ejemplo de respuesta: {"cards":[{"q":"¿Quién es el héroe?","a":"Link."},' +
+        '{"q":"¿Qué selló a Ganon?","a":"El ejército Sheikah y las Bestias Divinas."}]}',
       userPrefix: '',
     },
   },
@@ -48,9 +50,11 @@ const PROMPTS: Record<Locale, Record<PromptKind, PromptPair>> = {
     flashcards: {
       system:
         'You are a study flashcard generator. Answer ONLY with valid JSON, no extra text, with this ' +
-        'exact shape: {"cards":[{"q":"question","a":"short answer"}]}. Generate between 5 and 10 ' +
+        'exact shape: {"cards":[{"q":"question","a":"short answer"}]}. Generate between 5 and 8 ' +
         'cards from the text. Clear questions, answers of at most 25 words, in English. Do not ' +
-        'include information that is not in the text.',
+        'include information that is not in the text. ' +
+        'Example answer: {"cards":[{"q":"Who is the hero?","a":"Link."},' +
+        '{"q":"What sealed Ganon?","a":"The Sheikah army and the Divine Beasts."}]}',
       userPrefix: '',
     },
   },

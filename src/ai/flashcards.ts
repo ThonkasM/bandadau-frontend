@@ -54,8 +54,12 @@ export function parseFlashcardDeck(raw: string): FlashcardDeck | null {
   }
 }
 
-const QUESTION_LINE = /^\s*(?:p|q|pregunta|question)\s*[:.)-]\s*(.+)$/i;
-const ANSWER_LINE = /^\s*(?:r|a|respuesta|answer)\s*[:.)-]\s*(.+)$/i;
+const LEAD = '^\\s*(?:[#>*-]+\\s*|\\d+[.)]\\s*)*';
+const QUESTION_LINE = new RegExp(
+  `${LEAD}(?:pregunta|question|p|q)\\s*\\d*\\s*[:.)-]\\s*(.+)$`,
+  'i',
+);
+const ANSWER_LINE = new RegExp(`${LEAD}(?:respuesta|answer|r|a)\\s*\\d*\\s*[:.)-]\\s*(.+)$`, 'i');
 
 function decodeJsonString(value: string): string {
   try {
@@ -66,9 +70,9 @@ function decodeJsonString(value: string): string {
 }
 
 // Matches one card object regardless of the surrounding JSON being valid, truncated or comma-broken,
-// accepting `q`/`front`/`question` and `a`/`back`/`answer` (models disagree on the keys).
+// accepting `q`/`front`/`question`/`pregunta` and `a`/`back`/`answer`/`respuesta` (models disagree).
 const CARD_OBJECT_RE =
-  /\{\s*"(?:q|front|question)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"(?:a|back|answer)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/gi;
+  /\{\s*"(?:q|front|question|pregunta)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"(?:a|back|answer|respuesta)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/gi;
 
 /**
  * Repairs the common small-model failures: truncated JSON, trailing commas or `front`/`back` keys.

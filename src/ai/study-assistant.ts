@@ -75,6 +75,10 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
         { role: 'user', content: input },
       ];
       const first = await llm.generate(messages, { maxTokens: 1024, temperature: 0.2 });
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn('[assistant] raw flashcards answer:\n', first);
+      }
       const deck = parseAnyFlashcardDeck(first);
       if (deck) return deck;
       // One strict retry before giving up (UC-17 §5.4 step 3).
@@ -86,6 +90,10 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
         ],
         { maxTokens: 1024, temperature: 0 },
       );
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn('[assistant] raw flashcards retry:\n', retry);
+      }
       return parseAnyFlashcardDeck(retry);
     },
   };
