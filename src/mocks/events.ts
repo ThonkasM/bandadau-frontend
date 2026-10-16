@@ -1,8 +1,8 @@
 import type { Event, EventPage, Registration, RegistrationPage } from '@/features/events/types';
 import { eventCoverUrl } from '@/lib/event-cover';
 
-function inDays(days: number): string {
-  return new Date(Date.now() + days * 86_400_000).toISOString();
+function inDays(days: number, plusHours = 0): string {
+  return new Date(Date.now() + days * 86_400_000 + plusHours * 3_600_000).toISOString();
 }
 
 const NOW = new Date().toISOString();
@@ -15,6 +15,7 @@ const EVENTS: Event[] = [
     description: 'Introducción a puertos y adaptadores con ejemplos en Java y PHP.',
     venue: 'Auditorio A',
     startsAt: inDays(2),
+    endsAt: inDays(2, 2),
     priceCredits: 0,
     capacity: 100,
     seatsTaken: 34,
@@ -33,6 +34,7 @@ const EVENTS: Event[] = [
     description: 'Inscripción pagada de punta a punta: reserva, débito, ticket y compensación.',
     venue: 'Laboratorio 3',
     startsAt: inDays(5),
+    endsAt: inDays(5, 2),
     priceCredits: 20,
     capacity: 40,
     seatsTaken: 12,
@@ -51,6 +53,7 @@ const EVENTS: Event[] = [
     description: 'Cupo limitado para probar EVENT_FULL.',
     venue: 'Sala de videoconferencia',
     startsAt: inDays(7),
+    endsAt: inDays(7, 2),
     priceCredits: 0,
     capacity: 1,
     seatsTaken: 0,
@@ -99,6 +102,7 @@ function buildRegistration(
       title: event.title,
       venue: event.venue,
       startsAt: event.startsAt,
+      endsAt: event.endsAt,
     },
   };
 }

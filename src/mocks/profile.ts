@@ -5,6 +5,7 @@ const PROFILE: Profile = {
   displayName: 'Lucía Pérez',
   avatarUrl: null,
   avatarMediaId: null,
+  avatarStatus: null,
   bio: 'Estudiante de Ingeniería de Software. Amante de los eventos y el café.',
   career: 'Ingeniería de Software',
   semester: 6,
