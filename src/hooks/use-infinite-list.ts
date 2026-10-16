@@ -9,7 +9,7 @@ export interface CursorPage<T> {
 
 export interface UseInfiniteListOptions<TItem> {
   queryKey: QueryKey;
-  fetchPage: (cursor: string | undefined) => Promise<CursorPage<TItem>>;
+  fetchPage: (cursor: string | undefined, signal?: AbortSignal) => Promise<CursorPage<TItem>>;
   getId: (item: TItem) => string;
   enabled?: boolean;
 }
@@ -51,7 +51,7 @@ export function useInfiniteList<TItem>({
     queryKey,
     enabled,
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) => fetchPage(pageParam),
+    queryFn: ({ pageParam, signal }) => fetchPage(pageParam, signal),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 

@@ -18,8 +18,8 @@ export function useMyWallet() {
 export function useLedger() {
   return useInfiniteList<LedgerEntry>({
     queryKey: queryKeys.wallet.entries(),
-    fetchPage: (cursor) =>
-      apiRequest<LedgerPage>('/api/v1/wallet/me/entries', { query: { cursor, limit: 20 } }),
+    fetchPage: (cursor, signal) =>
+      apiRequest<LedgerPage>('/api/v1/wallet/me/entries', { query: { cursor, limit: 20 }, signal }),
     getId: (item) => item.id,
   });
 }

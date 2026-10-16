@@ -10,9 +10,10 @@ import type { Comment, CommentPage, CommentThread, CreateCommentRequest } from '
 export function useComments(postId: string | undefined) {
   return useInfiniteList<Comment>({
     queryKey: queryKeys.comments.forPost(postId ?? ''),
-    fetchPage: (cursor) =>
+    fetchPage: (cursor, signal) =>
       apiRequest<CommentPage>(`/api/v1/posts/${postId}/comments`, {
         query: { cursor, limit: 50 },
+        signal,
       }),
     getId: (comment) => comment.id,
     enabled: Boolean(postId),

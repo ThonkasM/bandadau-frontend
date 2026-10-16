@@ -16,8 +16,8 @@ const POLL_CAP_MS = 120_000;
 export function useEvents() {
   return useInfiniteList<Event>({
     queryKey: queryKeys.events.list(),
-    fetchPage: (cursor) =>
-      apiRequest<EventPage>('/api/v1/events', { query: { cursor, limit: 20 } }),
+    fetchPage: (cursor, signal) =>
+      apiRequest<EventPage>('/api/v1/events', { query: { cursor, limit: 20 }, signal }),
     getId: (item) => item.id,
   });
 }
@@ -92,8 +92,8 @@ export function useCancelRegistration() {
 export function useMyRegistrations() {
   return useInfiniteList<Registration>({
     queryKey: queryKeys.registrations.mine(),
-    fetchPage: (cursor) =>
-      apiRequest<RegistrationPage>('/api/v1/registrations/me', { query: { cursor, limit: 20 } }),
+    fetchPage: (cursor, signal) =>
+      apiRequest<RegistrationPage>('/api/v1/registrations/me', { query: { cursor, limit: 20 }, signal }),
     getId: (item) => item.id,
   });
 }

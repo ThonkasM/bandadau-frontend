@@ -12,8 +12,8 @@ const PAGE_SIZE = 20;
 export function useFeed() {
   return useInfiniteList<FeedItem>({
     queryKey: queryKeys.feed.home(),
-    fetchPage: (cursor) =>
-      apiRequest<FeedPage>('/api/v1/feed', { query: { cursor, limit: PAGE_SIZE } }),
+    fetchPage: (cursor, signal) =>
+      apiRequest<FeedPage>('/api/v1/feed', { query: { cursor, limit: PAGE_SIZE }, signal }),
     getId: (item) => item.post.id,
   });
 }

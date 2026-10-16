@@ -9,6 +9,7 @@ export const queryKeys = {
     root: () => ['profile'] as const,
     me: () => ['profile', 'me'] as const,
     byId: (id: string) => ['profile', id] as const,
+    posts: (id: string) => ['profile', id, 'posts'] as const,
   },
   feed: {
     root: () => ['feed'] as const,

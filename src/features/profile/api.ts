@@ -36,10 +36,11 @@ export function useUpdateProfile() {
 /** UC-04: posts authored by a user (profile grid → user feed). */
 export function useUserPosts(userId: string | undefined) {
   return useInfiniteList<FeedItem>({
-    queryKey: [...queryKeys.profile.byId(userId ?? ''), 'posts'],
-    fetchPage: (cursor) =>
+    queryKey: queryKeys.profile.posts(userId ?? ''),
+    fetchPage: (cursor, signal) =>
       apiRequest<FeedPage>(`/api/v1/profiles/${userId}/posts`, {
         query: { cursor, limit: 12 },
+        signal,
       }),
     getId: (item) => item.post.id,
     enabled: Boolean(userId),

@@ -17,8 +17,8 @@ import type {
 export function useGroups() {
   return useInfiniteList<Group>({
     queryKey: queryKeys.groups.list(),
-    fetchPage: (cursor) =>
-      apiRequest<GroupPage>('/api/v1/groups', { query: { cursor, limit: 20 } }),
+    fetchPage: (cursor, signal) =>
+      apiRequest<GroupPage>('/api/v1/groups', { query: { cursor, limit: 20 }, signal }),
     getId: (item) => item.id,
   });
 }
@@ -62,9 +62,10 @@ export function useLeaveGroup() {
 export function useGroupMembers(groupId: string | undefined) {
   return useInfiniteList<GroupMembership>({
     queryKey: [...queryKeys.groups.byId(groupId ?? ''), 'members'],
-    fetchPage: (cursor) =>
+    fetchPage: (cursor, signal) =>
       apiRequest<GroupMembershipPage>(`/api/v1/groups/${groupId}/members`, {
         query: { cursor, limit: 20 },
+        signal,
       }),
     getId: (item) => item.userId,
     enabled: Boolean(groupId),
@@ -87,8 +88,8 @@ export function useReviewGroupMember(groupId: string) {
 export function useGroupPosts(groupId: string | undefined) {
   return useInfiniteList<FeedItem>({
     queryKey: [...queryKeys.groups.byId(groupId ?? ''), 'posts'],
-    fetchPage: (cursor) =>
-      apiRequest<FeedPage>(`/api/v1/groups/${groupId}/posts`, { query: { cursor, limit: 12 } }),
+    fetchPage: (cursor, signal) =>
+      apiRequest<FeedPage>(`/api/v1/groups/${groupId}/posts`, { query: { cursor, limit: 12 }, signal }),
     getId: (item) => item.post.id,
     enabled: Boolean(groupId),
   });

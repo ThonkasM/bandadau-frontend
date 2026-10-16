@@ -10,8 +10,8 @@ import type { AppNotification, DevicePlatform, NotificationPage, NotificationPre
 export function useNotifications() {
   return useInfiniteList<AppNotification>({
     queryKey: queryKeys.notifications.list(),
-    fetchPage: (cursor) =>
-      apiRequest<NotificationPage>('/api/v1/notifications', { query: { cursor, limit: 20 } }),
+    fetchPage: (cursor, signal) =>
+      apiRequest<NotificationPage>('/api/v1/notifications', { query: { cursor, limit: 20 }, signal }),
     getId: (item) => item.id,
   });
 }
