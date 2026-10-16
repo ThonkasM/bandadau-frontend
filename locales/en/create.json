@@ -28,5 +28,6 @@
   },
   "publish": "Publish",
   "publishError": "We couldn't publish. Please try again.",
+  "queued": "Offline: your post will be sent when you're back online.",
   "groupRequired": "Pick a group to post only there."
 }

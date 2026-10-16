@@ -28,5 +28,6 @@
   },
   "publish": "Publicar",
   "publishError": "No pudimos publicar. Intenta de nuevo.",
+  "queued": "Sin conexión: tu publicación se enviará al reconectar.",
   "groupRequired": "Elige un grupo para publicar solo ahí."
 }

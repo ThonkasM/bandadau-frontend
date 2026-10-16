@@ -73,10 +73,17 @@ export function usePublishPost() {
   return useMutation<
     PublishedPost,
     Error,
-    { clientId: string; text: string; mediaIds: string[]; visibility: PostVisibility; groupId?: string }
+    {
+      clientId: string;
+      text: string;
+      mediaIds: string[];
+      visibility: PostVisibility;
+      groupId?: string;
+      idempotencyKey: string;
+    }
   >({
-    mutationFn: (input) =>
-      apiRequest<PublishedPost>('/api/v1/posts', { method: 'POST', body: input, idempotent: true }),
+    mutationFn: ({ idempotencyKey, ...body }) =>
+      apiRequest<PublishedPost>('/api/v1/posts', { method: 'POST', body, idempotencyKey }),
     onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.feed.root() }),
   });
 }

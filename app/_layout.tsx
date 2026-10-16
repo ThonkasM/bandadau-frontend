@@ -24,6 +24,8 @@ import { initI18n } from '@/i18n';
 import { queryClient } from '@/lib/query-client';
 import { queryPersister } from '@/lib/query-persister';
 import { registerServiceWorker } from '@/lib/service-worker';
+import { processOutboxItem } from '@/offline/handlers';
+import { startOutboxSync } from '@/offline/sync';
 import { ThemeProvider, useTheme, useTokens } from '@/theme/theme-provider';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -76,6 +78,8 @@ export default function RootLayout() {
     // Cold start: restore the session (native refresh token / web HttpOnly cookie).
     void restoreSession();
     registerServiceWorker();
+    // Drain the offline outbox now and whenever connectivity returns.
+    return startOutboxSync(processOutboxItem);
   }, []);
 
   const showSplash = !ready || !splashDone;

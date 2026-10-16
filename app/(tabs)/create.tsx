@@ -19,7 +19,9 @@ import {
 import { MediaPicker } from '@/features/create/components/media-picker';
 import { MAX_TEXT_LENGTH, type MediaItem, type Visibility } from '@/features/create/types';
 import { ApiError } from '@/lib/api-error';
-import { newClientId } from '@/lib/ids';
+import { randomIdempotencyKey } from '@/lib/idempotency';
+import { newClientId, newUuid } from '@/lib/ids';
+import { enqueue } from '@/offline/outbox';
 import { useTokens } from '@/theme/theme-provider';
 
 const HASHTAG = /#[\p{L}\d_]{2,50}/gu;
@@ -58,8 +60,11 @@ export default function CreateScreen() {
     }
     setError(null);
     setPublishing(true);
+    const clientId = newClientId();
+    const idempotencyKey = randomIdempotencyKey();
+    const trimmed = text.trim();
+    let mediaIds: string[] = [];
     try {
-      const mediaIds: string[] = [];
       for (const item of media) {
         const kind = item.kind === 'video' ? 'VIDEO' : 'IMAGE';
         const mimeType = item.mimeType ?? (kind === 'VIDEO' ? 'video/mp4' : 'image/jpeg');
@@ -75,17 +80,28 @@ export default function CreateScreen() {
         );
         mediaIds.push(id);
       }
-      await publish.mutateAsync({
-        clientId: newClientId(),
-        text: text.trim(),
-        mediaIds,
-        visibility,
-      });
+      await publish.mutateAsync({ clientId, text: trimmed, mediaIds, visibility, idempotencyKey });
       setText('');
       setMedia([]);
       router.push('/(tabs)/feed');
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.localizedMessage(locale) : t('publishError'));
+      if (caught instanceof ApiError) {
+        setError(caught.localizedMessage(locale));
+      } else {
+        // Offline / network error → queue it (sent when connectivity returns).
+        mediaIds = [];
+        await enqueue({
+          id: newUuid(),
+          clientId,
+          idempotencyKey,
+          kind: 'CREATE_POST',
+          payload: { clientId, text: trimmed, mediaIds, visibility },
+          attempts: 0,
+          status: 'PENDING',
+          createdAt: new Date().toISOString(),
+        }).catch(() => undefined);
+        setError(t('queued'));
+      }
     } finally {
       setPublishing(false);
     }
