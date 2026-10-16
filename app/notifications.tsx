@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
-import { FeedList } from '@/components/ui/feed-list';
+import { VirtualList } from '@/components/ui/virtual-list';
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
@@ -43,7 +43,7 @@ export default function NotificationsScreen() {
               <Text style={{ color: tokens.color.text.link }}>{tn('markAll')}</Text>
             </Pressable>
           ) : null}
-          <FeedList<AppNotification>
+          <VirtualList<AppNotification>
             style={styles.list}
             data={list.items}
             renderItem={({ item }) => (

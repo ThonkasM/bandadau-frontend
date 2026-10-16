@@ -13,7 +13,7 @@ import {
 
 import { AppHeader } from '@/components/screens/app-header';
 import { Screen } from '@/components/screens/screen';
-import { FeedList } from '@/components/ui/feed-list';
+import { VirtualList } from '@/components/ui/virtual-list';
 import CommentsPanel from '@/features/comments/comments-panel';
 import { FeedRightRail } from '@/features/feed/components/feed-right-rail';
 import { FeedSkeleton } from '@/features/feed/components/feed-skeleton';
@@ -131,7 +131,7 @@ export default function UserPostsScreen() {
             {posts.loading ? (
               <FeedSkeleton contentContainerStyle={styles.listContent} />
             ) : (
-              <FeedList<FeedItem>
+              <VirtualList<FeedItem>
                 listRef={listRef}
                 style={styles.list}
                 data={posts.items}

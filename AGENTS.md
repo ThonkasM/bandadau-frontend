@@ -55,9 +55,9 @@ subpaths de `expo-router` sin `@react-navigation/*`).
 
 ## Arquitectura y carpetas
 
-> **Estado (2026-10-15):** este árbol es el **objetivo**. Hoy existen `src/auth/`, `src/mocks/`, `src/features/*` y
-> `feed-list.tsx` (no `virtual-list.tsx`); **no** existen aún `src/offline/`, `src/ai/`, `app/assistant/`, `app/settings/`,
-> `app/posts/[postId].tsx` ni `public/manifest.webmanifest`/`sw/`. El layout real es
+> **Estado (2026-10-15):** este árbol es el **objetivo**. Hoy existen `src/auth/`, `src/mocks/`, `src/features/*`,
+> `src/offline/` (outbox), `src/components/ui/virtual-list.tsx` (`VirtualList`) y `public/manifest.webmanifest` + `sw.js` (PWA);
+> **no** existen aún `src/ai/`, `app/assistant/` (UC-17, fase 2), `app/settings/` ni `app/posts/[postId].tsx`. El layout real es
 > `SafeAreaProvider → GestureHandlerRootView → KeyboardProvider → QueryClient → Theme → BottomSheetModalProvider → ErrorBoundary`.
 > Detalle y plan en `bandadau-docs/docs/06-plan/auditoria-app-expo.md`.
 

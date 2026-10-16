@@ -4,8 +4,8 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
-import { FeedList } from '@/components/ui/feed-list';
 import { Text } from '@/components/ui/text';
+import { VirtualList } from '@/components/ui/virtual-list';
 import { PostCard } from '@/features/feed/components/post-card';
 import type { FeedItem } from '@/features/feed/types';
 import {
@@ -85,7 +85,7 @@ export default function GroupDetailScreen() {
 
   return (
     <Screen title={data.name} showBack>
-      <FeedList<FeedItem>
+      <VirtualList<FeedItem>
         style={styles.list}
         data={posts.items}
         ListHeaderComponent={header}

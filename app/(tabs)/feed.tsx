@@ -13,7 +13,7 @@ import {
 
 import { BandadaMark, BandadaWordmark } from '@/components/brand/BandadaLogo';
 import { Screen } from '@/components/screens/screen';
-import { FeedList } from '@/components/ui/feed-list';
+import { VirtualList } from '@/components/ui/virtual-list';
 import CommentsPanel from '@/features/comments/comments-panel';
 import { useFeed } from '@/features/feed/api';
 import { FeedRightRail } from '@/features/feed/components/feed-right-rail';
@@ -79,7 +79,7 @@ export default function FeedScreen() {
                 </Pressable>
               </View>
             ) : (
-              <FeedList<FeedItem>
+              <VirtualList<FeedItem>
                 style={styles.list}
                 data={feed.items}
                 renderItem={({ item }) => (

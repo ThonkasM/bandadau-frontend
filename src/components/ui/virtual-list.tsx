@@ -20,7 +20,7 @@ const IS_WEB = Platform.OS === 'web';
 /** Pre-load distance for the web sentinel before reaching the end. */
 const WEB_PREFETCH_MARGIN = '600px';
 
-export interface FeedListProps<T> {
+export interface VirtualListProps<T> {
   data: readonly T[];
   renderItem: ListRenderItem<T>;
   keyExtractor: (item: T) => string;
@@ -47,7 +47,7 @@ export interface FeedListProps<T> {
 }
 
 /**
- * Shared feed/list (adapted from Homy).
+ * Shared virtual list (adapted from Homy).
  *
  * - **FlashList** on native (cell recycling; the critical case on low-end
  *   devices) and **FlatList** on web.
@@ -57,7 +57,7 @@ export interface FeedListProps<T> {
  * - Encapsulates paddings (floating tabs + safe area), the "load more" spinner
  *   and the empty state; native perf props are tuned for long feeds.
  */
-export function FeedList<T>({
+export function VirtualList<T>({
   data,
   renderItem,
   keyExtractor,
@@ -78,7 +78,7 @@ export function FeedList<T>({
   listRef,
   onScrollToIndexFailed,
   onContentSizeChange,
-}: FeedListProps<T>) {
+}: VirtualListProps<T>) {
   const insets = useSafeAreaInsets();
   const tokens = useTokens();
   const collapseOnScroll = useTabBarOnScroll();

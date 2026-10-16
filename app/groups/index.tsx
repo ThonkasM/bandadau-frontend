@@ -4,7 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
-import { FeedList } from '@/components/ui/feed-list';
+import { VirtualList } from '@/components/ui/virtual-list';
 import { useGroups, useJoinGroup } from '@/features/groups/api';
 import { GroupCard } from '@/features/groups/components/group-card';
 import type { Group } from '@/features/groups/types';
@@ -39,7 +39,7 @@ export default function GroupsScreen() {
           </Pressable>
         </>
       ) : (
-        <FeedList<Group>
+        <VirtualList<Group>
           style={styles.list}
           data={list.items}
           renderItem={({ item }) => (

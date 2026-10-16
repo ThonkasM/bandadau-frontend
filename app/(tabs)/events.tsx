@@ -12,7 +12,7 @@ import {
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
-import { FeedList } from '@/components/ui/feed-list';
+import { VirtualList } from '@/components/ui/virtual-list';
 import { useEvents } from '@/features/events/api';
 import { EventCard } from '@/features/events/components/event-card';
 import type { Event } from '@/features/events/types';
@@ -58,7 +58,7 @@ export default function EventsScreen() {
               </Pressable>
             </View>
           ) : (
-            <FeedList<Event>
+            <VirtualList<Event>
               key={numColumns}
               numColumns={numColumns}
               style={styles.list}

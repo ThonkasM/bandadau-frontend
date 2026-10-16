@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
-import { FeedList } from '@/components/ui/feed-list';
+import { VirtualList } from '@/components/ui/virtual-list';
 import { useMyRegistrations } from '@/features/events/api';
 import type { Registration } from '@/features/events/types';
 import { useTokens } from '@/theme/theme-provider';
@@ -22,7 +22,7 @@ export default function RegistrationsScreen() {
       {list.loading ? (
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
       ) : (
-        <FeedList<Registration>
+        <VirtualList<Registration>
           data={list.items}
           renderItem={({ item }) => (
             <Pressable
