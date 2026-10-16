@@ -1,0 +1,14 @@
+{
+  "title": "Asistente de estudio",
+  "subtitle": "Funciona sin conexión: tu texto nunca sale del dispositivo.",
+  "placeholder": "Pega tus apuntes o un texto de estudio…",
+  "counter": "{used} de {max} caracteres",
+  "summarize": "Resumir",
+  "flashcards": "Generar flashcards",
+  "stop": "Detener",
+  "summaryTitle": "Resumen",
+  "disclaimer": "Generado en tu dispositivo, puede contener errores.",
+  "basicMode": "Modo básico: resumen extractivo en el dispositivo (sin modelo).",
+  "flashcardsFailed": "No se pudieron generar tarjetas; prueba con un texto más corto.",
+  "flip": "Toca para voltear"
+}

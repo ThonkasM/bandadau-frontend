@@ -47,6 +47,15 @@ export const NAV_ROUTES: NavRoute[] = [
     inTabBar: true,
   },
   {
+    name: 'assistant',
+    labelKey: 'assistant',
+    href: '/(tabs)/assistant',
+    icon: 'robot-outline',
+    iconActive: 'robot',
+    match: ['/assistant'],
+    inTabBar: true,
+  },
+  {
     name: 'wallet',
     labelKey: 'wallet',
     href: '/(tabs)/wallet',

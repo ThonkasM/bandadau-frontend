@@ -1,0 +1,84 @@
+import type { Locale } from '@bandada/i18n';
+
+import type { FlashcardDeck } from './flashcards';
+import { parseFlashcardDeck } from './flashcards';
+import type { ChatMessage, LocalLlm } from './local-llm';
+import { FLASHCARD_RETRY, promptSystem } from './prompts';
+
+/** UC-17 §5.4: input capped at 12 000 chars; longer texts are summarized with map-reduce. */
+export const MAX_INPUT_CHARS = 12_000;
+const CHUNK_CHARS = 6_000;
+
+export interface StudyAssistant {
+  /** True when a real LLM backend is available (flashcards need it; the extractive mode does not). */
+  readonly canGenerateFlashcards: boolean;
+  summarize(
+    text: string,
+    locale: Locale,
+    onToken?: (token: string) => void,
+    signal?: AbortSignal,
+  ): Promise<string>;
+  generateFlashcards(text: string, locale: Locale): Promise<FlashcardDeck | null>;
+}
+
+function chunk(text: string, size = CHUNK_CHARS): string[] {
+  if (text.length <= size) return [text];
+  const parts: string[] = [];
+  for (let i = 0; i < text.length; i += size) parts.push(text.slice(i, i + size));
+  return parts;
+}
+
+/** Wraps `LocalLlm` into the UC-17 study flows (summarize + flashcards). No network, ever. */
+export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
+  const summarizeChunk = (
+    text: string,
+    locale: Locale,
+    onToken?: (token: string) => void,
+    signal?: AbortSignal,
+  ): Promise<string> => {
+    const messages: ChatMessage[] = [
+      { role: 'system', content: promptSystem('summary', locale) },
+      { role: 'user', content: text },
+    ];
+    return llm.generate(messages, { maxTokens: 512, temperature: 0.2, onToken, signal });
+  };
+
+  return {
+    get canGenerateFlashcards() {
+      return llm.backend !== 'extractive';
+    },
+
+    async summarize(text, locale, onToken, signal) {
+      const input = text.slice(0, MAX_INPUT_CHARS).trim();
+      if (!input) return '';
+      const parts = chunk(input);
+      if (parts.length === 1) return summarizeChunk(input, locale, onToken, signal);
+      // map-reduce: summarize each chunk (no streaming), then summarize the concatenation.
+      const partials: string[] = [];
+      for (const part of parts) partials.push(await summarizeChunk(part, locale, undefined, signal));
+      return summarizeChunk(partials.join('\n\n'), locale, onToken, signal);
+    },
+
+    async generateFlashcards(text, locale) {
+      const input = text.slice(0, MAX_INPUT_CHARS).trim();
+      if (!input || llm.backend === 'extractive') return null;
+      const messages: ChatMessage[] = [
+        { role: 'system', content: promptSystem('flashcards', locale) },
+        { role: 'user', content: input },
+      ];
+      const first = await llm.generate(messages, { maxTokens: 768, temperature: 0.2 });
+      const deck = parseFlashcardDeck(first);
+      if (deck) return deck;
+      // One strict retry before giving up (UC-17 §5.4 step 3).
+      const retry = await llm.generate(
+        [
+          ...messages,
+          { role: 'assistant', content: first },
+          { role: 'user', content: FLASHCARD_RETRY[locale] },
+        ],
+        { maxTokens: 768, temperature: 0 },
+      );
+      return parseFlashcardDeck(retry);
+    },
+  };
+}

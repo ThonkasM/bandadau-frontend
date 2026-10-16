@@ -1,6 +1,7 @@
 import { resources as sharedResources } from '@bandada/i18n';
 
 import enApp from '../../locales/en/app.json';
+import enAssistant from '../../locales/en/assistant.json';
 import enAuth from '../../locales/en/auth.json';
 import enComments from '../../locales/en/comments.json';
 import enCreate from '../../locales/en/create.json';
@@ -14,6 +15,7 @@ import enScan from '../../locales/en/scan.json';
 import enTickets from '../../locales/en/tickets.json';
 import enWallet from '../../locales/en/wallet.json';
 import esApp from '../../locales/es/app.json';
+import esAssistant from '../../locales/es/assistant.json';
 import esAuth from '../../locales/es/auth.json';
 import esComments from '../../locales/es/comments.json';
 import esCreate from '../../locales/es/create.json';
@@ -42,6 +44,7 @@ const appResources = {
     groups: esGroups,
     create: esCreate,
     scan: esScan,
+    assistant: esAssistant,
   },
   en: {
     app: enApp,
@@ -57,6 +60,7 @@ const appResources = {
     groups: enGroups,
     create: enCreate,
     scan: enScan,
+    assistant: enAssistant,
   },
 } as const;
 

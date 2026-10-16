@@ -1,0 +1,14 @@
+{
+  "title": "Study assistant",
+  "subtitle": "Works offline: your text never leaves the device.",
+  "placeholder": "Paste your notes or a study text…",
+  "counter": "{used} of {max} characters",
+  "summarize": "Summarize",
+  "flashcards": "Generate flashcards",
+  "stop": "Stop",
+  "summaryTitle": "Summary",
+  "disclaimer": "Generated on your device, may contain mistakes.",
+  "basicMode": "Basic mode: on-device extractive summary (no model).",
+  "flashcardsFailed": "Could not generate cards; try a shorter text.",
+  "flip": "Tap to flip"
+}

@@ -22,6 +22,7 @@ export const NAMESPACES = [
   'groups',
   'create',
   'scan',
+  'assistant',
   'common',
   'enums',
   'errors',
