@@ -1,14 +1,37 @@
 import type { Locale } from '@bandada/i18n';
 
 import { extractiveSummary } from './extractive-summary';
-import type { FlashcardDeck } from './flashcards';
+import type { Flashcard, FlashcardDeck } from './flashcards';
 import { parseAnyFlashcardDeck } from './flashcards';
 import type { ChatMessage, LocalLlm } from './local-llm';
-import { FLASHCARD_RETRY, promptSystem } from './prompts';
+import { FLASHCARD_RETRY, flashcardTopUp, promptSystem } from './prompts';
 
 /** UC-17 §5.4: input capped at 12 000 chars; longer texts are summarized with map-reduce. */
 export const MAX_INPUT_CHARS = 12_000;
+/** Aim for at least this many flashcards, topping up if the model returns fewer. */
+export const MIN_FLASHCARDS = 5;
+const MAX_FLASHCARDS = 10;
 const CHUNK_CHARS = 6_000;
+
+function dedupeCards(cards: readonly Flashcard[]): Flashcard[] {
+  const seen = new Set<string>();
+  const out: Flashcard[] = [];
+  for (const card of cards) {
+    const key = card.q.toLowerCase().trim();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(card);
+    if (out.length >= MAX_FLASHCARDS) break;
+  }
+  return out;
+}
+
+function logRaw(label: string, value: string): void {
+  if (__DEV__) {
+    // eslint-disable-next-line no-console
+    console.warn(`[assistant] raw flashcards ${label}:\n`, value);
+  }
+}
 
 export interface StudyAssistant {
   /** True when a real LLM backend is available (flashcards need it; the extractive mode does not). */
@@ -75,26 +98,37 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
         { role: 'user', content: input },
       ];
       const first = await llm.generate(messages, { maxTokens: 1024, temperature: 0.2 });
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.warn('[assistant] raw flashcards answer:\n', first);
+      logRaw('answer', first);
+      let deck = parseAnyFlashcardDeck(first);
+      if (!deck) {
+        // One strict retry before giving up (UC-17 §5.4 step 3).
+        const retry = await llm.generate(
+          [
+            ...messages,
+            { role: 'assistant', content: first },
+            { role: 'user', content: FLASHCARD_RETRY[locale] },
+          ],
+          { maxTokens: 1024, temperature: 0 },
+        );
+        logRaw('retry', retry);
+        deck = parseAnyFlashcardDeck(retry);
       }
-      const deck = parseAnyFlashcardDeck(first);
-      if (deck) return deck;
-      // One strict retry before giving up (UC-17 §5.4 step 3).
-      const retry = await llm.generate(
+      if (!deck) return null;
+      if (deck.cards.length >= MIN_FLASHCARDS) return deck;
+
+      // Top up to reach at least MIN cards, asking for distinct ones and deduping by question.
+      const missing = MIN_FLASHCARDS - deck.cards.length;
+      const more = await llm.generate(
         [
           ...messages,
-          { role: 'assistant', content: first },
-          { role: 'user', content: FLASHCARD_RETRY[locale] },
+          { role: 'assistant', content: JSON.stringify({ cards: deck.cards }) },
+          { role: 'user', content: flashcardTopUp(locale, missing) },
         ],
-        { maxTokens: 1024, temperature: 0 },
+        { maxTokens: 1024, temperature: 0.3 },
       );
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.warn('[assistant] raw flashcards retry:\n', retry);
-      }
-      return parseAnyFlashcardDeck(retry);
+      logRaw('top-up', more);
+      const extra = parseAnyFlashcardDeck(more);
+      return { cards: dedupeCards([...deck.cards, ...(extra?.cards ?? [])]) };
     },
   };
 }

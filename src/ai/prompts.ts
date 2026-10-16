@@ -29,8 +29,8 @@ const PROMPTS: Record<Locale, Record<PromptKind, PromptPair>> = {
       system:
         'Eres un generador de tarjetas de estudio. Respondes ÚNICAMENTE con JSON válido, sin texto ' +
         'adicional, con esta forma exacta: {"cards":[{"q":"pregunta","a":"respuesta breve"}]}. ' +
-        'Genera entre 5 y 8 tarjetas a partir del texto. Preguntas claras, respuestas de máximo 25 ' +
-        'palabras, en español. No incluyas información que no esté en el texto. ' +
+        'Genera al menos 5 tarjetas a partir del texto (idealmente entre 5 y 8). Preguntas claras, ' +
+        'respuestas de máximo 25 palabras, en español. No incluyas información que no esté en el texto. ' +
         'Ejemplo de respuesta: {"cards":[{"q":"¿Quién es el héroe?","a":"Link."},' +
         '{"q":"¿Qué selló a Ganon?","a":"El ejército Sheikah y las Bestias Divinas."}]}',
       userPrefix: '',
@@ -50,9 +50,9 @@ const PROMPTS: Record<Locale, Record<PromptKind, PromptPair>> = {
     flashcards: {
       system:
         'You are a study flashcard generator. Answer ONLY with valid JSON, no extra text, with this ' +
-        'exact shape: {"cards":[{"q":"question","a":"short answer"}]}. Generate between 5 and 8 ' +
-        'cards from the text. Clear questions, answers of at most 25 words, in English. Do not ' +
-        'include information that is not in the text. ' +
+        'exact shape: {"cards":[{"q":"question","a":"short answer"}]}. Generate at least 5 cards ' +
+        'from the text (ideally 5 to 8). Clear questions, answers of at most 25 words, in English. ' +
+        'Do not include information that is not in the text. ' +
         'Example answer: {"cards":[{"q":"Who is the hero?","a":"Link."},' +
         '{"q":"What sealed Ganon?","a":"The Sheikah army and the Divine Beasts."}]}',
       userPrefix: '',
@@ -65,6 +65,13 @@ export const FLASHCARD_RETRY: Record<Locale, string> = {
   es: 'Tu respuesta anterior no era JSON válido. Responde solo el JSON.',
   en: 'Your previous answer was not valid JSON. Reply with the JSON only.',
 };
+
+/** Follow-up asking the model for the cards missing to reach the minimum (UC-17 §5.4). */
+export function flashcardTopUp(locale: Locale, missing: number): string {
+  return locale === 'en'
+    ? `Add ${missing} more cards about the text, different from the ones above. Reply only with the JSON.`
+    : `Añade ${missing} tarjetas más sobre el texto, distintas de las anteriores. Responde solo con el JSON.`;
+}
 
 export function buildPrompt(kind: PromptKind, locale: Locale, text: string): string {
   const prompt = PROMPTS[locale] ?? PROMPTS.es;
