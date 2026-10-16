@@ -1,6 +1,7 @@
 {
   "title": "New post",
   "placeholder": "What's happening on campus?",
+  "publishingAs": "Posting as {name}",
   "visibilityLabel": "Visibility",
   "visibility": {
     "PUBLIC": "Public",

@@ -8,8 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
-import { Chip } from '@/components/ui/chip';
 import { ProgressModal, type ProgressPhase } from '@/components/ui/progress-modal';
+import { Segmented } from '@/components/ui/segmented';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import {
@@ -20,9 +20,11 @@ import {
 } from '@/features/create/api';
 import { MediaPicker } from '@/features/create/components/media-picker';
 import { MAX_TEXT_LENGTH, type MediaItem, type Visibility } from '@/features/create/types';
+import { useMyProfile } from '@/features/profile/api';
 import { ApiError } from '@/lib/api-error';
 import { randomIdempotencyKey } from '@/lib/idempotency';
 import { newClientId, newUuid } from '@/lib/ids';
+import { shadowStyle } from '@/lib/shadow';
 import { enqueue } from '@/offline/outbox';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -40,6 +42,13 @@ export default function CreateScreen() {
   const createUpload = useCreateUpload();
   const completeUpload = useCompleteUpload();
   const publish = usePublishPost();
+  const profile = useMyProfile();
+  const authorName = profile.data?.displayName ?? '';
+  const visibilityOptions = [
+    { value: 'PUBLIC', label: t('visibility.PUBLIC'), icon: 'earth' },
+    { value: 'FOLLOWERS', label: t('visibility.FOLLOWERS'), icon: 'account-multiple-outline' },
+    { value: 'GROUP', label: t('visibility.GROUP'), icon: 'account-group-outline' },
+  ] as const;
 
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [visibility, setVisibility] = useState<Visibility>('PUBLIC');
@@ -136,23 +145,26 @@ export default function CreateScreen() {
           contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + TAB_BAR_CLEARANCE }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <MediaPicker items={media} onChange={setMedia} />
-
-          <View style={styles.block}>
-            <Text variant="label">{t('visibilityLabel')}</Text>
-            <View style={styles.row}>
-              {(['PUBLIC', 'FOLLOWERS', 'GROUP'] as Visibility[]).map((option) => (
-                <Chip
-                  key={option}
-                  label={t(`visibility.${option}`)}
-                  selected={visibility === option}
-                  onPress={() => setVisibility(option)}
-                />
-              ))}
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: tokens.color.bg.surface,
+                borderColor: tokens.color.border.default,
+              },
+              shadowStyle(tokens.shadow.sm),
+            ]}>
+            <View style={styles.authorRow}>
+              <View style={[styles.avatar, { backgroundColor: tokens.color.brand.primary }]}>
+                <Text style={[styles.avatarInitial, { color: tokens.color.text.inverse }]}>
+                  {authorName.slice(0, 1).toUpperCase()}
+                </Text>
+              </View>
+              <Text variant="label" color={tokens.color.text.secondary} style={styles.authorLabel}>
+                {t('publishingAs', { name: authorName })}
+              </Text>
             </View>
-          </View>
 
-          <View style={styles.block}>
             <TextField
               value={text}
               onChangeText={setText}
@@ -161,21 +173,37 @@ export default function CreateScreen() {
               maxLength={MAX_TEXT_LENGTH}
               style={styles.composer}
             />
-            <Text variant="caption" style={[styles.counter, { color: tokens.color.text.muted }]}>
-              {counter}
-            </Text>
 
             {hashtags.length > 0 ? (
               <View style={styles.tags}>
                 {hashtags.map((tag) => (
                   <View key={tag} style={[styles.tag, { backgroundColor: tokens.color.bg.muted }]}>
-                    <Text variant="caption" color={tokens.color.text.primary}>
+                    <Text variant="caption" color={tokens.color.brand.primary}>
                       {tag}
                     </Text>
                   </View>
                 ))}
               </View>
             ) : null}
+
+            <MediaPicker items={media} onChange={setMedia} />
+
+            <View style={[styles.divider, { backgroundColor: tokens.color.border.default }]} />
+
+            <View style={styles.footer}>
+              <View style={styles.segmented}>
+                <Segmented options={visibilityOptions} value={visibility} onChange={setVisibility} />
+              </View>
+              <Text
+                variant="caption"
+                color={
+                  text.length > MAX_TEXT_LENGTH * 0.9
+                    ? tokens.color.feedback.warning.fg
+                    : tokens.color.text.muted
+                }>
+                {counter}
+              </Text>
+            </View>
           </View>
 
           {error ? (
@@ -239,11 +267,16 @@ export default function CreateScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  content: { gap: 20 },
-  block: { gap: 8 },
+  content: { gap: 16 },
+  card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 18, padding: 16, gap: 12 },
+  authorRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  avatarInitial: { fontSize: 15, fontWeight: '800' },
+  authorLabel: { flex: 1 },
   composer: { minHeight: 120, textAlignVertical: 'top' },
-  counter: { textAlign: 'right' },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  divider: { height: StyleSheet.hairlineWidth },
+  footer: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  segmented: { flex: 1 },
 });

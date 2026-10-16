@@ -1,6 +1,7 @@
 {
   "title": "Nueva publicación",
   "placeholder": "¿Qué está pasando en el campus?",
+  "publishingAs": "Publicando como {name}",
   "visibilityLabel": "Visibilidad",
   "visibility": {
     "PUBLIC": "Público",
