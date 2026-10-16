@@ -1,9 +1,12 @@
 import type { Locale } from '@bandada/i18n';
-import { useRef, useState } from 'react';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { createLocalLlm } from '@/ai/local-llm';
+import { createLocalLlm, type LlmStatus, type LocalModelInfo } from '@/ai/local-llm';
+import { checkDownload } from '@/ai/model-manager';
+import { formatBytes } from '@/ai/model-store';
 import { createStudyAssistant,MAX_INPUT_CHARS } from '@/ai/study-assistant';
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
@@ -11,7 +14,8 @@ import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { useTokens } from '@/theme/theme-provider';
 
-const assistant = createStudyAssistant(createLocalLlm());
+const llm = createLocalLlm();
+const assistant = createStudyAssistant(llm);
 
 /** UC-17 · Offline study assistant (on-device; summary + flashcards). No network, ever. */
 export default function AssistantScreen() {
@@ -24,7 +28,40 @@ export default function AssistantScreen() {
   const [busy, setBusy] = useState<'summary' | 'cards' | null>(null);
   const [flipped, setFlipped] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
+  const [status, setStatus] = useState<LlmStatus>(llm.status());
+  const [recommended, setRecommended] = useState<LocalModelInfo | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const off = llm.onStatus(setStatus);
+    void llm.capabilities().then((caps) => setRecommended(caps.recommended));
+    return off;
+  }, []);
+
+  const onDownload = async (allowCellular = false) => {
+    if (!recommended) return;
+    setNotice(null);
+    const gate = await checkDownload(recommended, allowCellular);
+    if (!gate.ok) {
+      setNotice(
+        gate.reason === 'no-space'
+          ? t('model.noSpace', { missing: formatBytes(gate.missingBytes) })
+          : t('model.cellular'),
+      );
+      return;
+    }
+    try {
+      await llm.download(recommended.id, { allowCellular });
+    } catch {
+      setNotice(t('model.downloadError'));
+    }
+  };
+
+  const onRemove = async () => {
+    setNotice(null);
+    await llm.remove(recommended?.id ?? 'llama-3.2-1b-q').catch(() => undefined);
+  };
 
   const onSummarize = async () => {
     setBusy('summary');
@@ -41,6 +78,8 @@ export default function AssistantScreen() {
         controller.signal,
       );
       setSummary(result);
+    } catch {
+      setNotice(t('model.downloadError'));
     } finally {
       setBusy(null);
       abortRef.current = null;
@@ -61,10 +100,51 @@ export default function AssistantScreen() {
       const deck = await assistant.generateFlashcards(text, locale);
       if (deck) setCards(deck.cards);
       else setFailed(true);
+    } catch {
+      setFailed(true);
     } finally {
       setBusy(null);
     }
   };
+
+  const modelCard = (() => {
+    if (status.kind === 'downloading') {
+      return (
+        <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+          {t('model.downloading', { percent: Math.round(status.progress * 100) })}
+        </Text>
+      );
+    }
+    if (status.kind === 'ready') {
+      return (
+        <View style={styles.row}>
+          <Text variant="caption" style={{ color: tokens.color.feedback.success.fg }}>
+            {t('model.ready', { name: recommended?.displayName ?? '' })}
+          </Text>
+          <Button label={t('model.remove')} variant="secondary" onPress={onRemove} />
+        </View>
+      );
+    }
+    if (recommended && (status.kind === 'not-downloaded' || status.kind === 'error')) {
+      return (
+        <>
+          <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+            {t('model.notDownloaded')}
+          </Text>
+          <Button
+            label={t('model.download', { size: formatBytes(recommended.sizeBytes) })}
+            icon="download-outline"
+            onPress={() => onDownload()}
+          />
+        </>
+      );
+    }
+    return (
+      <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+        {t('basicMode')}
+      </Text>
+    );
+  })();
 
   return (
     <Screen title={t('title')} subtitle={t('subtitle')}>
@@ -73,6 +153,26 @@ export default function AssistantScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: tokens.color.bg.surface,
+                borderColor: tokens.color.border.default,
+              },
+            ]}>
+            <View style={styles.cardTitle}>
+              <MaterialCommunityIcons name="chip" size={16} color={tokens.color.text.secondary} />
+              <Text variant="label">{t('model.title')}</Text>
+            </View>
+            {modelCard}
+            {notice ? (
+              <Text variant="caption" color={tokens.color.feedback.danger.fg}>
+                {notice}
+              </Text>
+            ) : null}
+          </View>
+
           <TextField
             value={text}
             onChangeText={setText}
@@ -106,12 +206,6 @@ export default function AssistantScreen() {
               ) : null}
             </View>
           )}
-
-          {!assistant.canGenerateFlashcards ? (
-            <Text variant="caption" style={{ color: tokens.color.text.muted }}>
-              {t('basicMode')}
-            </Text>
-          ) : null}
 
           {summary ? (
             <View
@@ -159,9 +253,10 @@ export default function AssistantScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { gap: 12, paddingBottom: 96 },
-  composer: { minHeight: 140, textAlignVertical: 'top' },
-  row: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
   card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 16, padding: 16, gap: 8 },
+  cardTitle: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  composer: { minHeight: 140, textAlignVertical: 'top' },
+  row: { flexDirection: 'row', gap: 12, flexWrap: 'wrap', alignItems: 'center' },
   cards: { gap: 10 },
   flashcard: { borderRadius: 14, padding: 16, minHeight: 88, justifyContent: 'center' },
 });

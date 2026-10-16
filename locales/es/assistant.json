@@ -10,5 +10,16 @@
   "disclaimer": "Generado en tu dispositivo, puede contener errores.",
   "basicMode": "Modo básico: resumen extractivo en el dispositivo (sin modelo).",
   "flashcardsFailed": "No se pudieron generar tarjetas; prueba con un texto más corto.",
-  "flip": "Toca para voltear"
+  "flip": "Toca para voltear",
+  "model": {
+    "title": "Modelo en el dispositivo",
+    "notDownloaded": "Descarga el modelo (una vez, por Wi-Fi) para resúmenes con IA y flashcards. Sin él se usa el resumen extractivo.",
+    "download": "Descargar modelo ({size})",
+    "downloading": "Descargando… {percent}%",
+    "ready": "Modelo listo (offline): {name}",
+    "remove": "Eliminar modelo",
+    "noSpace": "No hay espacio suficiente: faltan {missing}.",
+    "cellular": "Estás con datos móviles. Descarga por Wi-Fi o confirma para usar datos móviles.",
+    "downloadError": "No pudimos descargar el modelo. Intenta de nuevo."
+  }
 }

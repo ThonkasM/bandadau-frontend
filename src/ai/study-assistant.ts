@@ -1,5 +1,6 @@
 import type { Locale } from '@bandada/i18n';
 
+import { extractiveSummary } from './extractive-summary';
 import type { FlashcardDeck } from './flashcards';
 import { parseFlashcardDeck } from './flashcards';
 import type { ChatMessage, LocalLlm } from './local-llm';
@@ -51,12 +52,19 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
     async summarize(text, locale, onToken, signal) {
       const input = text.slice(0, MAX_INPUT_CHARS).trim();
       if (!input) return '';
-      const parts = chunk(input);
-      if (parts.length === 1) return summarizeChunk(input, locale, onToken, signal);
-      // map-reduce: summarize each chunk (no streaming), then summarize the concatenation.
-      const partials: string[] = [];
-      for (const part of parts) partials.push(await summarizeChunk(part, locale, undefined, signal));
-      return summarizeChunk(partials.join('\n\n'), locale, onToken, signal);
+      // No model backend → extractive summary (UC-17 alterno 1a "modo básico").
+      if (llm.backend === 'extractive') return extractiveSummary(input);
+      try {
+        const parts = chunk(input);
+        if (parts.length === 1) return await summarizeChunk(input, locale, onToken, signal);
+        // map-reduce: summarize each chunk (no streaming), then summarize the concatenation.
+        const partials: string[] = [];
+        for (const part of parts) partials.push(await summarizeChunk(part, locale, undefined, signal));
+        return await summarizeChunk(partials.join('\n\n'), locale, onToken, signal);
+      } catch {
+        // Model not downloaded or runtime missing → keep the assistant usable offline.
+        return extractiveSummary(input);
+      }
     },
 
     async generateFlashcards(text, locale) {

@@ -10,5 +10,16 @@
   "disclaimer": "Generated on your device, may contain mistakes.",
   "basicMode": "Basic mode: on-device extractive summary (no model).",
   "flashcardsFailed": "Could not generate cards; try a shorter text.",
-  "flip": "Tap to flip"
+  "flip": "Tap to flip",
+  "model": {
+    "title": "On-device model",
+    "notDownloaded": "Download the model once (over Wi-Fi) for AI summaries and flashcards. Without it, the extractive summary is used.",
+    "download": "Download model ({size})",
+    "downloading": "Downloading… {percent}%",
+    "ready": "Model ready (offline): {name}",
+    "remove": "Remove model",
+    "noSpace": "Not enough space: {missing} more needed.",
+    "cellular": "You are on mobile data. Download over Wi-Fi, or confirm to use mobile data.",
+    "downloadError": "Could not download the model. Try again."
+  }
 }
