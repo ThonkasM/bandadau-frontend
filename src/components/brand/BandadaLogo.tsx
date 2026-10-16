@@ -8,6 +8,7 @@
  *  <BandadaSplash />    splash animada; mismo tamaño y centro que el splash nativo
  */
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
@@ -210,10 +211,11 @@ export function BandadaLoader({
   style?: ViewStyle;
 }) {
   const look: Look = { ox: CROP.x, oy: CROP.y - HEAD, k: size / CROP.w };
+  const { t } = useTranslation('app');
   return (
     <View
       accessibilityRole="progressbar"
-      accessibilityLabel="Cargando"
+      accessibilityLabel={t('loading')}
       style={[{ width: size, height: (CROP.h + HEAD) * look.k }, style]}
     >
       {BIRDS.map((b, i) => (

@@ -55,6 +55,12 @@ subpaths de `expo-router` sin `@react-navigation/*`).
 
 ## Arquitectura y carpetas
 
+> **Estado (2026-10-15):** este árbol es el **objetivo**. Hoy existen `src/auth/`, `src/mocks/`, `src/features/*` y
+> `feed-list.tsx` (no `virtual-list.tsx`); **no** existen aún `src/offline/`, `src/ai/`, `app/assistant/`, `app/settings/`,
+> `app/posts/[postId].tsx` ni `public/manifest.webmanifest`/`sw/`. El layout real es
+> `SafeAreaProvider → GestureHandlerRootView → KeyboardProvider → QueryClient → Theme → BottomSheetModalProvider → ErrorBoundary`.
+> Detalle y plan en `bandadau-docs/docs/06-plan/auditoria-app-expo.md`.
+
 ```
 bandadau-frontend/
 ├── app/                          rutas expo-router
@@ -128,13 +134,16 @@ Por eso `expo-build-properties` fija `ios.enableSceneSupport: true` (SDK 57.0.23
 EXPO_PUBLIC_API_URL=http://api.bandada.localhost
 EXPO_PUBLIC_APP_URL=http://app.bandada.localhost
 EXPO_PUBLIC_ADMIN_URL=http://admin.bandada.localhost
+EXPO_PUBLIC_BASE_DOMAIN=bandada.localhost
 EXPO_PUBLIC_DEFAULT_LOCALE=es
+EXPO_PUBLIC_USE_MOCKS=false   # fixtures locales de `src/mocks/`; por defecto OFF (solo con `true`), nunca en prod
 EXPO_PUBLIC_LOCAL_LLM_MODEL_URL=http://s3.bandada.localhost/bandada-public/mobile/llm/…   # descarga bajo demanda
 EXPO_PUBLIC_NSFW_MODEL_URL=http://s3.bandada.localhost/bandada-public/mobile/nsfw-mobile/1.0.0/model.onnx
 EXPO_PUBLIC_EAS_PROJECT_ID=
 ```
 
 `EXPO_PUBLIC_*` son públicas y se hornean en el build. En dispositivo físico usar la IP LAN, no `localhost`.
+`EXPO_PUBLIC_USE_MOCKS=true` sirve los fixtures de `src/mocks/` sin backend (Fase 1); sin la variable, **todo va al backend real**.
 
 ## Puertos y contratos
 
