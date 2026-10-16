@@ -3,6 +3,9 @@ import type { ExpoConfig } from 'expo/config';
 const BASE_DOMAIN = process.env.EXPO_PUBLIC_BASE_DOMAIN ?? 'bandada.localhost';
 const APP_URL = process.env.EXPO_PUBLIC_APP_URL ?? `http://app.${BASE_DOMAIN}`;
 
+// Excepción de marca (B-8): los colores de icono/adaptive/splash/notificación son la paleta oficial
+// (valores nativos fijos; no pueden venir de tokens en tiempo de build). El resto de la app usa `useTokens()`.
+
 const config: ExpoConfig = {
   name: 'Bandada U',
   slug: 'bandadau',

@@ -23,6 +23,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
+// Excepción de marca (B-8): paleta oficial del logo, fija en claro y oscuro; no sale de `useTokens()`.
+// Cualquier otro color de la app debe usar tokens semánticos.
 export const BRAND = {
   blue: '#1238A8',
   night: '#0A1F66',

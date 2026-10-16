@@ -1,7 +1,8 @@
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { DEFAULT_MEDIA_RATIO } from '@/lib/media-ratio';
+import { shadowStyle } from '@/lib/shadow';
 import { useTokens } from '@/theme/theme-provider';
 
 /** Placeholder matching `PostCard` (chrome, media ratio, actions and meta). */
@@ -14,7 +15,7 @@ export function PostCardSkeleton() {
         {
           backgroundColor: tokens.color.bg.surface,
           borderColor: tokens.color.border.default,
-          shadowColor: tokens.color.text.primary,
+          ...shadowStyle(tokens.shadow.md),
         },
       ]}>
       <View style={styles.header}>
@@ -51,12 +52,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     marginBottom: 16,
     overflow: 'hidden',
-    ...Platform.select({
-      web: { boxShadow: '0px 6px 20px rgba(0,0,0,0.06)' } as object,
-      ios: { shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 16 },
-      android: { elevation: 2 },
-      default: {},
-    }),
   },
   header: {
     flexDirection: 'row',

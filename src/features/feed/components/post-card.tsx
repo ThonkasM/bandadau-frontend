@@ -2,10 +2,11 @@ import { formatRelative, type Locale } from '@bandada/i18n';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useRemoveReaction, useSetReaction } from '@/features/feed/api';
 import type { FeedItem } from '@/features/feed/types';
+import { shadowStyle } from '@/lib/shadow';
 import { useTokens } from '@/theme/theme-provider';
 
 import { PostCarousel } from './post-carousel';
@@ -43,7 +44,7 @@ export function PostCard({
         {
           backgroundColor: tokens.color.bg.surface,
           borderColor: tokens.color.border.default,
-          shadowColor: tokens.color.text.primary,
+          ...shadowStyle(tokens.shadow.md),
         },
       ]}>
       <View style={styles.header}>
@@ -145,12 +146,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     marginBottom: 16,
     overflow: 'hidden',
-    ...Platform.select({
-      web: { boxShadow: '0px 6px 20px rgba(0,0,0,0.06)' } as object,
-      ios: { shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 16 },
-      android: { elevation: 2 },
-      default: {},
-    }),
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
   avatarRing: {

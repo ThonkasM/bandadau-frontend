@@ -12,6 +12,7 @@ export default function Root({ children }: PropsWithChildren) {
         <ScrollViewStyleReset />
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* Excepción de marca (B-8): color oficial para la barra del navegador/PWA. */}
         <meta name="theme-color" content="#1238A8" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Bandada U" />
