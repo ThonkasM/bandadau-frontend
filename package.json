@@ -84,6 +84,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@babel/runtime": "^7.29.10",
     "@bandada/eslint-config": "file:../bandadau-shared/packages/eslint-config",
     "@bandada/tsconfig": "file:../bandadau-shared/packages/tsconfig",
     "@playwright/test": "^1.64.1",
@@ -104,12 +105,21 @@
     "typescript": "~6.0.3"
   },
   "react-native-executorch": {
-    "backends": ["xnnpack", "coreml", "mlx", "vulkan"]
+    "backends": [
+      "xnnpack",
+      "coreml",
+      "mlx",
+      "vulkan"
+    ]
   },
   "jest": {
     "preset": "jest-expo",
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.ts"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/e2e/"
     ],
     "transformIgnorePatterns": [
       "node_modules/(?!.pnpm)(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|nativewind|react-native-css-interop|@bandada/.*))"
