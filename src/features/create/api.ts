@@ -2,6 +2,7 @@ import type { media, social } from '@bandada/contracts-ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api-client';
+import { ApiError } from '@/lib/api-error';
 import { queryKeys } from '@/lib/query-keys';
 
 export type UploadTicket = media.components['schemas']['UploadTicket'];
@@ -88,7 +89,33 @@ export function usePublishPost() {
   });
 }
 
-/** Full UC-05 pipeline for one attachment: register → PUT → complete. */
+const MODERATION_POLL_MS = 700;
+const MODERATION_TIMEOUT_MS = 10_000;
+
+/**
+ * Waits (bounded) for moderation to finish. The server keeps a post `PENDING_MEDIA` — hidden from the
+ * feed — until its media is approved, so publishing right after `complete` would leave the new post
+ * missing from the feed we refetch immediately. A rejected asset fails fast with `MEDIA_REJECTED`;
+ * if it is still processing at the deadline (e.g. video) we publish anyway and the server shows it later.
+ */
+async function waitForModeration(mediaId: string): Promise<void> {
+  const deadline = Date.now() + MODERATION_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    const asset = await apiRequest<MediaAsset>(`/api/v1/media/${mediaId}`);
+    if (asset.status === 'APPROVED') return;
+    if (asset.status === 'REJECTED') {
+      throw new ApiError({
+        type: 'about:blank',
+        title: 'Media rejected',
+        status: 422,
+        code: 'MEDIA_REJECTED',
+      });
+    }
+    await new Promise((resolve) => setTimeout(resolve, MODERATION_POLL_MS));
+  }
+}
+
+/** Full UC-05 pipeline for one attachment: register → PUT → complete → wait for moderation. */
 export async function uploadMedia(
   input: CreateUploadInput,
   fileUri: string,
@@ -100,5 +127,6 @@ export async function uploadMedia(
   const ticket = await deps.createUpload(input);
   await uploadToPresignedUrl(ticket, fileUri);
   await deps.completeUpload(ticket.mediaId);
+  await waitForModeration(ticket.mediaId);
   return ticket.mediaId;
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,8 @@ import { newClientId, newUuid } from '@/lib/ids';
 import { enqueue } from '@/offline/outbox';
 import { useTokens } from '@/theme/theme-provider';
 
+/** Floating tab bar (capsule + gap) overlays the content; keep the Publish button above it. */
+const TAB_BAR_CLEARANCE = 96;
 const HASHTAG = /#[\p{L}\d_]{2,50}/gu;
 
 /** UC-05 · Compose post: media → visibility → text, then publish (upload + create). */
@@ -32,6 +35,7 @@ export default function CreateScreen() {
   const { t, i18n } = useTranslation('create');
   const locale = i18n.language as Locale;
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const createUpload = useCreateUpload();
   const completeUpload = useCompleteUpload();
   const publish = usePublishPost();
@@ -41,6 +45,7 @@ export default function CreateScreen() {
   const [text, setText] = useState('');
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [queuedNotice, setQueuedNotice] = useState(false);
 
   const counter = `${text.length}/${MAX_TEXT_LENGTH}`;
   const hashtags = text.match(HASHTAG) ?? [];
@@ -59,6 +64,7 @@ export default function CreateScreen() {
       return;
     }
     setError(null);
+    setQueuedNotice(false);
     setPublishing(true);
     const clientId = newClientId();
     const idempotencyKey = randomIdempotencyKey();
@@ -100,7 +106,9 @@ export default function CreateScreen() {
           status: 'PENDING',
           createdAt: new Date().toISOString(),
         }).catch(() => undefined);
-        setError(t('queued'));
+        setQueuedNotice(true);
+        setText('');
+        setMedia([]);
       }
     } finally {
       setPublishing(false);
@@ -112,7 +120,7 @@ export default function CreateScreen() {
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + TAB_BAR_CLEARANCE }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           <MediaPicker items={media} onChange={setMedia} />
@@ -163,6 +171,12 @@ export default function CreateScreen() {
             </Text>
           ) : null}
 
+          {queuedNotice ? (
+            <Text variant="caption" color={tokens.color.text.muted}>
+              {t('queued')}
+            </Text>
+          ) : null}
+
           <Button
             label={t('publish')}
             icon="send"
@@ -178,7 +192,7 @@ export default function CreateScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  content: { gap: 20, paddingBottom: 24 },
+  content: { gap: 20 },
   block: { gap: 8 },
   composer: { minHeight: 120, textAlignVertical: 'top' },
   counter: { textAlign: 'right' },
