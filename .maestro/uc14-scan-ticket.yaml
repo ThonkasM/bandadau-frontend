@@ -1,0 +1,20 @@
+appId: com.bandadau.app
+name: UC-14 · Validar entrada en la puerta (portero)
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Iniciar sesión'
+- tapOn: 'Correo institucional'
+- inputText: '${ORG_EMAIL}'
+- tapOn: 'Contraseña'
+- inputText: '${PASSWORD}'
+- tapOn: 'Entrar'
+- assertVisible: 'Feed'
+# El escáner vive en /scan (se llega desde Mis entradas). Se abre por deep link
+# para no depender de la navegación por menú.
+- openLink: 'bandadau://scan'
+- assertVisible: 'Escanear entrada'
+# Con permiso de cámara concedido, la pantalla pide apuntar al QR.
+- assertVisible:
+    text: 'Apunta la cámara al código QR de la entrada.'
+    optional: true

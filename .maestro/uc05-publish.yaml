@@ -1,0 +1,19 @@
+appId: com.bandadau.app
+name: UC-05 · Publicar contenido (texto)
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Iniciar sesión'
+- tapOn: 'Correo institucional'
+- inputText: '${EMAIL}'
+- tapOn: 'Contraseña'
+- inputText: '${PASSWORD}'
+- tapOn: 'Entrar'
+- assertVisible: 'Feed'
+- tapOn: 'Publicar'
+- assertVisible: 'Nueva publicación'
+- tapOn: '¿Qué está pasando en el campus?'
+- inputText: 'Publicación E2E de Bandada U'
+- tapOn: 'Publicar'
+# El post sube (createUpload → PUT → completeUpload → createPost) y aparece en el feed.
+- assertVisible: 'Publicación E2E de Bandada U'

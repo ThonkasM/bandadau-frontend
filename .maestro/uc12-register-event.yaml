@@ -1,0 +1,22 @@
+appId: com.bandadau.app
+name: UC-12 · Inscribirse a un evento pagado
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Iniciar sesión'
+- tapOn: 'Correo institucional'
+- inputText: '${EMAIL}'
+- tapOn: 'Contraseña'
+- inputText: '${PASSWORD}'
+- tapOn: 'Entrar'
+- assertVisible: 'Feed'
+- tapOn: 'Eventos'
+- tapOn: 'Taller de React Native'
+- assertVisible: 'Participar'
+- tapOn: 'Participar'
+# SAGA: reserva → débito → emisión. La UI no se bloquea.
+- assertVisible: 'Procesando tu inscripción'
+- extendedWaitUntil:
+    visible: '¡Inscripción confirmada!'
+    timeout: 20000
+- assertVisible: 'Ver mi entrada'
