@@ -17,6 +17,7 @@ import {
 import EventDetailView from '@/features/events/components/event-detail-view';
 import { useTicket } from '@/features/tickets/api';
 import { TicketRevealModal } from '@/features/tickets/components/ticket-reveal-modal';
+import { useMyWallet } from '@/features/wallet/api';
 import { newUuid } from '@/lib/ids';
 import { queryKeys } from '@/lib/query-keys';
 import { useSessionStore } from '@/stores/session.store';
@@ -35,6 +36,7 @@ export default function EventDetailScreen() {
   const register = useRegisterToEvent();
   const client = useQueryClient();
   const myRegistrations = useMyRegistrations();
+  const wallet = useMyWallet();
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const registration = useRegistration(registrationId);
   const reg = registration.data;
@@ -70,11 +72,22 @@ export default function EventDetailScreen() {
     (r) => r.eventId === data.id && r.status !== 'FAILED' && r.status !== 'CANCELLED',
   );
   const registered = confirmed || alreadyRegistered;
+  const soldOut = data.seatsAvailable <= 0;
+
+  // UC-12 alterno 1a: avoid launching a SAGA doomed to fail when the balance is
+  // visibly short; offer «Recargar y continuar» instead.
+  const balance = wallet.data?.balanceCredits;
+  const insufficientFunds =
+    !registered && !soldOut && data.priceCredits > 0 && balance !== undefined && balance < data.priceCredits;
+  const registrationFailed = reg?.status === 'FAILED';
+  const insufficientReason = reg?.failureReason === 'INSUFFICIENT_FUNDS';
 
   const revealVisible = !dismissed && confirmed && Boolean(revealed.data);
   const paymentVisible =
-    !dismissed && !revealVisible && (register.isPending || register.isError || Boolean(registrationId));
-  const phase: PaymentPhase = register.isError ? 'failed' : 'processing';
+    !dismissed &&
+    !revealVisible &&
+    (register.isPending || register.isError || registrationFailed || Boolean(registrationId));
+  const phase: PaymentPhase = register.isError || registrationFailed ? 'failed' : 'processing';
 
   // `fresh` = new intent (regenerate the key); a retry reuses the same key.
   const startRegister = (fresh = false) => {
@@ -85,6 +98,13 @@ export default function EventDetailScreen() {
       { eventId: data.id, idempotencyKey: idempotencyKey.current },
       { onSuccess: (r) => setRegistrationId(r.id) },
     );
+  };
+
+  // UC-12 alterno 13a: top up the (minimum) missing credits and return here.
+  const topUpAndContinue = () => {
+    setDismissed(true);
+    const needed = Math.max(0, data.priceCredits - (balance ?? 0));
+    router.push({ pathname: '/wallet', params: { returnTo: data.id, needed: String(needed) } });
   };
 
   const saveTicket = () => {
@@ -100,8 +120,11 @@ export default function EventDetailScreen() {
       <EventDetailView
         event={data}
         registered={registered}
+        soldOut={soldOut}
+        insufficientFunds={insufficientFunds}
         onParticipate={() => startRegister(true)}
         onViewTickets={() => router.push('/tickets')}
+        onTopUp={topUpAndContinue}
       />
 
       <PaymentModal
@@ -125,8 +148,8 @@ export default function EventDetailScreen() {
           failed: {
             title: t('payment.failedTitle'),
             message: errorMessage(reg?.failureReason ?? undefined, locale),
-            primaryLabel: t('payment.retry'),
-            onPrimary: () => startRegister(),
+            primaryLabel: insufficientReason ? t('payment.topUpAndContinue') : t('payment.retry'),
+            onPrimary: insufficientReason ? topUpAndContinue : () => startRegister(),
             secondaryLabel: t('payment.close'),
           },
         }}

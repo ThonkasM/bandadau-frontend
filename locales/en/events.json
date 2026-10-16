@@ -6,6 +6,7 @@
   "empty": "No upcoming events.",
   "error": "We couldn't load the events.",
   "seats": "{count, plural, =0 {No seats} one {# seat} other {# seats}}",
+  "soldOut": "Sold out",
   "payment": {
     "processingTitle": "Processing your registration",
     "debiting": "{count, plural, one {Debiting # credit} other {Debiting # credits}}",
@@ -18,6 +19,7 @@
     "viewTicket": "View my ticket",
     "failedTitle": "Couldn't complete",
     "retry": "Retry",
+    "topUpAndContinue": "Top up and continue",
     "close": "Close"
   },
   "registrations": {

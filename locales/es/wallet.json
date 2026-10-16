@@ -6,6 +6,7 @@
   "movements": "Movimientos",
   "empty": "Sin movimientos todavía.",
   "error": "No pudimos cargar tu billetera.",
+  "returnToEvent": "Elige un paquete. Al terminar volverás a la inscripción del evento.",
   "type": {
     "TOPUP": "Recarga",
     "DEBIT": "Consumo",

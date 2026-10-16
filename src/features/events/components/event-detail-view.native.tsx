@@ -17,8 +17,11 @@ import { useTokens } from '@/theme/theme-provider';
 export default function EventDetailView({
   event,
   registered,
+  soldOut,
+  insufficientFunds,
   onParticipate,
   onViewTickets,
+  onTopUp,
 }: EventDetailViewProps) {
   const tokens = useTokens();
   const { i18n } = useTranslation('events');
@@ -50,8 +53,11 @@ export default function EventDetailView({
         <View style={styles.cta}>
           <EventCta
             registered={registered}
+            soldOut={soldOut}
+            insufficientFunds={insufficientFunds}
             onParticipate={onParticipate}
             onViewTickets={onViewTickets}
+            onTopUp={onTopUp}
           />
         </View>
       </View>

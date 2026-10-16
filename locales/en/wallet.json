@@ -6,6 +6,7 @@
   "movements": "Movements",
   "empty": "No movements yet.",
   "error": "We couldn't load your wallet.",
+  "returnToEvent": "Pick a package. When you're done you'll return to the event registration.",
   "type": {
     "TOPUP": "Top-up",
     "DEBIT": "Spend",

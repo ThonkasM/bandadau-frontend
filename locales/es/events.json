@@ -6,6 +6,7 @@
   "empty": "No hay eventos próximos.",
   "error": "No pudimos cargar los eventos.",
   "seats": "{count, plural, =0 {Sin cupo} one {# lugar} other {# lugares}}",
+  "soldOut": "Cupos agotados",
   "payment": {
     "processingTitle": "Procesando tu inscripción",
     "debiting": "{count, plural, one {Debitando # crédito} other {Debitando # créditos}}",
@@ -18,6 +19,7 @@
     "viewTicket": "Ver mi entrada",
     "failedTitle": "No se pudo completar",
     "retry": "Reintentar",
+    "topUpAndContinue": "Recargar y continuar",
     "close": "Cerrar"
   },
   "registrations": {

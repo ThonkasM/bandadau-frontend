@@ -14,8 +14,14 @@ export interface EventDetailViewProps {
   event: Event;
   /** The user already has a registration/ticket for this event (no re-purchase). */
   registered: boolean;
+  /** The event has no seats left (`seatsAvailable === 0`): no registration possible. */
+  soldOut: boolean;
+  /** The wallet balance is visibly below the price (UC-12, alterno 1a). */
+  insufficientFunds: boolean;
   onParticipate: () => void;
   onViewTickets: () => void;
+  /** UC-12 «extend» UC-15: top up credits and continue registering. */
+  onTopUp: () => void;
 }
 
 export function EventHero({ event, style }: { event: Event; style?: StyleProp<ViewStyle> }) {
@@ -77,15 +83,52 @@ export function EventPrice({ event, locale }: { event: Event; locale: Locale }) 
 
 export function EventCta({
   registered,
+  soldOut,
+  insufficientFunds,
   onParticipate,
   onViewTickets,
-}: Pick<EventDetailViewProps, 'registered' | 'onParticipate' | 'onViewTickets'>) {
+  onTopUp,
+}: Pick<
+  EventDetailViewProps,
+  'registered' | 'soldOut' | 'insufficientFunds' | 'onParticipate' | 'onViewTickets' | 'onTopUp'
+>) {
+  const tokens = useTokens();
   const { t } = useTranslation('events');
-  return registered ? (
-    <Button label={t('viewTickets')} variant="secondary" onPress={onViewTickets} />
-  ) : (
-    <Button label={t('register')} onPress={onParticipate} />
-  );
+  if (registered) {
+    return <Button label={t('viewTickets')} variant="secondary" onPress={onViewTickets} />;
+  }
+  if (soldOut) {
+    return (
+      <View
+        accessibilityRole="text"
+        style={[
+          styles.soldOut,
+          {
+            backgroundColor: tokens.color.feedback.danger.bg,
+            borderColor: tokens.color.feedback.danger.border,
+          },
+        ]}>
+        <MaterialCommunityIcons
+          name="alert-circle-outline"
+          size={18}
+          color={tokens.color.feedback.danger.fg}
+        />
+        <Text style={[styles.soldOutText, { color: tokens.color.feedback.danger.fg }]}>
+          {t('soldOut')}
+        </Text>
+      </View>
+    );
+  }
+  if (insufficientFunds) {
+    return (
+      <Button
+        label={t('payment.topUpAndContinue')}
+        icon="wallet-plus-outline"
+        onPress={onTopUp}
+      />
+    );
+  }
+  return <Button label={t('register')} onPress={onParticipate} />;
 }
 
 const styles = StyleSheet.create({
@@ -95,4 +138,16 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 14, flex: 1 },
   description: { fontSize: 15, lineHeight: 22 },
   price: { fontSize: 24, fontWeight: '900' },
+  soldOut: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    minHeight: 52,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  soldOutText: { fontSize: 15.5, fontWeight: '700' },
 });

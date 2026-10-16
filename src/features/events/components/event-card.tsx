@@ -13,6 +13,7 @@ export function EventCard({ event, onPress }: { event: Event; onPress?: () => vo
   const { t, i18n } = useTranslation(['events', 'app']);
   const locale = i18n.language as Locale;
   const price = event.priceCredits === 0 ? t('app:free') : formatCredits(event.priceCredits, locale);
+  const soldOut = event.seatsAvailable <= 0;
 
   return (
     <Pressable
@@ -32,6 +33,25 @@ export function EventCard({ event, onPress }: { event: Event; onPress?: () => vo
         <View style={[styles.priceBadge, { backgroundColor: tokens.color.brand.accent }]}>
           <Text style={[styles.priceText, { color: tokens.color.text.inverse }]}>{price}</Text>
         </View>
+        {soldOut ? (
+          <View
+            style={[
+              styles.soldOutBadge,
+              {
+                backgroundColor: tokens.color.feedback.danger.bg,
+                borderColor: tokens.color.feedback.danger.border,
+              },
+            ]}>
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={14}
+              color={tokens.color.feedback.danger.fg}
+            />
+            <Text style={[styles.soldOutText, { color: tokens.color.feedback.danger.fg }]}>
+              {t('events:soldOut')}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.body}>
@@ -45,8 +65,16 @@ export function EventCard({ event, onPress }: { event: Event; onPress?: () => vo
           </Text>
         </View>
         <View style={styles.metaRow}>
-          <MaterialCommunityIcons name="account-multiple-outline" size={15} color={tokens.color.text.muted} />
-          <Text style={[styles.meta, { color: tokens.color.text.muted }]}>
+          <MaterialCommunityIcons
+            name="account-multiple-outline"
+            size={15}
+            color={soldOut ? tokens.color.feedback.danger.fg : tokens.color.text.muted}
+          />
+          <Text
+            style={[
+              styles.meta,
+              { color: soldOut ? tokens.color.feedback.danger.fg : tokens.color.text.muted },
+            ]}>
             {t('events:seats', { count: event.seatsAvailable })}
           </Text>
         </View>
@@ -77,6 +105,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   priceText: { fontSize: 12.5, fontWeight: '800' },
+  soldOutBadge: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  soldOutText: { fontSize: 12.5, fontWeight: '800' },
   body: { padding: 14, gap: 6 },
   title: { fontSize: 16.5, fontWeight: '800' },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
