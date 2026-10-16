@@ -90,6 +90,8 @@ const config: ExpoConfig = {
       {
         ios: {
           enableSceneSupport: true,
+          // react-native-executorch (UC-17) and its MLX backend require iOS 17.
+          deploymentTarget: '17.0',
         },
       },
     ],
