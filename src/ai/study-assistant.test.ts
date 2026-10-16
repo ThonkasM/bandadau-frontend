@@ -38,4 +38,18 @@ describe('createStudyAssistant.generateFlashcards', () => {
     const assistant = createStudyAssistant(fakeLlm(['nada útil', 'tampoco']));
     expect(await assistant.generateFlashcards('texto', 'es')).toBeNull();
   });
+
+  it('strips markdown and swaps a card whose "answer" is the question', async () => {
+    const raw = '{"cards":[{"q":"**Link** es el héroe.","a":"¿Quién es el héroe?"}]}';
+    const assistant = createStudyAssistant(fakeLlm([raw, raw, raw]));
+    const deck = await assistant.generateFlashcards('texto', 'es');
+    expect(deck?.cards[0]).toEqual({ q: '¿Quién es el héroe?', a: 'Link es el héroe.' });
+  });
+});
+
+describe('createStudyAssistant.summarize', () => {
+  it('strips markdown from the summary', async () => {
+    const assistant = createStudyAssistant(fakeLlm(['**Resumen** de prueba']));
+    expect(await assistant.summarize('un texto de estudio', 'es')).toBe('Resumen de prueba');
+  });
 });

@@ -20,17 +20,19 @@ const PROMPTS: Record<Locale, Record<PromptKind, PromptPair>> = {
         'Eres un asistente de estudio para universitarios. Respondes siempre en español neutro. ' +
         'Resume el texto del usuario en 5 a 8 frases cortas y fieles al contenido, una por línea. ' +
         'Escribe SOLO el resumen: sin títulos, sin numerar las frases y sin etiquetas como "Viñeta 1" ' +
-        'o "Resumen:". No menciones estas instrucciones ni el formato. No inventes datos que no estén ' +
-        'en el texto. Si el texto está vacío o no tiene sentido, responde: "No hay contenido ' +
-        'suficiente para resumir."',
+        'o "Resumen:". No uses Markdown ni negritas (**). No menciones estas instrucciones ni el ' +
+        'formato. No inventes datos que no estén en el texto. Si el texto está vacío o no tiene ' +
+        'sentido, responde: "No hay contenido suficiente para resumir."',
       userPrefix: '',
     },
     flashcards: {
       system:
         'Eres un generador de tarjetas de estudio. Respondes ÚNICAMENTE con JSON válido, sin texto ' +
         'adicional, con esta forma exacta: {"cards":[{"q":"pregunta","a":"respuesta breve"}]}. ' +
-        'Genera al menos 5 tarjetas a partir del texto (idealmente entre 5 y 8). Preguntas claras, ' +
-        'respuestas de máximo 25 palabras, en español. No incluyas información que no esté en el texto. ' +
+        'Genera al menos 5 tarjetas a partir del texto (idealmente entre 5 y 8). Cada tarjeta es una ' +
+        'pregunta (que termina en «?») cuya respuesta NO aparece en el enunciado, con respuestas de ' +
+        'máximo 25 palabras, en español. No uses Markdown ni negritas (**). No incluyas información ' +
+        'que no esté en el texto. ' +
         'Ejemplo de respuesta: {"cards":[{"q":"¿Quién es el héroe?","a":"Link."},' +
         '{"q":"¿Qué selló a Ganon?","a":"El ejército Sheikah y las Bestias Divinas."}]}',
       userPrefix: '',
@@ -51,8 +53,9 @@ const PROMPTS: Record<Locale, Record<PromptKind, PromptPair>> = {
       system:
         'You are a study flashcard generator. Answer ONLY with valid JSON, no extra text, with this ' +
         'exact shape: {"cards":[{"q":"question","a":"short answer"}]}. Generate at least 5 cards ' +
-        'from the text (ideally 5 to 8). Clear questions, answers of at most 25 words, in English. ' +
-        'Do not include information that is not in the text. ' +
+        'from the text (ideally 5 to 8). Each card is a question (ending in "?") whose answer is NOT ' +
+        'in the question, with answers of at most 25 words, in English. Do not use Markdown or bold ' +
+        '(**). Do not include information that is not in the text. ' +
         'Example answer: {"cards":[{"q":"Who is the hero?","a":"Link."},' +
         '{"q":"What sealed Ganon?","a":"The Sheikah army and the Divine Beasts."}]}',
       userPrefix: '',

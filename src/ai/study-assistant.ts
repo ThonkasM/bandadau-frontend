@@ -5,6 +5,7 @@ import type { Flashcard, FlashcardDeck } from './flashcards';
 import { parseAnyFlashcardDeck } from './flashcards';
 import type { ChatMessage, LocalLlm } from './local-llm';
 import { FLASHCARD_RETRY, flashcardTopUp, promptSystem } from './prompts';
+import { stripMarkdown } from './text';
 
 /** UC-17 §5.4: input capped at 12 000 chars; longer texts are summarized with map-reduce. */
 export const MAX_INPUT_CHARS = 12_000;
@@ -13,12 +14,20 @@ export const MIN_FLASHCARDS = 5;
 const MAX_FLASHCARDS = 10;
 const CHUNK_CHARS = 6_000;
 
+/** Cleans one card: strips Markdown and swaps the pair when the "answer" is the interrogative one. */
+function cleanCard(card: Flashcard): Flashcard {
+  const q = stripMarkdown(card.q);
+  const a = stripMarkdown(card.a);
+  if (!q.includes('?') && a.includes('?')) return { q: a, a: q };
+  return { q, a };
+}
+
 function dedupeCards(cards: readonly Flashcard[]): Flashcard[] {
   const seen = new Set<string>();
   const out: Flashcard[] = [];
-  for (const card of cards) {
+  for (const card of cards.map(cleanCard)) {
     const key = card.q.toLowerCase().trim();
-    if (seen.has(key)) continue;
+    if (seen.has(key) || !card.q || !card.a) continue;
     seen.add(key);
     out.push(card);
     if (out.length >= MAX_FLASHCARDS) break;
@@ -79,11 +88,18 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
       if (llm.backend === 'extractive') return extractiveSummary(input);
       try {
         const parts = chunk(input);
-        if (parts.length === 1) return await summarizeChunk(input, locale, onToken, signal);
-        // map-reduce: summarize each chunk (no streaming), then summarize the concatenation.
-        const partials: string[] = [];
-        for (const part of parts) partials.push(await summarizeChunk(part, locale, undefined, signal));
-        return await summarizeChunk(partials.join('\n\n'), locale, onToken, signal);
+        const result =
+          parts.length === 1
+            ? await summarizeChunk(input, locale, onToken, signal)
+            : await (async () => {
+                // map-reduce: summarize each chunk (no streaming), then summarize the concatenation.
+                const partials: string[] = [];
+                for (const part of parts) {
+                  partials.push(await summarizeChunk(part, locale, undefined, signal));
+                }
+                return summarizeChunk(partials.join('\n\n'), locale, onToken, signal);
+              })();
+        return stripMarkdown(result);
       } catch {
         // Model not downloaded or runtime missing → keep the assistant usable offline.
         return extractiveSummary(input);
@@ -114,7 +130,7 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
         deck = parseAnyFlashcardDeck(retry);
       }
       if (!deck) return null;
-      if (deck.cards.length >= MIN_FLASHCARDS) return deck;
+      if (deck.cards.length >= MIN_FLASHCARDS) return { cards: dedupeCards(deck.cards) };
 
       // Top up to reach at least MIN cards, asking for distinct ones and deduping by question.
       const missing = MIN_FLASHCARDS - deck.cards.length;
