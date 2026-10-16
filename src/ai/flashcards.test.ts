@@ -1,4 +1,4 @@
-import { extractJsonObject, parseFlashcardDeck } from './flashcards';
+import { extractJsonObject, parseAnyFlashcardDeck, parseFlashcardDeck, parseFlashcardsFromLines } from './flashcards';
 
 describe('extractJsonObject', () => {
   it('extracts a balanced object surrounded by prose', () => {
@@ -29,5 +29,33 @@ describe('parseFlashcardDeck', () => {
     expect(parseFlashcardDeck('{"cards":[{"q":"","a":"x"}]}')).toBeNull();
     const many = { cards: Array.from({ length: 11 }, (_, i) => ({ q: `q${i}`, a: 'a' })) };
     expect(parseFlashcardDeck(JSON.stringify(many))).toBeNull();
+  });
+});
+
+describe('parseFlashcardsFromLines (tolerant fallback, UC-17 §9a)', () => {
+  it('parses P:/R: pairs', () => {
+    const raw = 'P: ¿Qué es el sol?\nR: Una estrella.\nP: ¿Y la luna?\nR: Un satélite.';
+    expect(parseFlashcardsFromLines(raw)).toEqual({
+      cards: [
+        { q: '¿Qué es el sol?', a: 'Una estrella.' },
+        { q: '¿Y la luna?', a: 'Un satélite.' },
+      ],
+    });
+  });
+
+  it('accepts Q:/A: and ignores a dangling question', () => {
+    const raw = 'Q: Uno\nA: Dos\nP: sin respuesta';
+    expect(parseFlashcardsFromLines(raw)?.cards).toHaveLength(1);
+  });
+
+  it('returns null when there is nothing to pair', () => {
+    expect(parseFlashcardsFromLines('texto sin tarjetas')).toBeNull();
+  });
+});
+
+describe('parseAnyFlashcardDeck', () => {
+  it('prefers JSON but falls back to lines', () => {
+    expect(parseAnyFlashcardDeck('{"cards":[{"q":"a","a":"b"}]}')?.cards).toHaveLength(1);
+    expect(parseAnyFlashcardDeck('P: a\nR: b')?.cards).toHaveLength(1);
   });
 });

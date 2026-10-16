@@ -2,7 +2,7 @@ import type { Locale } from '@bandada/i18n';
 
 import { extractiveSummary } from './extractive-summary';
 import type { FlashcardDeck } from './flashcards';
-import { parseFlashcardDeck } from './flashcards';
+import { parseAnyFlashcardDeck } from './flashcards';
 import type { ChatMessage, LocalLlm } from './local-llm';
 import { FLASHCARD_RETRY, promptSystem } from './prompts';
 
@@ -75,7 +75,7 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
         { role: 'user', content: input },
       ];
       const first = await llm.generate(messages, { maxTokens: 768, temperature: 0.2 });
-      const deck = parseFlashcardDeck(first);
+      const deck = parseAnyFlashcardDeck(first);
       if (deck) return deck;
       // One strict retry before giving up (UC-17 §5.4 step 3).
       const retry = await llm.generate(
@@ -86,7 +86,7 @@ export function createStudyAssistant(llm: LocalLlm): StudyAssistant {
         ],
         { maxTokens: 768, temperature: 0 },
       );
-      return parseFlashcardDeck(retry);
+      return parseAnyFlashcardDeck(retry);
     },
   };
 }

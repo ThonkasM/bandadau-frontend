@@ -28,8 +28,10 @@ interface ExecuTorchModule {
   ): Promise<LLMChatSession>;
 }
 
-/** Maps our model ids to the curated `models.llm.*` registry of the installed runtime. */
-function registryModel(runtime: ExecuTorchModule, id: LocalModelId): LLMModel | null {
+/** Keeps a session only while its history is short (system + ~1 turn), then reloads a fresh one. */
+const MAX_SESSION_MESSAGES = 4;
+
+/** Maps our model ids to the curated `models.llm.*` registry of the installed runtime. */function registryModel(runtime: ExecuTorchModule, id: LocalModelId): LLMModel | null {
   const { llm } = runtime.models;
   switch (id) {
     case 'llama-3.2-1b-q':
@@ -111,7 +113,14 @@ class ExecutorchLlm implements LocalLlm {
   private async ensureSession(system: string): Promise<LLMChatSession> {
     const runtime = await this.runtime();
     if (!runtime || !this.modelConfig) throw new Error('assistant model is not ready');
-    if (this.session && this.sessionSystem === system) return this.session;
+    // Reuse only while the system prompt is unchanged and the history is short; otherwise start a
+    // fresh context so a new summarize/flashcards run is not influenced by the previous one (the
+    // flashcards retry still reuses the session, since its history is within the bound).
+    const reusable =
+      this.session &&
+      this.sessionSystem === system &&
+      this.session.getHistory().length <= MAX_SESSION_MESSAGES;
+    if (reusable) return this.session as LLMChatSession;
     this.session?.dispose();
     this.session = await runtime.createLLMChatSession(this.modelConfig, {
       initialMessages: system ? [{ role: 'system', content: system }] : [],

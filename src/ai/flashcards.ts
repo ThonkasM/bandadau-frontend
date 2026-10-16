@@ -53,3 +53,35 @@ export function parseFlashcardDeck(raw: string): FlashcardDeck | null {
     return null;
   }
 }
+
+const QUESTION_LINE = /^\s*(?:p|q|pregunta|question)\s*[:.)-]\s*(.+)$/i;
+const ANSWER_LINE = /^\s*(?:r|a|respuesta|answer)\s*[:.)-]\s*(.+)$/i;
+
+/**
+ * Tolerant fallback (UC-17 §9a): some small models answer with `P:`/`R:` lines instead of JSON.
+ * Pairs each question line with the next answer line.
+ */
+export function parseFlashcardsFromLines(raw: string): FlashcardDeck | null {
+  const cards: Flashcard[] = [];
+  let question: string | null = null;
+  for (const line of raw.split('\n')) {
+    const q = line.match(QUESTION_LINE);
+    if (q?.[1]) {
+      question = q[1].trim();
+      continue;
+    }
+    const a = line.match(ANSWER_LINE);
+    if (a?.[1] && question) {
+      cards.push({ q: question, a: a[1].trim().slice(0, 300) });
+      question = null;
+    }
+  }
+  if (cards.length === 0) return null;
+  const parsed = FlashcardDeckSchema.safeParse({ cards: cards.slice(0, 10) });
+  return parsed.success ? parsed.data : null;
+}
+
+/** JSON first, then the tolerant line format (UC-17 §5.4 / §9a). */
+export function parseAnyFlashcardDeck(raw: string): FlashcardDeck | null {
+  return parseFlashcardDeck(raw) ?? parseFlashcardsFromLines(raw);
+}
