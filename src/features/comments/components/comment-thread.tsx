@@ -13,13 +13,13 @@ function CommentRow({
 }: {
   comment: Comment;
   indent?: boolean;
-  onReply: (comment: Comment) => void;
+  /** Only root comments can be replied to (one level of nesting); replies get no button. */
+  onReply?: (comment: Comment) => void;
 }) {
   const tokens = useTokens();
   const { t, i18n } = useTranslation('comments');
   const locale = i18n.language as Locale;
   const initial = comment.author.displayName.slice(0, 1).toUpperCase();
-  const body = `${comment.author.displayName} ${comment.text}`;
 
   return (
     <View style={[styles.row, indent && styles.indented]}>
@@ -27,14 +27,19 @@ function CommentRow({
         <RNText style={[styles.initial, { color: tokens.color.text.primary }]}>{initial}</RNText>
       </View>
       <View style={styles.content}>
-        <RNText style={[styles.body, { color: tokens.color.text.primary }]}>{body}</RNText>
+        <RNText style={[styles.author, { color: tokens.color.text.primary }]}>
+          {comment.author.displayName}
+        </RNText>
+        <RNText style={[styles.body, { color: tokens.color.text.primary }]}>{comment.text}</RNText>
         <View style={styles.metaRow}>
           <RNText style={[styles.time, { color: tokens.color.text.muted }]}>
             {formatRelative(comment.createdAt, locale)}
           </RNText>
-          <Pressable onPress={() => onReply(comment)}>
-            <RNText style={[styles.reply, { color: tokens.color.text.muted }]}>{t('reply')}</RNText>
-          </Pressable>
+          {onReply ? (
+            <Pressable onPress={() => onReply(comment)}>
+              <RNText style={[styles.reply, { color: tokens.color.text.muted }]}>{t('reply')}</RNText>
+            </Pressable>
+          ) : null}
         </View>
       </View>
     </View>
@@ -63,7 +68,7 @@ export function CommentThreadView({
     <View style={styles.thread}>
       <CommentRow comment={thread.comment} onReply={onReply} />
       {shownReplies.map((reply) => (
-        <CommentRow key={reply.id} comment={reply} indent onReply={onReply} />
+        <CommentRow key={reply.id} comment={reply} indent />
       ))}
       {hidden > 0 ? (
         <Pressable
@@ -92,8 +97,9 @@ const styles = StyleSheet.create({
   avatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   initial: { fontSize: 13, fontWeight: '800' },
   content: { flex: 1, gap: 2 },
+  author: { fontSize: 13, fontWeight: '700' },
   body: { fontSize: 14, lineHeight: 19 },
-  metaRow: { flexDirection: 'row', gap: 14 },
+  metaRow: { flexDirection: 'row', gap: 14, marginTop: 2 },
   time: { fontSize: 12 },
   reply: { fontSize: 12, fontWeight: '700' },
   moreReplies: { marginLeft: 44, paddingLeft: 8, paddingVertical: 4 },
