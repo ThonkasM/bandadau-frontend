@@ -5,14 +5,14 @@ import { apiRequest } from '@/lib/api-client';
 import type { ApiError } from '@/lib/api-error';
 import { queryKeys } from '@/lib/query-keys';
 
-import type { Ticket, TicketDetail, TicketPage, ValidateTicketResponse } from './types';
+import type { Ticket, TicketDetail, TicketPage, TicketSort, ValidateTicketResponse } from './types';
 
-/** UC-12/14: my tickets (QR). */
-export function useMyTickets() {
+/** UC-12/14: my tickets (QR). `sort` is resolved by the service (GSI1/GSI3). */
+export function useMyTickets(sort: TicketSort = 'eventDate') {
   return useInfiniteList<Ticket>({
-    queryKey: queryKeys.tickets.mine(),
+    queryKey: queryKeys.tickets.mine(sort),
     fetchPage: (cursor) =>
-      apiRequest<TicketPage>('/api/v1/tickets/me', { query: { cursor, limit: 20 } }),
+      apiRequest<TicketPage>('/api/v1/tickets/me', { query: { cursor, limit: 20, sort } }),
     getId: (item) => item.id,
   });
 }

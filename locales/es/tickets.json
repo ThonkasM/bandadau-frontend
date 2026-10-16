@@ -13,6 +13,12 @@
     "available": "Disponible",
     "used": "Usado"
   },
+  "sort": {
+    "label": "Ordenar por",
+    "recent": "Recientes",
+    "eventDate": "Por fecha",
+    "a11y": "Ordenar mis entradas"
+  },
   "reveal": {
     "title": "¡Tu entrada está lista!",
     "subtitle": "Guárdala para no perderla.",

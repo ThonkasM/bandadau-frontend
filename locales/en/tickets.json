@@ -13,6 +13,12 @@
     "available": "Available",
     "used": "Used"
   },
+  "sort": {
+    "label": "Sort by",
+    "recent": "Recent",
+    "eventDate": "By date",
+    "a11y": "Sort my tickets"
+  },
   "reveal": {
     "title": "Your ticket is ready!",
     "subtitle": "Save it so you don't lose it.",

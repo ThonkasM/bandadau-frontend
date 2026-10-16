@@ -5,11 +5,13 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
-import { FeedList } from '@/components/ui/feed-list';
+import { Chip } from '@/components/ui/chip';
+import { Text as UiText } from '@/components/ui/text';
+import { VirtualList } from '@/components/ui/virtual-list';
 import { useMyTickets, useTicket } from '@/features/tickets/api';
 import { TicketPassListItem } from '@/features/tickets/components/ticket-pass-list-item';
 import { TicketPassModal } from '@/features/tickets/components/ticket-pass-modal';
-import type { Ticket } from '@/features/tickets/types';
+import type { Ticket, TicketSort } from '@/features/tickets/types';
 import { useDeviceType } from '@/hooks/use-device-type';
 import { useTokens } from '@/theme/theme-provider';
 
@@ -22,11 +24,13 @@ export default function TicketsScreen() {
   const { t: ta } = useTranslation('app');
   const router = useRouter();
   const { isWeb, width } = useDeviceType();
-  const list = useMyTickets();
   const [tab, setTab] = useState<Tab>('available');
+  const [sort, setSort] = useState<TicketSort>('recent');
+  const list = useMyTickets(sort);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const detail = useTicket(selectedId ?? undefined);
 
+  // Ordering is resolved by the service (`sort`); the tab filter is local.
   const items = list.items.filter((ticket) =>
     tab === 'available' ? ticket.status === 'ISSUED' : ticket.status !== 'ISSUED',
   );
@@ -36,6 +40,7 @@ export default function TicketsScreen() {
     { id: 'available', label: t('tabs.available') },
     { id: 'used', label: t('tabs.used') },
   ];
+  const sorts: TicketSort[] = ['recent', 'eventDate'];
 
   return (
     <Screen title={t('title')} showBack>
@@ -70,6 +75,18 @@ export default function TicketsScreen() {
         })}
       </View>
 
+      <View style={styles.sortRow} accessibilityLabel={t('sort.a11y')}>
+        <UiText variant="label">{t('sort.label')}</UiText>
+        {sorts.map((option) => (
+          <Chip
+            key={option}
+            label={t(`sort.${option}`)}
+            selected={sort === option}
+            onPress={() => setSort(option)}
+          />
+        ))}
+      </View>
+
       {list.loading ? (
         <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
       ) : list.error ? (
@@ -82,7 +99,7 @@ export default function TicketsScreen() {
           </Pressable>
         </>
       ) : (
-        <FeedList<Ticket>
+        <VirtualList<Ticket>
           style={styles.list}
           data={items}
           numColumns={columns}
@@ -124,6 +141,7 @@ const styles = StyleSheet.create({
   tab: { flex: 1, alignItems: 'center', paddingVertical: 12 },
   tabLabel: { fontSize: 14.5, fontWeight: '700' },
   tabUnderline: { position: 'absolute', bottom: 0, height: 3, width: '46%', borderRadius: 2 },
+  sortRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 12 },
   list: { flex: 1, marginTop: 12 },
   row: { gap: 12 },
   ticket: { flex: 1, marginBottom: 16 },

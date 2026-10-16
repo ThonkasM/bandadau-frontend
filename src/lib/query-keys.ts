@@ -32,7 +32,7 @@ export const queryKeys = {
   },
   tickets: {
     root: () => ['tickets'] as const,
-    mine: () => ['tickets', 'me'] as const,
+    mine: (sort: string = 'eventDate') => ['tickets', 'me', sort] as const,
     byId: (id: string) => ['tickets', id] as const,
   },
   notifications: {
