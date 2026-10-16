@@ -18,7 +18,8 @@
     "header": "Menu",
     "tickets": "My tickets",
     "registrations": "My registrations",
-    "edit": "Edit profile",
+  "edit": "Edit profile",
+  "create": "Create post",
     "settings": "Settings",
     "openPanel": "Open panel",
     "logout": "Log out"

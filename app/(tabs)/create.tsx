@@ -116,7 +116,7 @@ export default function CreateScreen() {
   };
 
   return (
-    <Screen title={t('title')}>
+    <Screen title={t('title')} showBack>
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
         <ScrollView
           style={styles.flex}

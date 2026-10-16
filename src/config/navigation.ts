@@ -44,7 +44,8 @@ export const NAV_ROUTES: NavRoute[] = [
     icon: 'plus-circle-outline',
     iconActive: 'plus-circle',
     match: ['/create'],
-    inTabBar: true,
+    // Reachable from the profile («Crear publicación»), not from the tab bar.
+    inTabBar: false,
   },
   {
     name: 'assistant',

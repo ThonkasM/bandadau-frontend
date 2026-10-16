@@ -101,6 +101,21 @@ export default function ProfileScreen() {
           <Stat label={tp('following')} value={data.followingCount} />
         </View>
 
+        <Pressable
+          onPress={() => router.push('/(tabs)/create')}
+          accessibilityRole="button"
+          accessibilityLabel={tp('create')}
+          style={[styles.createButton, { backgroundColor: tokens.color.action.primary.bg }]}>
+          <MaterialCommunityIcons
+            name="plus"
+            size={18}
+            color={tokens.color.action.primary.fg}
+          />
+          <Text style={[styles.createLabel, { color: tokens.color.action.primary.fg }]}>
+            {tp('create')}
+          </Text>
+        </Pressable>
+
         <View style={[styles.tabs, { borderBottomColor: tokens.color.border.default }]}>
           {(['posts', 'saved'] as Tab[]).map((option) => {
             const active = tab === option;
@@ -180,6 +195,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  createButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
+  },
+  createLabel: { fontSize: 15, fontWeight: '800' },
   identity: { alignItems: 'center', marginTop: -44, gap: 4 },
   avatar: {
     width: 88,

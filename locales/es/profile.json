@@ -18,7 +18,8 @@
     "header": "Menú",
     "tickets": "Mis entradas",
     "registrations": "Mis inscripciones",
-    "edit": "Editar perfil",
+  "edit": "Editar perfil",
+  "create": "Crear publicación",
     "settings": "Configuración",
     "openPanel": "Abrir panel",
     "logout": "Cerrar sesión"
