@@ -65,6 +65,7 @@ const config: ExpoConfig = {
     'expo-system-ui',
     'expo-web-browser',
     'expo-image-picker',
+    'expo-asset',
     'expo-audio',
     'expo-camera',
     [
