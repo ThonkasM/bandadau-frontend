@@ -83,6 +83,7 @@
     "@bandada/tsconfig": "file:../bandadau-shared/packages/tsconfig",
     "@react-native/jest-preset": "^0.86.3",
     "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.2.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "babel-preset-expo": "~57.0.0",
@@ -101,7 +102,7 @@
       "<rootDir>/jest.setup.ts"
     ],
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|nativewind|react-native-css-interop|@bandada/.*))"
+      "node_modules/(?!.pnpm)(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|nativewind|react-native-css-interop|@bandada/.*))"
     ]
   }
 }
