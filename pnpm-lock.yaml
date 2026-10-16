@@ -29,6 +29,9 @@ importers:
       '@shopify/flash-list':
         specifier: 2.0.2
         version: 2.0.2(@babel/runtime@7.29.10)(react-native@0.86.3(@babel/core@7.29.7)(@react-native/jest-preset@0.86.3(@babel/core@7.29.7)(react@19.2.3))(@react-native/metro-config@0.86.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
+      '@tanstack/query-async-storage-persister':
+        specifier: ^5.104.3
+        version: 5.104.3
       '@tanstack/query-sync-storage-persister':
         specifier: ^5.104.2
         version: 5.104.2
@@ -1521,11 +1524,20 @@ packages:
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
 
+  '@tanstack/query-async-storage-persister@5.104.3':
+    resolution: {integrity: sha512-xunlTTS1NFNE5Uk0pEZMhriYMqdaiZVhqTSQmTfKzLHg+oDBM6tUhSQsdCwAC77mvGC5J59tGkwhFz8CHtvdsg==}
+
   '@tanstack/query-core@5.104.2':
     resolution: {integrity: sha512-/qbsxJK5c3Ve1aFIULWYNcT2jeRUAiD4HME6Eu2ZdpofHoVgAjpkQhLg5xHuOoBkTPQUJLfP7zOxy0qsBcqROA==}
 
+  '@tanstack/query-core@5.104.3':
+    resolution: {integrity: sha512-DZY9TuJAOgU3UyHUhXb4CcTYEHNZszlwkPg4VViIwTxOKzLprPUU+rbaPZQd3srqkGOtpaDdKpW972UV/LKlcg==}
+
   '@tanstack/query-persist-client-core@5.104.2':
     resolution: {integrity: sha512-rFbWzV0NmdPU9b6xbJBEH6dtaWbbSX1vmXoi+s5o63ETKJhcKoh3gGq0NMqITtGEGEG8kogvJ56US7DJjwkPKA==}
+
+  '@tanstack/query-persist-client-core@5.104.3':
+    resolution: {integrity: sha512-6nhc/QbMpkKeuAM81SFSdcsJ9B8dm3fGHPODbau2cRSDyqcXiSl7sXQM7POVktch/YdgIGYPIQyZOQQaRarHMA==}
 
   '@tanstack/query-sync-storage-persister@5.104.2':
     resolution: {integrity: sha512-CpnIzeZrAw3s8aaSNiica4CvM2vDwMJFOzBjmQ4yrTTM9J0Qn8s54ER1Wg0sEYi8/HPYzisUyr77o729bv3VUw==}
@@ -7386,7 +7398,9 @@ snapshots:
       metro-runtime: 0.84.6
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-colors@0.74.89': {}
 
@@ -7420,11 +7434,22 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
+  '@tanstack/query-async-storage-persister@5.104.3':
+    dependencies:
+      '@tanstack/query-core': 5.104.3
+      '@tanstack/query-persist-client-core': 5.104.3
+
   '@tanstack/query-core@5.104.2': {}
+
+  '@tanstack/query-core@5.104.3': {}
 
   '@tanstack/query-persist-client-core@5.104.2':
     dependencies:
       '@tanstack/query-core': 5.104.2
+
+  '@tanstack/query-persist-client-core@5.104.3':
+    dependencies:
+      '@tanstack/query-core': 5.104.3
 
   '@tanstack/query-sync-storage-persister@5.104.2':
     dependencies:

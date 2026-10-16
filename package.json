@@ -26,6 +26,7 @@
     "@gorhom/bottom-sheet": "^5.2.14",
     "@react-native-community/netinfo": "12.0.1",
     "@shopify/flash-list": "2.0.2",
+    "@tanstack/query-async-storage-persister": "^5.104.3",
     "@tanstack/query-sync-storage-persister": "^5.104.2",
     "@tanstack/react-query": "^5.104.2",
     "@tanstack/react-query-persist-client": "^5.104.2",

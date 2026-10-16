@@ -2,6 +2,7 @@ import { clearRefreshToken, getRefreshToken, setRefreshToken } from '@/auth/refr
 import type { AuthTokens } from '@/features/auth/types';
 import { apiRequest, refreshSession } from '@/lib/api-client';
 import { queryClient } from '@/lib/query-client';
+import { queryPersister } from '@/lib/query-persister';
 import { useSessionStore } from '@/stores/session.store';
 
 /** Persists tokens + session after a successful login/verify/refresh-exchange. */
@@ -30,6 +31,7 @@ export async function logout(): Promise<void> {
   } finally {
     await clearRefreshToken();
     queryClient.clear();
+    await Promise.resolve(queryPersister.removeClient()).catch(() => undefined);
     useSessionStore.getState().clear();
   }
 }

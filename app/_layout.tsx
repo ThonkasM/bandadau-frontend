@@ -4,7 +4,7 @@ import 'intl-pluralrules';
 import '../global.css';
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -22,6 +22,7 @@ import { SIDEBAR_WIDTH } from '@/constants/layout';
 import { useSidebarLayout } from '@/hooks/use-sidebar-layout';
 import { initI18n } from '@/i18n';
 import { queryClient } from '@/lib/query-client';
+import { queryPersister } from '@/lib/query-persister';
 import { registerServiceWorker } from '@/lib/service-worker';
 import { ThemeProvider, useTheme, useTokens } from '@/theme/theme-provider';
 
@@ -84,7 +85,9 @@ export default function RootLayout() {
       <GestureHandlerRootView style={styles.flex}>
         <KeyboardProvider>
           {ready ? (
-            <QueryClientProvider client={queryClient}>
+            <PersistQueryClientProvider
+              client={queryClient}
+              persistOptions={{ persister: queryPersister, maxAge: 24 * 60 * 60 * 1000 }}>
               <ThemeProvider>
                 <BottomSheetModalProvider>
                   <ErrorBoundary>
@@ -92,7 +95,7 @@ export default function RootLayout() {
                   </ErrorBoundary>
                 </BottomSheetModalProvider>
               </ThemeProvider>
-            </QueryClientProvider>
+            </PersistQueryClientProvider>
           ) : null}
           {showSplash ? (
             <BandadaSplash
