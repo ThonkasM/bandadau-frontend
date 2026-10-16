@@ -8,6 +8,11 @@ import type {
   LocalLlm,
   LocalModelId,
 } from './local-llm';
+import {
+  clearModelDownloaded,
+  isModelDownloaded,
+  markModelDownloaded,
+} from './model-downloaded';
 import { MODELS } from './model-store';
 
 /** Minimal surface of `react-native-executorch` we rely on (kept loose for lazy loading). */
@@ -102,11 +107,24 @@ class ExecutorchLlm implements LocalLlm {
     this.modelConfig = await runtime.download(config, {
       onProgress: (progress) => this.emit({ kind: 'downloading', progress }),
     });
+    await markModelDownloaded(model);
     this.emit({ kind: 'ready' });
   }
 
   async load(model: LocalModelId): Promise<void> {
-    if (!this.modelConfig) await this.download(model);
+    if (this.modelConfig) {
+      this.emit({ kind: 'ready' });
+      return;
+    }
+    const runtime = await this.runtime();
+    if (!runtime) return;
+    // Only load from the local cache: if it was never downloaded, leave the status as
+    // `not-downloaded` so the UI keeps offering the download (RNF-11: never download on its own).
+    if (!(await isModelDownloaded(model))) return;
+    const config = registryModel(runtime, model);
+    if (!config) return;
+    // Cache hit: resolves immediately without touching the network.
+    this.modelConfig = await runtime.download(config);
     this.emit({ kind: 'ready' });
   }
 
@@ -154,8 +172,9 @@ class ExecutorchLlm implements LocalLlm {
     this.sessionSystem = null;
   }
 
-  async remove(): Promise<void> {
+  async remove(model: LocalModelId): Promise<void> {
     await this.unload();
+    await clearModelDownloaded(model);
     this.modelConfig = null;
     this.emit({ kind: 'not-downloaded' });
   }

@@ -37,7 +37,11 @@ export default function AssistantScreen() {
 
   useEffect(() => {
     const off = llm.onStatus(setStatus);
-    void llm.capabilities().then((caps) => setRecommended(caps.recommended));
+    void llm.capabilities().then((caps) => {
+      setRecommended(caps.recommended);
+      // Restore the `ready` state if the model is already cached (never downloads on its own).
+      if (caps.recommended) void llm.load(caps.recommended.id).catch(() => undefined);
+    });
     return off;
   }, []);
 

@@ -20,6 +20,8 @@ interface WebLlmModule {
     modelId: string,
     config?: { initProgressCallback?: (report: ProgressReport) => void },
   ): Promise<WebEngine>;
+  hasModelInCache(modelId: string): Promise<boolean>;
+  deleteModelAllInfoInCache(modelId: string): Promise<void>;
 }
 
 /** WebLLM prebuilt model ids (verified against the installed `@mlc-ai/web-llm`). */
@@ -88,7 +90,15 @@ class BrowserLlm implements LocalLlm {
   }
 
   async load(model: LocalModelId): Promise<void> {
-    if (!this.engine) await this.download(model);
+    if (this.engine) {
+      this.emit({ kind: 'ready' });
+      return;
+    }
+    const webllm = (await import('@mlc-ai/web-llm').catch(() => null)) as unknown as WebLlmModule | null;
+    if (!webllm || !(await hasWebGpu())) return;
+    // Only load from the browser cache: never download on its own (RNF-11).
+    if (!(await webllm.hasModelInCache(WEBLLM_MODELS[model]).catch(() => false))) return;
+    this.engine = await webllm.CreateMLCEngine(WEBLLM_MODELS[model]);
     this.emit({ kind: 'ready' });
   }
 
@@ -116,8 +126,10 @@ class BrowserLlm implements LocalLlm {
     this.engine = null;
   }
 
-  async remove(): Promise<void> {
+  async remove(model: LocalModelId): Promise<void> {
     await this.unload();
+    const webllm = (await import('@mlc-ai/web-llm').catch(() => null)) as unknown as WebLlmModule | null;
+    await webllm?.deleteModelAllInfoInCache(WEBLLM_MODELS[model]).catch(() => undefined);
     this.emit({ kind: 'not-downloaded' });
   }
 }
