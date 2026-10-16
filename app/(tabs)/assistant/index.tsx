@@ -12,7 +12,7 @@ import { createStudyAssistant, MAX_INPUT_CHARS } from '@/ai/study-assistant';
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { TextField } from '@/components/ui/text-field';
+import { TextEditorSheet } from '@/features/assistant/components/text-editor-sheet';
 import { useTokens } from '@/theme/theme-provider';
 
 const llm = createLocalLlm();
@@ -28,6 +28,7 @@ export default function AssistantScreen() {
   const [cards, setCards] = useState<{ q: string; a: string }[]>([]);
   const [busy, setBusy] = useState<'summary' | 'cards' | null>(null);
   const [flipped, setFlipped] = useState<number | null>(null);
+  const [editorVisible, setEditorVisible] = useState(false);
   const [failed, setFailed] = useState(false);
   const [status, setStatus] = useState<LlmStatus>(llm.status());
   const [recommended, setRecommended] = useState<LocalModelInfo | null>(null);
@@ -178,17 +179,36 @@ export default function AssistantScreen() {
           ) : null}
         </View>
 
-        <TextField
-          value={text}
-          onChangeText={setText}
-          placeholder={t('placeholder')}
-          multiline
-          maxLength={MAX_INPUT_CHARS}
-          style={styles.composer}
-        />
-        <Text variant="caption" style={{ color: tokens.color.text.muted }}>
-          {t('counter', { used: text.length, max: MAX_INPUT_CHARS })}
-        </Text>
+        <Pressable
+          onPress={() => setEditorVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t('editor.title')}
+          style={[
+            styles.composer,
+            {
+              backgroundColor: tokens.color.bg.muted,
+              borderColor: tokens.color.border.default,
+            },
+          ]}
+        >
+          <Text
+            numberOfLines={3}
+            style={[
+              styles.preview,
+              { color: text ? tokens.color.text.primary : tokens.color.text.muted },
+            ]}
+          >
+            {text || t('placeholder')}
+          </Text>
+          <View style={styles.composerFooter}>
+            <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+              {t('counter', { used: text.length, max: MAX_INPUT_CHARS })}
+            </Text>
+            <Text variant="caption" style={{ color: tokens.color.text.link }}>
+              {t('seeMore')}
+            </Text>
+          </View>
+        </Pressable>
 
         {busy === 'summary' ? (
           <Button label={t('stop')} icon="stop" onPress={onStop} />
@@ -252,6 +272,13 @@ export default function AssistantScreen() {
           </View>
         ) : null}
       </KeyboardAwareScrollView>
+
+      <TextEditorSheet
+        visible={editorVisible}
+        value={text}
+        onChangeText={setText}
+        onClose={() => setEditorVisible(false)}
+      />
     </Screen>
   );
 }
@@ -261,7 +288,9 @@ const styles = StyleSheet.create({
   content: { gap: 12, paddingBottom: 96 },
   card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 16, padding: 16, gap: 8 },
   cardTitle: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  composer: { minHeight: 140, textAlignVertical: 'top' },
+  composer: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 14, padding: 14, gap: 10 },
+  preview: { fontSize: 15, lineHeight: 21, minHeight: 42 },
+  composerFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   row: { flexDirection: 'row', gap: 12, flexWrap: 'wrap', alignItems: 'center' },
   cards: { gap: 10 },
   flashcard: { borderRadius: 14, padding: 16, minHeight: 88, justifyContent: 'center' },

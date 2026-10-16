@@ -2,6 +2,11 @@
   "title": "Study assistant",
   "subtitle": "Works offline: your text never leaves the device.",
   "placeholder": "Paste your notes or a study text…",
+  "seeMore": "See more",
+  "editor": {
+    "title": "Study text",
+    "done": "Done"
+  },
   "counter": "{used} of {max} characters",
   "summarize": "Summarize",
   "flashcards": "Generate flashcards",

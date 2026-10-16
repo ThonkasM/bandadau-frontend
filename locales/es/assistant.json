@@ -2,6 +2,11 @@
   "title": "Asistente de estudio",
   "subtitle": "Funciona sin conexión: tu texto nunca sale del dispositivo.",
   "placeholder": "Pega tus apuntes o un texto de estudio…",
+  "seeMore": "Ver más",
+  "editor": {
+    "title": "Texto de estudio",
+    "done": "Listo"
+  },
   "counter": "{used} de {max} caracteres",
   "summarize": "Resumir",
   "flashcards": "Generar flashcards",
