@@ -32,5 +32,16 @@
       "CANCELLATION_PENDING": "Cancelling…",
       "CANCELLED": "Cancelled"
     }
-  }
+  },
+  "createTitle": "Create event",
+  "titleLabel": "Title",
+  "descriptionLabel": "Description",
+  "venueLabel": "Venue",
+  "startsAtLabel": "Start (date and time)",
+  "startsAtHelper": "ISO format, e.g. 2026-11-15T19:00",
+  "capacityLabel": "Capacity",
+  "priceLabel": "Price (credits)",
+  "priceHelper": "0 = free event",
+  "createSubmit": "Create and publish",
+  "createError": "We couldn't create the event. Please try again."
 }

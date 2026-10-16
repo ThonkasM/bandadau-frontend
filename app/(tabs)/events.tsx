@@ -11,10 +11,13 @@ import {
 } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
+import { Button } from '@/components/ui/button';
 import { FeedList } from '@/components/ui/feed-list';
 import { useEvents } from '@/features/events/api';
 import { EventCard } from '@/features/events/components/event-card';
 import type { Event } from '@/features/events/types';
+import { isOrganizer } from '@/lib/roles';
+import { useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
 
 const WEB_MAX_WIDTH = 960;
@@ -27,11 +30,20 @@ export default function EventsScreen() {
   const { t: ta } = useTranslation('app');
   const router = useRouter();
   const list = useEvents();
+  const roles = useSessionStore((s) => s.user?.roles);
   const { width } = useWindowDimensions();
   const numColumns = Platform.OS === 'web' && width >= GRID_MIN_WIDTH ? 2 : 1;
 
   return (
     <Screen title={t('events')}>
+      {isOrganizer(roles) ? (
+        <Button
+          label={te('createTitle')}
+          icon="plus"
+          variant="secondary"
+          onPress={() => router.push('/events/create')}
+        />
+      ) : null}
       <View style={styles.row}>
         <View style={[styles.column, Platform.OS === 'web' && { maxWidth: WEB_MAX_WIDTH }]}>
           {list.loading ? (

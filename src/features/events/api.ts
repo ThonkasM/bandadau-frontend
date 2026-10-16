@@ -5,7 +5,7 @@ import { useInfiniteList } from '@/hooks/use-infinite-list';
 import { apiRequest, apiRequestMeta } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
 
-import type { Event, EventPage, Registration, RegistrationPage } from './types';
+import type { CreateEventRequest, Event, EventPage, Registration, RegistrationPage } from './types';
 
 // SAGA polling bounds (contract suggests `Retry-After`).
 const MIN_POLL_MS = 1000;
@@ -95,5 +95,25 @@ export function useMyRegistrations() {
     fetchPage: (cursor) =>
       apiRequest<RegistrationPage>('/api/v1/registrations/me', { query: { cursor, limit: 20 } }),
     getId: (item) => item.id,
+  });
+}
+
+/** UC-11: create an event (DRAFT, ORGANIZER). */
+export function useCreateEvent() {
+  const client = useQueryClient();
+  return useMutation<Event, Error, CreateEventRequest>({
+    mutationFn: (input) =>
+      apiRequest<Event>('/api/v1/events', { method: 'POST', body: input, idempotent: true }),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.events.root() }),
+  });
+}
+
+/** UC-11: publish a draft event. */
+export function usePublishEvent() {
+  const client = useQueryClient();
+  return useMutation<Event, Error, string>({
+    mutationFn: (eventId) =>
+      apiRequest<Event>(`/api/v1/events/${eventId}/publish`, { method: 'POST' }),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.events.root() }),
   });
 }

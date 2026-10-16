@@ -5,6 +5,7 @@ export type Event = events.components['schemas']['Event'];
 export type EventStatus = Event['status'];
 export type Registration = events.components['schemas']['Registration'];
 export type RegistrationStatus = Registration['status'];
+export type CreateEventRequest = events.components['schemas']['CreateEventRequest'];
 
 /** `GET /api/v1/events` → `{ items, nextCursor }`. */
 export type EventPage = events.components['schemas']['CursorPageMeta'] & { items: Event[] };
