@@ -1,10 +1,8 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useGoBack } from '@/hooks/use-go-back';
+import { AppHeader } from '@/components/screens/app-header';
 import { useTokens } from '@/theme/theme-provider';
 
 export interface ScreenProps {
@@ -20,37 +18,21 @@ export interface ScreenProps {
 /** Base screen: canvas background, safe top inset and an optional title (+ back button). */
 export function Screen({ title, subtitle, padded = true, showBack = false, children }: ScreenProps) {
   const tokens = useTokens();
-  const { t } = useTranslation('app');
-  const goBack = useGoBack();
+  const withHeader = showBack && Boolean(title);
 
   return (
     <SafeAreaView
       edges={['top']}
       style={[styles.safe, { backgroundColor: tokens.color.bg.canvas }]}>
-      <View style={[styles.body, !padded && styles.bodyFlush]}>
-        {title ? (
-          showBack ? (
-            <View style={styles.titleRow}>
-              <Pressable
-                onPress={goBack}
-                accessibilityRole="button"
-                accessibilityLabel={t('back')}
-                hitSlop={8}
-                style={styles.back}>
-                <MaterialCommunityIcons
-                  name="chevron-left"
-                  size={26}
-                  color={tokens.color.text.primary}
-                />
-              </Pressable>
-              <Text style={[styles.title, styles.titleCentered, { color: tokens.color.text.primary }]}>
-                {title}
-              </Text>
-              <View style={styles.back} />
-            </View>
-          ) : (
-            <Text style={[styles.title, { color: tokens.color.text.primary }]}>{title}</Text>
-          )
+      {showBack && title ? <AppHeader title={title} /> : null}
+      <View
+        style={[
+          styles.body,
+          !padded && styles.bodyFlush,
+          withHeader && padded && styles.bodyWithHeader,
+        ]}>
+        {title && !showBack ? (
+          <Text style={[styles.title, { color: tokens.color.text.primary }]}>{title}</Text>
         ) : null}
         {subtitle ? (
           <Text style={[styles.subtitle, { color: tokens.color.text.muted }]}>{subtitle}</Text>
@@ -65,9 +47,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   body: { flex: 1, minHeight: 0, paddingHorizontal: 16, paddingTop: 24, gap: 8 },
   bodyFlush: { paddingHorizontal: 0, paddingTop: 0 },
-  titleRow: { flexDirection: 'row', alignItems: 'center' },
-  back: { width: 36, alignItems: 'flex-start' },
+  bodyWithHeader: { paddingTop: 12 },
   title: { fontSize: 24, fontWeight: '800' },
-  titleCentered: { flex: 1, textAlign: 'center', fontSize: 18 },
   subtitle: { fontSize: 15 },
 });

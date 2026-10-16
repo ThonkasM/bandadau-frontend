@@ -2,7 +2,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   type FlatList,
   Platform,
   StyleSheet,
@@ -16,7 +15,9 @@ import { Screen } from '@/components/screens/screen';
 import { FeedList } from '@/components/ui/feed-list';
 import CommentsPanel from '@/features/comments/comments-panel';
 import { FeedRightRail } from '@/features/feed/components/feed-right-rail';
+import { FeedSkeleton } from '@/features/feed/components/feed-skeleton';
 import { PostCard } from '@/features/feed/components/post-card';
+import { PostCardSkeleton } from '@/features/feed/components/post-card-skeleton';
 import type { FeedItem, Post } from '@/features/feed/types';
 import { useUserPosts } from '@/features/profile/api';
 import { useTokens } from '@/theme/theme-provider';
@@ -88,7 +89,7 @@ export default function UserPostsScreen() {
         <View style={styles.row}>
           <View style={[styles.column, showRail && { maxWidth: WEB_COLUMN_WIDTH }]}>
             {posts.loading ? (
-              <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
+              <FeedSkeleton contentContainerStyle={styles.listContent} />
             ) : (
               <FeedList<FeedItem>
                 listRef={listRef}
@@ -109,6 +110,7 @@ export default function UserPostsScreen() {
                 onEndReached={posts.loadMore}
                 onRefresh={posts.refresh}
                 contentContainerStyle={styles.listContent}
+                renderLoadingMore={() => <PostCardSkeleton />}
                 onContentSizeChange={realign}
                 renderEmpty={() => (
                   <Text style={[styles.message, { color: tokens.color.text.muted }]}>
@@ -145,6 +147,5 @@ const styles = StyleSheet.create({
   column: { flex: 1, minHeight: 0 },
   list: { flex: 1, minHeight: 0 },
   listContent: { paddingTop: LIST_TOP_PADDING },
-  center: { marginTop: 24 },
   message: { textAlign: 'center', margin: 24 },
 });

@@ -4,10 +4,11 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { ProfileMenuContent } from '@/features/profile/components/profile-menu-content';
+import { SettingsMenuContent } from '@/features/profile/components/settings-menu-content';
 import { useDeviceType } from '@/hooks/use-device-type';
 import { usePresentableSheet } from '@/hooks/use-presentable-sheet';
 import { useTheme, useTokens } from '@/theme/theme-provider';
@@ -19,13 +20,30 @@ export interface ProfileMenuProps {
   anchor?: { top: number; right: number };
 }
 
+type MenuView = 'menu' | 'settings';
+
 /** Profile options menu: gorhom bottom sheet on native; popover anchored to the ⋯ button on web. */
 export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
   const tokens = useTokens();
   const { effective } = useTheme();
   const { isWeb } = useDeviceType();
-  const { ref, onDismiss, onChange } = usePresentableSheet(visible, onClose);
   const isDark = effective === 'dark';
+  const [view, setView] = useState<MenuView>('menu');
+
+  // Closing always returns to the root menu, so the next open starts there.
+  const close = useCallback(() => {
+    setView('menu');
+    onClose();
+  }, [onClose]);
+
+  const { ref, onDismiss, onChange } = usePresentableSheet(visible, close);
+
+  const content =
+    view === 'menu' ? (
+      <ProfileMenuContent onClose={close} onOpenSettings={() => setView('settings')} />
+    ) : (
+      <SettingsMenuContent onBack={() => setView('menu')} onClose={close} />
+    );
 
   const backdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -51,8 +69,8 @@ export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
 
   if (isWeb) {
     return (
-      <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
+      <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={close}>
           <View style={isDark ? styles.blurDark : styles.blurLight} />
           <View
             style={[
@@ -75,7 +93,7 @@ export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
               borderColor: tokens.color.border.default,
             },
           ]}>
-          <ProfileMenuContent onClose={onClose} />
+          {content}
         </View>
       </Modal>
     );
@@ -90,9 +108,7 @@ export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
       backgroundStyle={backgroundStyle}
       onChange={onChange}
       onDismiss={onDismiss}>
-      <BottomSheetView style={styles.sheetContent}>
-        <ProfileMenuContent onClose={onClose} />
-      </BottomSheetView>
+      <BottomSheetView style={styles.sheetContent}>{content}</BottomSheetView>
     </BottomSheetModal>
   );
 }

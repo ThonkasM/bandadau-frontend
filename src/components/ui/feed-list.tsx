@@ -31,6 +31,8 @@ export interface FeedListProps<T> {
   onRefresh?: () => void;
   renderFooter?: () => ReactElement | null;
   renderEmpty?: () => ReactElement | null;
+  /** Footer shown while the next page loads (defaults to a spinner). Use it for a skeleton card in infinite scroll. */
+  renderLoadingMore?: () => ReactElement | null;
   ListHeaderComponent?: ReactElement | null;
   contentContainerStyle?: StyleProp<ViewStyle>;
   contentBottomPadding?: number;
@@ -66,6 +68,7 @@ export function FeedList<T>({
   onRefresh,
   renderFooter,
   renderEmpty,
+  renderLoadingMore,
   ListHeaderComponent,
   contentContainerStyle,
   contentBottomPadding = 96,
@@ -99,9 +102,11 @@ export function FeedList<T>({
 
   const footer = (
     <>
-      {loadingMore ? (
-        <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.footer} />
-      ) : null}
+      {loadingMore
+        ? (renderLoadingMore?.() ?? (
+            <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.footer} />
+          ))
+        : null}
       {renderFooter?.()}
       {useSentinel && hasMore ? <View ref={sentinelRef} style={styles.sentinel} /> : null}
     </>

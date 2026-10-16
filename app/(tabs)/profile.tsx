@@ -3,12 +3,13 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Screen } from '@/components/screens/screen';
 import { useMyProfile, useUserPosts } from '@/features/profile/api';
 import { ProfileMenu } from '@/features/profile/components/profile-menu';
+import { ProfileGridSkeleton, ProfileSkeleton } from '@/features/profile/components/profile-skeleton';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
@@ -31,7 +32,9 @@ export default function ProfileScreen() {
   if (profile.isLoading) {
     return (
       <Screen padded={false}>
-        <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <ProfileSkeleton />
+        </ScrollView>
       </Screen>
     );
   }
@@ -116,7 +119,9 @@ export default function ProfileScreen() {
           })}
         </View>
 
-        {gridItems.length > 0 ? (
+        {tab === 'posts' && posts.loading ? (
+          <ProfileGridSkeleton />
+        ) : gridItems.length > 0 ? (
           <View style={styles.grid}>
             {gridItems.map((item) => (
               <Pressable
@@ -160,7 +165,6 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 const styles = StyleSheet.create({
-  center: { marginTop: 24 },
   message: { fontSize: 15, margin: 24, textAlign: 'center' },
   button: { borderRadius: 12, paddingVertical: 12, marginHorizontal: 24, alignItems: 'center' },
   scroll: { paddingBottom: 96 },

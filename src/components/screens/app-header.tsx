@@ -14,9 +14,8 @@ export interface AppHeaderProps {
 }
 
 /**
- * Secondary-screen header: back button on the left, centered title, optional
- * right action. Rule: any screen that is not a main tab uses a header with a
- * back button.
+ * Secondary-screen header: circular back button, bold left title and an optional
+ * right action. Shared by every non-main screen (directly or via `Screen showBack`).
  */
 export function AppHeader({ title, onBack, right, style }: AppHeaderProps) {
   const tokens = useTokens();
@@ -25,19 +24,23 @@ export function AppHeader({ title, onBack, right, style }: AppHeaderProps) {
   const handleBack = onBack ?? goBack;
 
   return (
-    <View style={[styles.header, { borderBottomColor: tokens.color.border.default }, style]}>
+    <View style={[styles.header, style]}>
       <Pressable
         onPress={handleBack}
         accessibilityRole="button"
         accessibilityLabel={t('back')}
         hitSlop={8}
-        style={styles.side}>
-        <MaterialCommunityIcons name="chevron-left" size={26} color={tokens.color.text.primary} />
+        style={({ pressed }) => [
+          styles.back,
+          { backgroundColor: tokens.color.bg.muted },
+          pressed && styles.pressed,
+        ]}>
+        <MaterialCommunityIcons name="chevron-left" size={22} color={tokens.color.text.primary} />
       </Pressable>
-      <Text style={[styles.title, { color: tokens.color.text.primary }]} numberOfLines={1}>
+      <Text numberOfLines={1} style={[styles.title, { color: tokens.color.text.primary }]}>
         {title}
       </Text>
-      <View style={[styles.side, styles.sideRight]}>{right}</View>
+      <View style={styles.right}>{right}</View>
     </View>
   );
 }
@@ -46,11 +49,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    gap: 12,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  side: { width: 44, alignItems: 'flex-start' },
-  sideRight: { alignItems: 'flex-end' },
-  title: { flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '700' },
+  back: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: { opacity: 0.6 },
+  title: { flex: 1, fontSize: 18, fontWeight: '800' },
+  right: { minWidth: 40, alignItems: 'flex-end' },
 });

@@ -61,7 +61,7 @@ export const NAV_ROUTES: NavRoute[] = [
     href: '/(tabs)/profile',
     icon: 'account-outline',
     iconActive: 'account',
-    match: ['/profile', '/settings'],
+    match: ['/profile'],
     inTabBar: true,
   },
   {
@@ -89,15 +89,6 @@ export const NAV_ROUTES: NavRoute[] = [
     icon: 'account-group-outline',
     iconActive: 'account-group',
     match: ['/groups'],
-    inTabBar: false,
-  },
-  {
-    name: 'settings',
-    labelKey: 'settings',
-    href: '/settings',
-    icon: 'cog-outline',
-    iconActive: 'cog',
-    match: ['/settings'],
     inTabBar: false,
   },
 ];

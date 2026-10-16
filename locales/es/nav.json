@@ -10,5 +10,12 @@
   "groups": "Grupos",
   "settings": "Ajustes",
   "openPanel": "Abrir panel",
-  "backToApp": "Volver a la app"
+  "backToApp": "Volver a la app",
+  "theme": "Tema",
+  "themeSystem": "Sistema",
+  "themeLight": "Claro",
+  "themeDark": "Oscuro",
+  "language": "Idioma",
+  "localeEs": "Español",
+  "localeEn": "Inglés"
 }

@@ -1,8 +1,10 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { BandadaLoader } from '@/components/brand/BandadaLogo';
 import { useTheme, useTokens } from '@/theme/theme-provider';
+import { useBrand } from '@/theme/use-brand';
 
 export type PaymentPhase = 'processing' | 'confirmed' | 'failed';
 
@@ -82,6 +84,7 @@ export function PaymentModal({
   onClose: () => void;
 }) {
   const tokens = useTokens();
+  const brand = useBrand();
   const { effective } = useTheme();
   const scrim = effective === 'dark' ? tokens.color.bg.canvas : tokens.color.bg.inverse;
 
@@ -106,7 +109,7 @@ export function PaymentModal({
         >
           {phase === 'processing' ? (
             <>
-              <ActivityIndicator size="large" color={tokens.color.action.primary.bg} />
+              <BandadaLoader size={72} color={brand.color} accent={brand.accent} />
               <Text style={[styles.title, { color: tokens.color.text.primary }]}>
                 {copy.processing.title}
               </Text>

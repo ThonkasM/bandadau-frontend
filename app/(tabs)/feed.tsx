@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Platform,
   Pressable,
   StyleSheet,
@@ -18,7 +17,9 @@ import { FeedList } from '@/components/ui/feed-list';
 import CommentsPanel from '@/features/comments/comments-panel';
 import { useFeed } from '@/features/feed/api';
 import { FeedRightRail } from '@/features/feed/components/feed-right-rail';
+import { FeedSkeleton } from '@/features/feed/components/feed-skeleton';
 import { PostCard } from '@/features/feed/components/post-card';
+import { PostCardSkeleton } from '@/features/feed/components/post-card-skeleton';
 import type { FeedItem, Post } from '@/features/feed/types';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
@@ -65,7 +66,7 @@ export default function FeedScreen() {
         <View style={styles.row}>
           <View style={[styles.column, showRail && { maxWidth: WEB_COLUMN_WIDTH }]}>
             {feed.loading ? (
-              <ActivityIndicator color={tokens.color.action.primary.bg} style={styles.center} />
+              <FeedSkeleton />
             ) : feed.error ? (
               <View style={styles.state}>
                 <Text style={[styles.message, { color: tokens.color.text.muted }]}>
@@ -91,6 +92,7 @@ export default function FeedScreen() {
                 onEndReached={feed.loadMore}
                 onRefresh={feed.refresh}
                 contentContainerStyle={styles.listContent}
+                renderLoadingMore={() => <PostCardSkeleton />}
                 renderEmpty={() => (
                   <Text style={[styles.message, { color: tokens.color.text.muted }]}>
                     {tf('empty')}
@@ -138,7 +140,6 @@ const styles = StyleSheet.create({
   list: { flex: 1, minHeight: 0 },
   // Separation belongs to the list content, not the header/container.
   listContent: { paddingTop: 12 },
-  center: { marginTop: 24 },
   state: { alignItems: 'center', paddingHorizontal: 16 },
   message: { fontSize: 15, marginTop: 16, textAlign: 'center' },
   button: { borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24, marginTop: 12 },

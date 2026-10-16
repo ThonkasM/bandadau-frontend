@@ -7,9 +7,19 @@
     "FOLLOWERS": "Seguidores",
     "GROUP": "Grupo"
   },
+  "media": {
+    "title": "Multimedia",
+    "hint": "Hasta 4 imágenes (máx. 10 MB cada una) o 1 video (máx. 60 s / 50 MB).",
+    "permissionDenied": "Necesitamos acceso a tu galería para adjuntar multimedia.",
+    "imageTooLarge": "Alguna imagen supera los 10 MB y no se adjuntó.",
+    "imageLimit": "Puedes adjuntar hasta {count} imágenes.",
+    "videoTooLong": "El video supera los 60 segundos.",
+    "videoTooLarge": "El video supera los 50 MB."
+  },
   "addImage": "Imagen",
   "addVideo": "Video",
   "remove": "Quitar",
+  "removeMedia": "Quitar multimedia",
   "preview": "Así se verá en el feed",
   "orientation": {
     "portrait": "Vertical 4:5",

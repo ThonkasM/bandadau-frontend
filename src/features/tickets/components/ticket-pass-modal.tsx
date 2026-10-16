@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TicketPass } from '@/features/tickets/components/ticket-pass';
 import { TicketQrModal } from '@/features/tickets/components/ticket-qr-modal';
@@ -26,6 +27,7 @@ export function TicketPassModal({
   const tokens = useTokens();
   const { effective } = useTheme();
   const { t } = useTranslation(['tickets', 'app']);
+  const insets = useSafeAreaInsets();
   const opacity = useSharedValue(0);
   const [qrOpen, setQrOpen] = useState(false);
 
@@ -39,7 +41,16 @@ export function TicketPassModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <GestureHandlerRootView style={styles.root}>
-        <View style={styles.overlay}>
+        <View
+          style={[
+            styles.overlay,
+            {
+              paddingTop: 20 + insets.top,
+              paddingBottom: 20 + insets.bottom,
+              paddingLeft: 20 + insets.left,
+              paddingRight: 20 + insets.right,
+            },
+          ]}>
           <Animated.View
             style={[StyleSheet.absoluteFill, { backgroundColor: scrim, opacity: 0.6 }, backdrop]}
           />
@@ -64,7 +75,14 @@ export function TicketPassModal({
             accessibilityRole="button"
             accessibilityLabel={t('app:close')}
             hitSlop={10}
-            style={[styles.close, { backgroundColor: tokens.color.bg.surface }]}>
+            style={[
+              styles.close,
+              {
+                top: insets.top + 16,
+                right: insets.right + 16,
+                backgroundColor: tokens.color.bg.surface,
+              },
+            ]}>
             <MaterialCommunityIcons name="close" size={22} color={tokens.color.text.primary} />
           </Pressable>
         </View>
@@ -77,13 +95,11 @@ export function TicketPassModal({
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  overlay: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
+  overlay: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   center: { width: '100%', alignItems: 'center', gap: 14 },
   hint: { fontSize: 13, fontWeight: '600', textAlign: 'center', opacity: 0.85 },
   close: {
     position: 'absolute',
-    top: 16,
-    right: 16,
     width: 40,
     height: 40,
     borderRadius: 20,
