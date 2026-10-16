@@ -22,6 +22,7 @@ import { SIDEBAR_WIDTH } from '@/constants/layout';
 import { useSidebarLayout } from '@/hooks/use-sidebar-layout';
 import { initI18n } from '@/i18n';
 import { queryClient } from '@/lib/query-client';
+import { registerServiceWorker } from '@/lib/service-worker';
 import { ThemeProvider, useTheme, useTokens } from '@/theme/theme-provider';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -73,6 +74,7 @@ export default function RootLayout() {
     initI18n().finally(() => setReady(true));
     // Cold start: restore the session (native refresh token / web HttpOnly cookie).
     void restoreSession();
+    registerServiceWorker();
   }, []);
 
   const showSplash = !ready || !splashDone;
