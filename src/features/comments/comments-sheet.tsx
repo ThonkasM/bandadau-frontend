@@ -73,6 +73,8 @@ export default function CommentsSheet({ post, visible, onClose }: CommentsPanelP
       enableDynamicSizing={false}
       enablePanDownToClose
       handleComponent={null}
+      // gorhom does not read the safe-area context: bound the sheet below the status bar/notch.
+      topInset={insets.top}
       backdropComponent={backdrop}
       backgroundStyle={backgroundStyle}
       keyboardBehavior="interactive"

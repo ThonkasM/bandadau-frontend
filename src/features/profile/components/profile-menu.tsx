@@ -6,6 +6,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { useCallback, useMemo, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProfileMenuContent } from '@/features/profile/components/profile-menu-content';
 import { SettingsMenuContent } from '@/features/profile/components/settings-menu-content';
@@ -27,6 +28,7 @@ export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
   const tokens = useTokens();
   const { effective } = useTheme();
   const { isWeb } = useDeviceType();
+  const insets = useSafeAreaInsets();
   const isDark = effective === 'dark';
   const [view, setView] = useState<MenuView>('menu');
 
@@ -106,11 +108,15 @@ export function ProfileMenu({ visible, onClose, anchor }: ProfileMenuProps) {
       ref={ref}
       enablePanDownToClose
       handleComponent={null}
+      // gorhom does not read the safe-area context: bound the sheet below the status bar/notch.
+      topInset={insets.top}
       backdropComponent={backdrop}
       backgroundStyle={backgroundStyle}
       onChange={onChange}
       onDismiss={onDismiss}>
-      <BottomSheetView style={styles.sheetContent}>{content}</BottomSheetView>
+      <BottomSheetView style={[styles.sheetContent, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+        {content}
+      </BottomSheetView>
     </BottomSheetModal>
   );
 }
