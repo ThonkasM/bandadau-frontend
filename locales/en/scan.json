@@ -1,9 +1,17 @@
 {
   "title": "Scan ticket",
   "hint": "Point the camera at the ticket QR code.",
-  "simulate": "Simulate scan",
+  "permissionMessage": "We need the camera to scan tickets.",
+  "grant": "Allow camera",
   "scanAgain": "Scan another",
+  "validating": "Validating…",
   "valid": "Valid ticket. Come in!",
-  "used": "This ticket was already used.",
-  "invalid": "Invalid signature."
+  "alreadyUsed": "This ticket was already used.",
+  "voided": "This ticket is voided.",
+  "invalidSignature": "Invalid signature.",
+  "eventMismatch": "This ticket is not for this event.",
+  "notOrganizer": "You are not an organizer of this event.",
+  "notFound": "We couldn't find the ticket.",
+  "windowClosed": "Outside the validation window.",
+  "error": "We couldn't validate the ticket."
 }

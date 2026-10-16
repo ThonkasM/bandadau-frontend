@@ -1,9 +1,17 @@
 {
   "title": "Escanear entrada",
   "hint": "Apunta la cámara al código QR de la entrada.",
-  "simulate": "Simular escaneo",
+  "permissionMessage": "Necesitamos la cámara para escanear entradas.",
+  "grant": "Permitir cámara",
   "scanAgain": "Escanear otra",
+  "validating": "Validando…",
   "valid": "Entrada válida. ¡Adelante!",
-  "used": "Esta entrada ya fue usada.",
-  "invalid": "Firma inválida."
+  "alreadyUsed": "Esta entrada ya fue usada.",
+  "voided": "Esta entrada está anulada.",
+  "invalidSignature": "Firma inválida.",
+  "eventMismatch": "La entrada no es de este evento.",
+  "notOrganizer": "No eres organizador de este evento.",
+  "notFound": "No encontramos la entrada.",
+  "windowClosed": "Fuera de la ventana de validación.",
+  "error": "No pudimos validar la entrada."
 }

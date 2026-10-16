@@ -1,79 +1,125 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { AppHeader } from '@/components/screens/app-header';
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
+import { useValidateTicket } from '@/features/tickets/api';
+import { ApiError } from '@/lib/api-error';
 import { useTokens } from '@/theme/theme-provider';
 
-type ScanResult = 'valid' | 'used' | 'invalid';
+interface Outcome {
+  ok: boolean;
+  label: string;
+}
 
-const CYCLE: ScanResult[] = ['valid', 'used', 'invalid'];
-
-/** UC-14 · Ticket scanner (mockup: camera frame + simulated result). */
+/** UC-14 · Ticket scanner (camera + QR → `validateTicket`, ORGANIZER only). */
 export default function ScanScreen() {
   const tokens = useTokens();
   const { t } = useTranslation('scan');
-  const [result, setResult] = useState<ScanResult | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const validate = useValidateTicket();
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
 
-  const simulate = () => {
-    const next = result ? CYCLE[(CYCLE.indexOf(result) + 1) % CYCLE.length]! : CYCLE[0]!;
-    setResult(next);
+  const reasonFor = (error: ApiError): string => {
+    switch (error.code) {
+      case 'TICKET_ALREADY_USED':
+        return t('alreadyUsed');
+      case 'TICKET_VOIDED':
+        return t('voided');
+      case 'INVALID_QR_SIGNATURE':
+        return t('invalidSignature');
+      case 'TICKET_EVENT_MISMATCH':
+        return t('eventMismatch');
+      case 'NOT_EVENT_ORGANIZER':
+        return t('notOrganizer');
+      case 'TICKET_NOT_FOUND':
+        return t('notFound');
+      case 'VALIDATION_WINDOW_CLOSED':
+        return t('windowClosed');
+      default:
+        return t('error');
+    }
   };
 
-  const resultColor =
-    result === 'valid'
-      ? tokens.color.feedback.success.fg
-      : result === 'invalid'
-        ? tokens.color.feedback.danger.fg
-        : tokens.color.text.muted;
+  const onScan = ({ data }: { data: string }) => {
+    if (outcome || validate.isPending) return;
+    validate.mutate(
+      { qrPayload: data },
+      {
+        onSuccess: () => setOutcome({ ok: true, label: t('valid') }),
+        onError: (error) =>
+          setOutcome({ ok: false, label: error instanceof ApiError ? reasonFor(error) : t('error') }),
+      },
+    );
+  };
+
+  const resultColor = outcome?.ok ? tokens.color.feedback.success.fg : tokens.color.feedback.danger.fg;
 
   return (
     <Screen padded={false}>
       <AppHeader title={t('title')} />
-      <View style={styles.area}>
-        <View style={[styles.viewport, { backgroundColor: tokens.color.bg.muted }]}>
-          <MaterialCommunityIcons
-            name="qrcode-scan"
-            size={140}
-            color={tokens.color.brand.primary}
-          />
-          <View style={[styles.corner, styles.tl, { borderColor: tokens.color.brand.accent }]} />
-          <View style={[styles.corner, styles.tr, { borderColor: tokens.color.brand.accent }]} />
-          <View style={[styles.corner, styles.bl, { borderColor: tokens.color.brand.accent }]} />
-          <View style={[styles.corner, styles.br, { borderColor: tokens.color.brand.accent }]} />
+
+      {!permission ? (
+        <View style={styles.center}>
+          <ActivityIndicator color={tokens.color.action.primary.bg} />
         </View>
-
-        <Text style={[styles.hint, { color: tokens.color.text.muted }]}>{t('hint')}</Text>
-
-        {result ? (
-          <View
-            style={[
-              styles.result,
-              {
-                backgroundColor: tokens.color.bg.surface,
-                borderColor: tokens.color.border.default,
-              },
-            ]}>
-            <MaterialCommunityIcons
-              name={result === 'valid' ? 'check-circle-outline' : 'alert-circle-outline'}
-              size={26}
-              color={resultColor}
-            />
-            <Text style={[styles.resultText, { color: resultColor }]}>{t(result)}</Text>
+      ) : !permission.granted ? (
+        <View style={styles.center}>
+          <Text style={[styles.hint, { color: tokens.color.text.muted }]}>
+            {t('permissionMessage')}
+          </Text>
+          <Button label={t('grant')} icon="camera" onPress={requestPermission} />
+        </View>
+      ) : (
+        <View style={styles.area}>
+          <View style={[styles.viewport, { backgroundColor: tokens.color.bg.muted }]}>
+            {outcome ? (
+              <MaterialCommunityIcons
+                name={outcome.ok ? 'check-circle-outline' : 'alert-circle-outline'}
+                size={120}
+                color={resultColor}
+              />
+            ) : (
+              <CameraView
+                style={StyleSheet.absoluteFill}
+                facing="back"
+                barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+                onBarcodeScanned={onScan}
+              />
+            )}
+            <View style={[styles.corner, styles.tl, { borderColor: tokens.color.brand.accent }]} />
+            <View style={[styles.corner, styles.tr, { borderColor: tokens.color.brand.accent }]} />
+            <View style={[styles.corner, styles.bl, { borderColor: tokens.color.brand.accent }]} />
+            <View style={[styles.corner, styles.br, { borderColor: tokens.color.brand.accent }]} />
           </View>
-        ) : null}
 
-        <View style={styles.buttonWrap}>
-          <Button
-            label={result ? t('scanAgain') : t('simulate')}
-            icon="qrcode-scan"
-            onPress={simulate}
-          />
+          {outcome ? (
+            <>
+              <View
+                style={[
+                  styles.result,
+                  {
+                    backgroundColor: tokens.color.bg.surface,
+                    borderColor: tokens.color.border.default,
+                  },
+                ]}>
+                <Text style={[styles.resultText, { color: resultColor }]}>{outcome.label}</Text>
+              </View>
+              <View style={styles.buttonWrap}>
+                <Button label={t('scanAgain')} icon="qrcode-scan" onPress={() => setOutcome(null)} />
+              </View>
+            </>
+          ) : (
+            <Text style={[styles.hint, { color: tokens.color.text.muted }]}>
+              {validate.isPending ? t('validating') : t('hint')}
+            </Text>
+          )}
         </View>
-      </View>
+      )}
     </Screen>
   );
 }
@@ -81,6 +127,7 @@ export default function ScanScreen() {
 const CORNER = 34;
 
 const styles = StyleSheet.create({
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 },
   area: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 18 },
   viewport: {
     width: 260,
@@ -88,6 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   corner: { position: 'absolute', width: CORNER, height: CORNER },
   tl: { top: 16, left: 16, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 10 },
@@ -96,14 +144,11 @@ const styles = StyleSheet.create({
   br: { bottom: 16, right: 16, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 10 },
   hint: { fontSize: 14, textAlign: 'center', maxWidth: 280 },
   result: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
     borderWidth: 1,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  resultText: { fontSize: 14.5, fontWeight: '700' },
+  resultText: { fontSize: 14.5, fontWeight: '700', textAlign: 'center' },
   buttonWrap: { width: '100%', maxWidth: 320 },
 });

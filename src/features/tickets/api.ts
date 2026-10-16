@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { useInfiniteList } from '@/hooks/use-infinite-list';
 import { apiRequest } from '@/lib/api-client';
+import type { ApiError } from '@/lib/api-error';
 import { queryKeys } from '@/lib/query-keys';
 
-import type { Ticket, TicketDetail, TicketPage } from './types';
+import type { Ticket, TicketDetail, TicketPage, ValidateTicketResponse } from './types';
 
 /** UC-12/14: my tickets (QR). */
 export function useMyTickets() {
@@ -21,5 +22,17 @@ export function useTicket(id: string | undefined) {
     queryKey: queryKeys.tickets.byId(id ?? ''),
     queryFn: () => apiRequest<TicketDetail>(`/api/v1/tickets/${id}`),
     enabled: Boolean(id),
+  });
+}
+
+/** UC-14: validate a scanned ticket at the door (♻️, ORGANIZER). */
+export function useValidateTicket() {
+  return useMutation<ValidateTicketResponse, ApiError, { qrPayload: string; eventId?: string }>({
+    mutationFn: (input) =>
+      apiRequest<ValidateTicketResponse>('/api/v1/tickets/validate', {
+        method: 'POST',
+        body: input,
+        idempotent: true,
+      }),
   });
 }

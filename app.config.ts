@@ -63,6 +63,7 @@ const config: ExpoConfig = {
     'expo-web-browser',
     'expo-image-picker',
     'expo-audio',
+    'expo-camera',
     [
       'expo-splash-screen',
       {
