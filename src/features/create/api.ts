@@ -14,6 +14,8 @@ export type PostVisibility = social.components['schemas']['PostVisibility'];
 export type PublishedPost = social.components['schemas']['Post'];
 
 export interface CreateUploadInput {
+  /** Uso del medio (D15). Por defecto `POST`; `AVATAR` solo admite imágenes. */
+  purpose?: 'POST' | 'AVATAR';
   kind: MediaKind;
   mimeType: string;
   sizeBytes: number;

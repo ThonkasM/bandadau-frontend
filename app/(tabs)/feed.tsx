@@ -21,6 +21,7 @@ import { FeedSkeleton } from '@/features/feed/components/feed-skeleton';
 import { PostCard } from '@/features/feed/components/post-card';
 import { PostCardSkeleton } from '@/features/feed/components/post-card-skeleton';
 import type { FeedItem, Post } from '@/features/feed/types';
+import { FollowSuggestions } from '@/features/social/components/follow-suggestions';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
@@ -91,6 +92,7 @@ export default function FeedScreen() {
                 refreshing={feed.refreshing}
                 onEndReached={feed.loadMore}
                 onRefresh={feed.refresh}
+                ListHeaderComponent={<FollowSuggestions />}
                 contentContainerStyle={styles.listContent}
                 renderLoadingMore={() => <PostCardSkeleton />}
                 renderEmpty={() => (

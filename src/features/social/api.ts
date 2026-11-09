@@ -1,5 +1,5 @@
 import type { social } from '@bandada/contracts-ts';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
@@ -15,12 +15,22 @@ export interface ReportInput {
   details?: string;
 }
 
+/** Following someone changes their profile, my counters, my feed and my suggestions. */
+function refreshAfterFollowChange(client: QueryClient, userId: string) {
+  return Promise.all([
+    client.invalidateQueries({ queryKey: queryKeys.profile.byId(userId) }),
+    client.invalidateQueries({ queryKey: queryKeys.profile.me() }),
+    client.invalidateQueries({ queryKey: queryKeys.feed.root() }),
+    client.invalidateQueries({ queryKey: queryKeys.follows.suggestions() }),
+  ]);
+}
+
 /** UC-08: follow a student (PUT, idempotent). */
 export function useFollow(userId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: () => apiRequest(`/api/v1/follows/${userId}`, { method: 'PUT' }),
-    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.profile.byId(userId) }),
+    onSuccess: () => refreshAfterFollowChange(client, userId),
   });
 }
 
@@ -29,7 +39,7 @@ export function useUnfollow(userId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: () => apiRequest(`/api/v1/follows/${userId}`, { method: 'DELETE' }),
-    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.profile.byId(userId) }),
+    onSuccess: () => refreshAfterFollowChange(client, userId),
   });
 }
 

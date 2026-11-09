@@ -23,5 +23,14 @@
     "settings": "Settings",
     "openPanel": "Open panel",
     "logout": "Log out"
-  }
+  },
+  "changePhoto": "Change profile photo",
+  "avatarUploading": "Uploading photo…",
+  "avatarPending": "Your photo is under review.",
+  "avatarRejected": "The photo doesn't meet the guidelines. Pick another.",
+  "avatarFailed": "We couldn't upload the photo. Try again.",
+  "userNotFound": "We couldn't find this user.",
+  "suggestionsTitle": "Who to follow",
+  "viewProfile": "View profile",
+  "noPostsYet": "Hasn't posted anything yet."
 }

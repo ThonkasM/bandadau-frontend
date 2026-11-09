@@ -23,5 +23,14 @@
     "settings": "Configuración",
     "openPanel": "Abrir panel",
     "logout": "Cerrar sesión"
-  }
+  },
+  "changePhoto": "Cambiar foto de perfil",
+  "avatarUploading": "Subiendo foto…",
+  "avatarPending": "Tu foto está en revisión.",
+  "avatarRejected": "La foto no cumple las normas. Elige otra.",
+  "avatarFailed": "No pudimos subir la foto. Inténtalo de nuevo.",
+  "userNotFound": "No encontramos a este usuario.",
+  "suggestionsTitle": "A quién seguir",
+  "viewProfile": "Ver perfil",
+  "noPostsYet": "Todavía no publicó nada."
 }

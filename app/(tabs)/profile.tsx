@@ -3,13 +3,15 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/common/avatar';
 import { Screen } from '@/components/screens/screen';
 import { useMyProfile, useUserPosts } from '@/features/profile/api';
 import { ProfileMenu } from '@/features/profile/components/profile-menu';
 import { ProfileGridSkeleton, ProfileSkeleton } from '@/features/profile/components/profile-skeleton';
+import { useAvatarUpload } from '@/features/profile/use-avatar-upload';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
@@ -28,6 +30,7 @@ export default function ProfileScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const posts = useUserPosts(profile.data?.userId);
+  const avatar = useAvatarUpload();
 
   if (profile.isLoading) {
     return (
@@ -80,15 +83,44 @@ export default function ProfileScreen() {
         </Pressable>
 
         <View style={styles.identity}>
-          <View
-            style={[
-              styles.avatar,
-              { backgroundColor: tokens.color.bg.muted, borderColor: brand.accent },
-            ]}>
-            <Text style={[styles.initial, { color: tokens.color.text.primary }]}>
-              {data.displayName.slice(0, 1).toUpperCase()}
+          <Pressable
+            onPress={avatar.pickAvatar}
+            disabled={avatar.uploading}
+            accessibilityRole="button"
+            accessibilityLabel={tp('changePhoto')}
+            style={styles.avatarPress}>
+            <Avatar
+              name={data.displayName}
+              url={data.avatarUrl}
+              size={88}
+              ringColor={brand.accent}
+              ringWidth={3}
+            />
+            <View style={[styles.cameraBadge, { backgroundColor: tokens.color.action.primary.bg }]}>
+              {avatar.uploading ? (
+                <ActivityIndicator size="small" color={tokens.color.action.primary.fg} />
+              ) : (
+                <MaterialCommunityIcons
+                  name="camera"
+                  size={14}
+                  color={tokens.color.action.primary.fg}
+                />
+              )}
+            </View>
+          </Pressable>
+          {avatar.uploading ? (
+            <Text style={[styles.avatarNote, { color: tokens.color.text.muted }]}>
+              {tp('avatarUploading')}
             </Text>
-          </View>
+          ) : avatar.error ? (
+            <Text style={[styles.avatarNote, { color: tokens.color.feedback.danger.fg }]}>
+              {avatar.error === 'rejected' ? tp('avatarRejected') : tp('avatarFailed')}
+            </Text>
+          ) : data.avatarStatus === 'PENDING' ? (
+            <Text style={[styles.avatarNote, { color: tokens.color.text.muted }]}>
+              {tp('avatarPending')}
+            </Text>
+          ) : null}
           <Text style={[styles.name, { color: tokens.color.text.primary }]}>{data.displayName}</Text>
           {data.career ? <Text style={{ color: tokens.color.text.muted }}>{data.career}</Text> : null}
         </View>
@@ -207,15 +239,18 @@ const styles = StyleSheet.create({
   },
   createLabel: { fontSize: 15, fontWeight: '800' },
   identity: { alignItems: 'center', marginTop: -44, gap: 4 },
-  avatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    borderWidth: 3,
+  avatarPress: { width: 88, height: 88 },
+  cameraBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  initial: { fontSize: 34, fontWeight: '800' },
+  avatarNote: { fontSize: 12, marginTop: 2 },
   name: { fontSize: 20, fontWeight: '800', marginTop: 4 },
   stats: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 16 },
   stat: { flex: 1, alignItems: 'center', gap: 2 },

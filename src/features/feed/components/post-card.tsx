@@ -1,9 +1,11 @@
 import { formatRelative, type Locale } from '@bandada/i18n';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Avatar } from '@/components/common/avatar';
 import { useRemoveReaction, useSetReaction } from '@/features/feed/api';
 import type { FeedItem } from '@/features/feed/types';
 import { shadowStyle } from '@/lib/shadow';
@@ -27,8 +29,13 @@ export function PostCard({
   const setReaction = useSetReaction();
   const removeReaction = useRemoveReaction();
   const [reportOpen, setReportOpen] = useState(false);
+  const router = useRouter();
+  const openAuthor = () =>
+    router.push({
+      pathname: '/user/[userId]',
+      params: { userId: post.author.userId, name: post.author.displayName },
+    });
 
-  const initial = post.author.displayName.slice(0, 1).toUpperCase();
   const relative = formatRelative(post.createdAt, locale);
   const caption = `${post.author.displayName} ${post.text}`;
   const liked = post.myReaction === 'LIKE';
@@ -48,19 +55,19 @@ export function PostCard({
         },
       ]}>
       <View style={styles.header}>
-        <View
-          style={[
-            styles.avatarRing,
-            { borderColor: tokens.color.brand.accent, backgroundColor: tokens.color.bg.muted },
-          ]}>
-          <Text style={[styles.initial, { color: tokens.color.text.primary }]}>{initial}</Text>
-        </View>
-        <View style={styles.headerText}>
-          <Text style={[styles.username, { color: tokens.color.text.primary }]}>
-            {post.author.displayName}
-          </Text>
-          <Text style={[styles.time, { color: tokens.color.text.muted }]}>{relative}</Text>
-        </View>
+        <Pressable
+          onPress={openAuthor}
+          accessibilityRole="button"
+          accessibilityLabel={post.author.displayName}
+          style={styles.authorLink}>
+          <Avatar name={post.author.displayName} url={post.author.avatarUrl} size={36} />
+          <View style={styles.headerText}>
+            <Text style={[styles.username, { color: tokens.color.text.primary }]}>
+              {post.author.displayName}
+            </Text>
+            <Text style={[styles.time, { color: tokens.color.text.muted }]}>{relative}</Text>
+          </View>
+        </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('report.title')}
@@ -148,15 +155,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
-  avatarRing: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initial: { fontSize: 16, fontWeight: '800' },
+  authorLink: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerText: { flex: 1 },
   username: { fontSize: 14.5, fontWeight: '800' },
   time: { fontSize: 12 },
