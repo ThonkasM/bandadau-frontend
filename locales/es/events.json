@@ -45,5 +45,12 @@
   "priceLabel": "Precio (créditos)",
   "priceHelper": "0 = evento gratuito",
   "createSubmit": "Crear y publicar",
-  "createError": "No pudimos crear el evento. Intenta de nuevo."
+  "createError": "No pudimos crear el evento. Intenta de nuevo.",
+  "confirm": {
+    "title": "¿Estás seguro?",
+    "message": "Vas a inscribirte en «{title}». Se descontarán {count, plural, one {# crédito} other {# créditos}} de tu saldo.",
+    "messageFree": "Vas a inscribirte en «{title}». Es gratis.",
+    "accept": "Sí, participar",
+    "cancel": "Cancelar"
+  }
 }

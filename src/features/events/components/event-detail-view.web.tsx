@@ -1,6 +1,6 @@
 import type { Locale } from '@bandada/i18n';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { GUTTER_DESKTOP } from '@/constants/layout';
 import {
@@ -13,11 +13,21 @@ import {
 } from '@/features/events/components/event-detail-parts';
 import { useTokens } from '@/theme/theme-provider';
 
+import NarrowEventDetailView from './event-detail-view.native';
+
 const MAX_WIDTH = 1080;
 const PANEL_WIDTH = 400;
+/** Below this width (phones, small tablets) two columns do not fit: use the single-column layout. */
+const TWO_COLUMN_MIN_WIDTH = 900;
 
 /** Web event detail: hero on the left, info + CTA panel on the right. */
-export default function EventDetailView({
+export default function EventDetailView(props: EventDetailViewProps) {
+  const { width } = useWindowDimensions();
+  if (width < TWO_COLUMN_MIN_WIDTH) return <NarrowEventDetailView {...props} />;
+  return <WideEventDetailView {...props} />;
+}
+
+function WideEventDetailView({
   event,
   registered,
   soldOut,

@@ -1,8 +1,8 @@
 import type { Locale } from '@bandada/i18n';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, type TextInput } from 'react-native';
 
 import { AuthLayout } from '@/components/screens/auth-layout';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ export default function LoginScreen() {
   const login = useLogin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const passwordRef = useRef<TextInput>(null);
 
   const error = login.error;
   const errorMessage = error
@@ -46,14 +47,28 @@ export default function LoginScreen() {
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
+        autoCorrect={false}
         keyboardType="email-address"
-        autoComplete="email"
+        inputMode="email"
+        autoComplete="username"
+        textContentType="username"
+        returnKeyType="next"
+        enterKeyHint="next"
+        submitBehavior="submit"
+        onSubmitEditing={() => passwordRef.current?.focus()}
       />
       <PasswordField
         label={t('login.password')}
         value={password}
         onChangeText={setPassword}
-        autoComplete="password"
+        inputRef={passwordRef}
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoComplete="current-password"
+        textContentType="password"
+        returnKeyType="go"
+        enterKeyHint="go"
+        onSubmitEditing={onSubmit}
       />
 
       {errorMessage ? (

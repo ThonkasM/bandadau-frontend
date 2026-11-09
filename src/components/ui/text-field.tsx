@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { StyleSheet, TextInput, type TextInputProps,View } from 'react-native';
+import type { ReactNode, Ref } from 'react';
+import { StyleSheet, TextInput, type TextInputProps, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
 import { useTokens } from '@/theme/theme-provider';
@@ -10,10 +10,12 @@ export interface TextFieldProps extends TextInputProps {
   helper?: string;
   /** Accessory rendered inside the input, aligned to the right (e.g. password toggle). */
   rightAccessory?: ReactNode;
+  /** Ref to the underlying `TextInput` (focus chaining: «next» → next field). */
+  inputRef?: Ref<TextInput>;
 }
 
 /** Labeled input with error/helper and an optional right accessory. Tokens only. */
-export function TextField({ label, error, helper, rightAccessory, style, ...rest }: TextFieldProps) {
+export function TextField({ label, error, helper, rightAccessory, inputRef, style, ...rest }: TextFieldProps) {
   const tokens = useTokens();
   const borderColor = error ? tokens.color.feedback.danger.border : tokens.color.border.default;
 
@@ -22,6 +24,7 @@ export function TextField({ label, error, helper, rightAccessory, style, ...rest
       {label ? <Text variant="label">{label}</Text> : null}
       <View style={styles.inputWrap}>
         <TextInput
+          ref={inputRef}
           placeholderTextColor={tokens.color.text.muted}
           {...rest}
           style={[
@@ -51,7 +54,7 @@ export function TextField({ label, error, helper, rightAccessory, style, ...rest
 const styles = StyleSheet.create({
   wrapper: { gap: 6 },
   inputWrap: { position: 'relative', justifyContent: 'center' },
-  input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
   inputWithAccessory: { paddingRight: 46 },
   accessory: { position: 'absolute', right: 8, height: '100%', justifyContent: 'center' },
 });

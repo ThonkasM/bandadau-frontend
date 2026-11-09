@@ -45,5 +45,12 @@
   "priceLabel": "Price (credits)",
   "priceHelper": "0 = free event",
   "createSubmit": "Create and publish",
-  "createError": "We couldn't create the event. Please try again."
+  "createError": "We couldn't create the event. Please try again.",
+  "confirm": {
+    "title": "Are you sure?",
+    "message": "You're about to register for \"{title}\". {count, plural, one {# credit} other {# credits}} will be deducted from your balance.",
+    "messageFree": "You're about to register for \"{title}\". It's free.",
+    "accept": "Yes, join",
+    "cancel": "Cancel"
+  }
 }

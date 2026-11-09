@@ -7,6 +7,7 @@ import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { PaymentModal, type PaymentPhase } from '@/components/ui/payment-modal';
 import {
   useEvent,
@@ -44,6 +45,7 @@ export default function EventDetailScreen() {
   const revealed = useTicket(reg?.ticketId ?? undefined);
   const [dismissed, setDismissed] = useState(false);
   const idempotencyKey = useRef(newUuid());
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Route guard: anonymous users go to welcome (the detail lives in the root stack).
   if (sessionStatus === 'anonymous') return <Redirect href="/(auth)/welcome" />;
@@ -122,9 +124,26 @@ export default function EventDetailScreen() {
         registered={registered}
         soldOut={soldOut}
         insufficientFunds={insufficientFunds}
-        onParticipate={() => startRegister(true)}
+        onParticipate={() => setConfirmOpen(true)}
         onViewTickets={() => router.push('/tickets')}
         onTopUp={topUpAndContinue}
+      />
+
+      <ConfirmModal
+        visible={confirmOpen}
+        title={t('confirm.title')}
+        message={
+          data.priceCredits > 0
+            ? t('confirm.message', { title: data.title, count: data.priceCredits })
+            : t('confirm.messageFree', { title: data.title })
+        }
+        confirmLabel={t('confirm.accept')}
+        cancelLabel={t('confirm.cancel')}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          startRegister(true);
+        }}
       />
 
       <PaymentModal

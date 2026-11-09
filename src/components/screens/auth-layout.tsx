@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandHero } from '@/components/brand/brand-hero';
@@ -25,14 +25,16 @@ export function AuthLayout({ children, heroSubtitle, heroHeight = 180 }: AuthLay
     <View style={[styles.root, { backgroundColor: tokens.color.bg.canvas }]}>
       <BrandHero height={heroHeight} subtitle={heroSubtitle} paddingTop={insets.top} />
 
-      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
-        <ScrollView
-          contentContainerStyle={[styles.form, { paddingBottom: 24 + insets.bottom }]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.inner}>{children}</View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      {/* Scrolls the focused field above the keyboard (native); plain ScrollView on web. */}
+      <KeyboardAwareScrollView
+        style={styles.flex}
+        bottomOffset={24}
+        contentContainerStyle={[styles.form, { paddingBottom: 24 + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.inner}>{children}</View>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

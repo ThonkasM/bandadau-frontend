@@ -56,6 +56,12 @@ export default function VerifyEmailScreen() {
         value={code}
         onChangeText={onChangeCode}
         keyboardType="number-pad"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        textContentType="oneTimeCode"
+        autoCorrect={false}
+        returnKeyType="done"
+        enterKeyHint="done"
         maxLength={6}
         style={styles.code}
         helper={t('verify.codeHelper')}
