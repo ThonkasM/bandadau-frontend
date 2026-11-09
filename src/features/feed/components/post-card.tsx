@@ -37,7 +37,6 @@ export function PostCard({
     });
 
   const relative = formatRelative(post.createdAt, locale);
-  const caption = `${post.author.displayName} ${post.text}`;
   const liked = post.myReaction === 'LIKE';
   const onLike = () => {
     if (liked) removeReaction.mutate({ postId: post.id });
@@ -100,7 +99,13 @@ export function PostCard({
         <Text style={[styles.likes, { color: tokens.color.text.primary }]}>
           {t('likes', { count: post.reactionCounts.like })}
         </Text>
-        <Text style={[styles.caption, { color: tokens.color.text.primary }]}>{caption}</Text>
+        <Text style={[styles.caption, { color: tokens.color.text.primary }]}>
+          <Text onPress={openAuthor} accessibilityRole="link" style={styles.captionAuthor}>
+            {post.author.displayName}
+          </Text>
+          {' '}
+          {post.text}
+        </Text>
         {post.commentsCount > 0 ? (
           <Pressable onPress={onOpenComments}>
             <Text style={[styles.comments, { color: tokens.color.text.muted }]}>
@@ -173,5 +178,6 @@ const styles = StyleSheet.create({
   meta: { paddingHorizontal: 14, paddingBottom: 14, gap: 4 },
   likes: { fontSize: 14, fontWeight: '800' },
   caption: { fontSize: 14, lineHeight: 19.5 },
+  captionAuthor: { fontWeight: '800' },
   comments: { fontSize: 13 },
 });
