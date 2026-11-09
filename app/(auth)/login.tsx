@@ -50,8 +50,8 @@ export default function LoginScreen() {
         autoCorrect={false}
         keyboardType="email-address"
         inputMode="email"
-        autoComplete="username"
-        textContentType="username"
+        autoComplete="email"
+        textContentType="emailAddress"
         returnKeyType="next"
         enterKeyHint="next"
         submitBehavior="submit"

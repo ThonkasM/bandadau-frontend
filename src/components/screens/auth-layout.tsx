@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,6 +16,8 @@ export interface AuthLayoutProps {
  * Auth screen layout: branded hero on top (respecting the top safe-area inset)
  * and a centered, scrollable, keyboard-aware form below (respecting the bottom
  * inset). Used by login, register and verify-email.
+ * Platform split: this file is native (and the TS default); the web version is `auth-layout.web.tsx`
+ * (a plain `ScrollView`: the browser already scrolls/resizes for its own keyboard).
  */
 export function AuthLayout({ children, heroSubtitle, heroHeight = 180 }: AuthLayoutProps) {
   const insets = useSafeAreaInsets();
@@ -25,13 +27,12 @@ export function AuthLayout({ children, heroSubtitle, heroHeight = 180 }: AuthLay
     <View style={[styles.root, { backgroundColor: tokens.color.bg.canvas }]}>
       <BrandHero height={heroHeight} subtitle={heroSubtitle} paddingTop={insets.top} />
 
-      {/* Scrolls the focused field above the keyboard (native); plain ScrollView on web. */}
+      {/* Native: scrolls the focused field above the keyboard (same pattern as Homy). Web: `auth-layout.web.tsx`. */}
       <KeyboardAwareScrollView
         style={styles.flex}
-        bottomOffset={24}
+        bottomOffset={Platform.OS === 'ios' ? 24 : 50}
         contentContainerStyle={[styles.form, { paddingBottom: 24 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}>
         <View style={styles.inner}>{children}</View>
       </KeyboardAwareScrollView>
