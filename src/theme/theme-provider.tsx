@@ -43,6 +43,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   if (Platform.OS === 'web' && typeof document !== 'undefined') {
     applyTheme(effective, document as never);
+    // Mobile browsers paint the document background behind the keyboard/overscroll: match the theme (no white flash).
+    document.documentElement.style.backgroundColor = tokens[effective].color.bg.canvas;
   }
 
   // Justificado (B-9): `value` y `themeVars` deben conservar identidad para no re-renderizar a todos
