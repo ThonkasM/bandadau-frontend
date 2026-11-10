@@ -64,15 +64,29 @@ export function PostCarousel({ media }: { media: PostMedia[] }) {
     <View
       onLayout={onLayout}
       style={[styles.root, { aspectRatio: ratio, backgroundColor: tokens.color.bg.muted }]}>
-      {width > 0 ? (
+      {width > 0 && count === 1 ? (
+        // Una sola imagen: sin ScrollView. En web, un ScrollView con scrollEnabled=false aplica
+        // `touch-action: none` y bloquea el scroll vertical del feed al tocar la foto.
+        <Image
+          source={{ uri: media[0]?.url ?? media[0]?.thumbnailUrl ?? undefined }}
+          style={{ width, height: slideHeight }}
+          contentFit="cover"
+          transition={200}
+          recyclingKey={media[0]?.mediaId ?? '0'}
+          onLoad={handleFirstLoad(0)}
+        />
+      ) : null}
+      {width > 0 && count > 1 ? (
         <ScrollView
           ref={scrollRef}
           horizontal
           pagingEnabled
-          scrollEnabled={count > 1}
+          directionalLockEnabled
+          nestedScrollEnabled
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={16}
-          onScroll={onScroll}>
+          onScroll={onScroll}
+          style={styles.webPan}>
           {media.map((mediaItem, i) => (
             <Image
               key={mediaItem.mediaId ?? i}
@@ -165,6 +179,8 @@ function Arrow({
 
 const styles = StyleSheet.create({
   root: { width: '100%', overflow: 'hidden' },
+  // Web táctil: permitir el paneo horizontal del carrusel y el vertical de la página.
+  webPan: Platform.select({ web: { touchAction: 'pan-x pan-y' } as object, default: {} }),
   dots: {
     position: 'absolute',
     bottom: 12,

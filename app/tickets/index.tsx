@@ -13,6 +13,8 @@ import { TicketPassListItem } from '@/features/tickets/components/ticket-pass-li
 import { TicketPassModal } from '@/features/tickets/components/ticket-pass-modal';
 import type { Ticket, TicketSort } from '@/features/tickets/types';
 import { useDeviceType } from '@/hooks/use-device-type';
+import { isOrganizer } from '@/lib/roles';
+import { useSessionStore } from '@/stores/session.store';
 import { useTokens } from '@/theme/theme-provider';
 
 type Tab = 'available' | 'used';
@@ -23,6 +25,7 @@ export default function TicketsScreen() {
   const { t } = useTranslation('tickets');
   const { t: ta } = useTranslation('app');
   const router = useRouter();
+  const canScan = isOrganizer(useSessionStore((state) => state.user?.roles));
   const { isWeb, width } = useDeviceType();
   const [tab, setTab] = useState<Tab>('available');
   const [sort, setSort] = useState<TicketSort>('recent');
@@ -44,12 +47,14 @@ export default function TicketsScreen() {
 
   return (
     <Screen title={t('title')} showBack>
-      <Button
-        label={t('scan')}
-        icon="qrcode-scan"
-        variant="secondary"
-        onPress={() => router.push('/scan')}
-      />
+      {canScan ? (
+        <Button
+          label={t('scan')}
+          icon="qrcode-scan"
+          variant="secondary"
+          onPress={() => router.push('/scan')}
+        />
+      ) : null}
 
       <View style={[styles.tabs, { borderBottomColor: tokens.color.border.default }]}>
         {tabs.map((item) => {
