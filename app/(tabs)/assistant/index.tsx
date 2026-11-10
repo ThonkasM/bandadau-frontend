@@ -40,6 +40,7 @@ export default function AssistantScreen() {
   const [failed, setFailed] = useState(false);
   const [status, setStatus] = useState<LlmStatus>(llm.status());
   const [recommended, setRecommended] = useState<LocalModelInfo | null>(null);
+  const [unsupportedReason, setUnsupportedReason] = useState<string | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -47,6 +48,7 @@ export default function AssistantScreen() {
     const off = llm.onStatus(setStatus);
     void llm.capabilities().then((caps) => {
       setRecommended(caps.recommended);
+      setUnsupportedReason(caps.recommended ? null : (caps.reason ?? null));
       // Restore the `ready` state if the model is already cached (never downloads on its own).
       if (caps.recommended) void llm.load(caps.recommended.id).catch(() => undefined);
     });
@@ -160,9 +162,16 @@ export default function AssistantScreen() {
       );
     }
     return (
-      <Text variant="caption" style={{ color: tokens.color.text.muted }}>
-        {t('basicMode')}
-      </Text>
+      <>
+        <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+          {t('basicMode')}
+        </Text>
+        {unsupportedReason === 'no-webgpu' ? (
+          <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+            {t('model.noWebgpu')}
+          </Text>
+        ) : null}
+      </>
     );
   })();
 

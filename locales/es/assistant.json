@@ -31,6 +31,7 @@
     "noSpace": "No hay espacio suficiente: faltan {missing}.",
     "cellular": "Estás con datos móviles. Descarga por Wi-Fi o confirma para usar datos móviles.",
     "confirmCellular": "Descargar con datos móviles",
-    "downloadError": "No pudimos descargar el modelo. Intenta de nuevo."
+    "downloadError": "No pudimos descargar el modelo. Intenta de nuevo.",
+    "noWebgpu": "Este navegador no admite WebGPU, que se necesita para descargar el modelo. Usa Chrome o Edge en una computadora (o la app en tu celular) y vuelve a entrar."
   }
 }

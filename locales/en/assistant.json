@@ -31,6 +31,7 @@
     "noSpace": "Not enough space: {missing} more needed.",
     "cellular": "You are on mobile data. Download over Wi-Fi, or confirm to use mobile data.",
     "confirmCellular": "Download using mobile data",
-    "downloadError": "Could not download the model. Try again."
+    "downloadError": "Could not download the model. Try again.",
+    "noWebgpu": "This browser does not support WebGPU, which is needed to download the model. Use Chrome or Edge on a computer (or the mobile app) and come back."
   }
 }
