@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
@@ -18,7 +19,9 @@ export function usePushRegistration(): void {
       try {
         const permission = await Notifications.requestPermissionsAsync();
         if (!permission.granted) return;
-        const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+        const projectId =
+          process.env.EXPO_PUBLIC_EAS_PROJECT_ID ??
+          (Constants.expoConfig?.extra?.eas as { projectId?: string } | undefined)?.projectId;
         const token = (await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined))
           .data;
         if (cancelled) return;

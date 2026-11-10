@@ -103,7 +103,7 @@ const config: ExpoConfig = {
     appUrl: APP_URL,
     adminUrl: process.env.EXPO_PUBLIC_ADMIN_URL ?? `http://admin.${BASE_DOMAIN}`,
     eas: {
-      projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID,
+      projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? '161d57c9-300b-447c-9a72-2d13f318a75f',
     },
   },
 };
