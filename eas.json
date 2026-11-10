@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 24.8.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
+    },
+    "demo": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.bandadau.lat",
+        "EXPO_PUBLIC_APP_URL": "https://app.bandadau.lat",
+        "EXPO_PUBLIC_ADMIN_URL": "https://admin.bandadau.lat",
+        "EXPO_PUBLIC_BASE_DOMAIN": "bandadau.lat",
+        "EXPO_PUBLIC_DEFAULT_LOCALE": "es",
+        "EXPO_PUBLIC_USE_MOCKS": "false"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
