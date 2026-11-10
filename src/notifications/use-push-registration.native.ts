@@ -23,7 +23,7 @@ export function usePushRegistration(): void {
           .data;
         if (cancelled) return;
         await apiRequest<void>(`/api/v1/devices/${token}`, {
-          method: 'POST',
+          method: 'PUT',
           body: { platform: Platform.OS === 'ios' ? 'IOS' : 'ANDROID' },
         });
       } catch {

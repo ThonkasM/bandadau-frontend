@@ -38,6 +38,8 @@ const config: ExpoConfig = {
   },
   android: {
     package: 'com.bandadau.app',
+    // Push en Android (FCM): ruta al google-services.json de Firebase (no va en git). Sin él, el APK compila pero no recibe push.
+    ...(process.env.GOOGLE_SERVICES_JSON ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON } : {}),
     adaptiveIcon: {
       foregroundImage: './assets/brand/android-adaptive-foreground.png',
       monochromeImage: './assets/brand/android-adaptive-monochrome.png',

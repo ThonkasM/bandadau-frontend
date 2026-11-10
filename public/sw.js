@@ -34,3 +34,46 @@ self.addEventListener('fetch', (event) => {
       .catch(() => caches.match(request).then((cached) => cached || caches.match('/'))),
   );
 });
+
+// --- Web Push (VAPID) ---
+// Payload from notification-service WebPushSender: { title, body, data: { deepLink?, ... } }
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : '' };
+  }
+  const data = payload.data && typeof payload.data === 'object' ? payload.data : {};
+  event.waitUntil(
+    self.registration.showNotification(payload.title || 'Bandada U', {
+      body: payload.body || '',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data,
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const data = event.notification.data || {};
+  let target = self.location.origin + '/';
+  try {
+    const url = new URL(data.deepLink || data.url || '/', self.location.origin);
+    // Keep only path/query/hash so the link always opens inside this origin.
+    target = self.location.origin + url.pathname + url.search + url.hash;
+  } catch {
+    // keep default
+  }
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if (new URL(client.url).origin === self.location.origin && 'focus' in client) {
+          return client.focus().then((focused) => (focused && 'navigate' in focused ? focused.navigate(target) : focused));
+        }
+      }
+      return self.clients.openWindow(target);
+    }),
+  );
+});
