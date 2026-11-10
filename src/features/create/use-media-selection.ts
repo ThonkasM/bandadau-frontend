@@ -11,6 +11,7 @@ import {
   type MediaKind,
 } from '@/features/create/types';
 import { newUuid } from '@/lib/ids';
+import { needsJpegConversion, toJpeg } from '@/lib/image-format';
 
 export interface MediaSelection {
   error: string | null;
@@ -47,6 +48,29 @@ export function useMediaSelection({
     durationMs: asset.duration ?? undefined,
   });
 
+  /**
+   * iPhones shoot HEIC/HEIF, which browsers cannot display (`Content-Type: image/heic` shows as a
+   * broken image) and `sharp` cannot thumbnail. Re-encode such images to JPEG before upload.
+   */
+  const toImageItem = async (asset: ImagePicker.ImagePickerAsset): Promise<MediaItem | null> => {
+    const item = toItem(asset, 'image');
+    if (!needsJpegConversion(item.mimeType, item.uri)) return item;
+    try {
+      const jpeg = await toJpeg(item.uri);
+      return {
+        ...item,
+        uri: jpeg.uri,
+        mimeType: jpeg.mimeType,
+        width: jpeg.width,
+        height: jpeg.height,
+        fileSize: jpeg.fileSize,
+      };
+    } catch {
+      setError(t('media.unsupportedFormat'));
+      return null;
+    }
+  };
+
   const ensurePermission = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
@@ -71,7 +95,10 @@ export function useMediaSelection({
     const accepted = result.assets.filter((asset) => (asset.fileSize ?? 0) <= MAX_IMAGE_BYTES);
     if (accepted.length < result.assets.length) setError(t('media.imageTooLarge'));
     if (result.assets.length > remaining) setError(t('media.imageLimit', { count: MAX_IMAGES }));
-    onChange([...items, ...accepted.map((asset) => toItem(asset, 'image'))].slice(0, MAX_IMAGES));
+    const prepared = (await Promise.all(accepted.map(toImageItem))).filter(
+      (item): item is MediaItem => item !== null,
+    );
+    onChange([...items, ...prepared].slice(0, MAX_IMAGES));
   };
 
   const pickVideo = async () => {

@@ -19,26 +19,58 @@ interface WebLlmModule {
   CreateMLCEngine(
     modelId: string,
     config?: { initProgressCallback?: (report: ProgressReport) => void },
+    chatOpts?: { context_window_size?: number },
   ): Promise<WebEngine>;
   hasModelInCache(modelId: string): Promise<boolean>;
   deleteModelAllInfoInCache(modelId: string): Promise<void>;
 }
 
-/** WebLLM prebuilt model ids (verified against the installed `@mlc-ai/web-llm`). */
-const WEBLLM_MODELS: Record<LocalModelId, string> = {
-  'qwen3-0.6b-q': 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
-  'llama-3.2-1b-q': 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
-  'web-fallback-small': 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
+/**
+ * WebLLM prebuilt model ids (verified against the installed `@mlc-ai/web-llm`). `q4f16_1` needs the
+ * WebGPU `shader-f16` feature; without it the same model is served as `q4f32_1` (bigger, same weights
+ * family), so web keeps parity with native instead of silently switching models.
+ */
+const WEBLLM_MODELS: Record<LocalModelId, { f16: string; f32: string }> = {
+  'qwen3-0.6b-q': { f16: 'Qwen3-0.6B-q4f16_1-MLC', f32: 'Qwen3-0.6B-q4f32_1-MLC' },
+  'llama-3.2-1b-q': {
+    f16: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
+    f32: 'Llama-3.2-1B-Instruct-q4f32_1-MLC',
+  },
+  'web-fallback-small': { f16: 'Qwen3-0.6B-q4f16_1-MLC', f32: 'Qwen3-0.6B-q4f32_1-MLC' },
 };
 
-async function hasWebGpu(): Promise<boolean> {
-  const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu;
-  if (!gpu) return false;
+interface GpuAdapter {
+  features?: { has(name: string): boolean };
+}
+
+/** The WebGPU adapter, or null when WebGPU is missing. */
+async function requestAdapter(): Promise<GpuAdapter | null> {
+  const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<GpuAdapter | null> } })
+    .gpu;
+  if (!gpu) return null;
   try {
-    return Boolean(await gpu.requestAdapter());
+    return (await gpu.requestAdapter()) ?? null;
   } catch {
-    return false;
+    return null;
   }
+}
+
+/**
+ * Context window requested from WebLLM. It matches the prebuilt override of Llama 3.2 1B, and is set
+ * explicitly so every model has a known budget for chunking.
+ */
+const CONTEXT_WINDOW = 4096;
+const CHAT_OPTS = { context_window_size: CONTEXT_WINDOW };
+
+async function hasWebGpu(): Promise<boolean> {
+  return (await requestAdapter()) !== null;
+}
+
+/** WebLLM id for `model` matching what this GPU supports. */
+async function webllmId(model: LocalModelId): Promise<string> {
+  const adapter = await requestAdapter();
+  const ids = WEBLLM_MODELS[model];
+  return adapter?.features?.has('shader-f16') ? ids.f16 : ids.f32;
 }
 
 /**
@@ -54,6 +86,8 @@ class BrowserLlm implements LocalLlm {
   private statusValue: LlmStatus = { kind: 'not-downloaded' };
   private readonly listeners = new Set<(status: LlmStatus) => void>();
   private engine: WebEngine | null = null;
+  /** WebLLM id of the loaded engine (to pass model-specific options such as `enable_thinking`). */
+  private engineModelId: string | null = null;
 
   private emit(status: LlmStatus): void {
     this.statusValue = status;
@@ -73,19 +107,27 @@ class BrowserLlm implements LocalLlm {
 
   async capabilities(): Promise<LlmCapabilities> {
     if (await hasWebGpu()) {
-      return { supported: true, recommended: { ...MODELS['qwen3-0.6b-q'], backend: 'webllm' } };
+      return { supported: true, recommended: { ...MODELS['llama-3.2-1b-q'], backend: 'webllm' } };
     }
     return { supported: false, recommended: null, reason: 'no-webgpu' };
   }
 
   async download(model: LocalModelId): Promise<void> {
-    const webllm = (await import('@mlc-ai/web-llm').catch(() => null)) as unknown as WebLlmModule | null;
+    const webllm = (await import('@mlc-ai/web-llm').catch(
+      () => null,
+    )) as unknown as WebLlmModule | null;
     if (!webllm || !(await hasWebGpu())) throw new Error('WebGPU is not available');
     this.emit({ kind: 'downloading', progress: 0 });
-    this.engine = await webllm.CreateMLCEngine(WEBLLM_MODELS[model], {
-      initProgressCallback: (report) =>
-        this.emit({ kind: 'downloading', progress: report.progress ?? 0 }),
-    });
+    const id = await webllmId(model);
+    this.engine = await webllm.CreateMLCEngine(
+      id,
+      {
+        initProgressCallback: (report) =>
+          this.emit({ kind: 'downloading', progress: report.progress ?? 0 }),
+      },
+      CHAT_OPTS,
+    );
+    this.engineModelId = id;
     this.emit({ kind: 'ready' });
   }
 
@@ -94,42 +136,81 @@ class BrowserLlm implements LocalLlm {
       this.emit({ kind: 'ready' });
       return;
     }
-    const webllm = (await import('@mlc-ai/web-llm').catch(() => null)) as unknown as WebLlmModule | null;
+    const webllm = (await import('@mlc-ai/web-llm').catch(
+      () => null,
+    )) as unknown as WebLlmModule | null;
     if (!webllm || !(await hasWebGpu())) return;
     // Only load from the browser cache: never download on its own (RNF-11).
-    if (!(await webllm.hasModelInCache(WEBLLM_MODELS[model]).catch(() => false))) return;
-    this.engine = await webllm.CreateMLCEngine(WEBLLM_MODELS[model]);
+    const id = await webllmId(model);
+    if (!(await webllm.hasModelInCache(id).catch(() => false))) return;
+    this.engine = await webllm.CreateMLCEngine(id, undefined, CHAT_OPTS);
+    this.engineModelId = id;
     this.emit({ kind: 'ready' });
   }
 
+  contextWindow(): number | null {
+    return this.engine ? CONTEXT_WINDOW : null;
+  }
+
   async generate(messages: ChatMessage[], opts?: GenerateOptions): Promise<string> {
-    if (!this.engine) throw new Error('assistant model is not ready');
-    const stream = await this.engine.chat.completions.create({
+    const engine = this.engine;
+    if (!engine) throw new Error('assistant model is not ready');
+    const base: Record<string, unknown> = {
       messages,
       stream: true,
       temperature: opts?.temperature ?? 0.2,
       max_tokens: opts?.maxTokens ?? 512,
-    });
-    let text = '';
-    for await (const chunk of stream) {
-      const delta =
-        (chunk as { choices?: { delta?: { content?: string } }[] }).choices?.[0]?.delta?.content ?? '';
-      if (!delta) continue;
-      text += delta;
-      opts?.onToken?.(delta);
+    };
+    if (opts?.topP !== undefined) base.top_p = opts.topP;
+    if (opts?.repetitionPenalty !== undefined) base.repetition_penalty = opts.repetitionPenalty;
+    // Qwen3 has a "thinking" mode that prepends reasoning to the answer; we want the answer only.
+    if (this.engineModelId?.startsWith('Qwen3')) base.extra_body = { enable_thinking: false };
+
+    const run = async (request: Record<string, unknown>): Promise<string> => {
+      const stream = await engine.chat.completions.create(request);
+      let text = '';
+      for await (const chunk of stream) {
+        if (opts?.signal?.aborted) {
+          engine.interruptGenerate();
+          throw Object.assign(new Error('aborted'), { name: 'AbortError' });
+        }
+        const delta =
+          (chunk as { choices?: { delta?: { content?: string } }[] }).choices?.[0]?.delta
+            ?.content ?? '';
+        if (!delta) continue;
+        text += delta;
+        opts?.onToken?.(delta);
+      }
+      return text;
+    };
+
+    if (opts?.jsonSchema) {
+      // Constrained decoding makes the JSON valid by construction; if the engine rejects the
+      // grammar, fall back to the unconstrained request (the tolerant parsers still apply).
+      try {
+        return await run({
+          ...base,
+          response_format: { type: 'json_object', schema: JSON.stringify(opts.jsonSchema) },
+        });
+      } catch (error) {
+        if (opts.signal?.aborted) throw error;
+      }
     }
-    return text;
+    return run(base);
   }
 
   async unload(): Promise<void> {
     await this.engine?.unload();
     this.engine = null;
+    this.engineModelId = null;
   }
 
   async remove(model: LocalModelId): Promise<void> {
     await this.unload();
-    const webllm = (await import('@mlc-ai/web-llm').catch(() => null)) as unknown as WebLlmModule | null;
-    await webllm?.deleteModelAllInfoInCache(WEBLLM_MODELS[model]).catch(() => undefined);
+    const webllm = (await import('@mlc-ai/web-llm').catch(
+      () => null,
+    )) as unknown as WebLlmModule | null;
+    await webllm?.deleteModelAllInfoInCache(await webllmId(model)).catch(() => undefined);
     this.emit({ kind: 'not-downloaded' });
   }
 }

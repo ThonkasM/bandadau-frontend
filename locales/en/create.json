@@ -13,6 +13,7 @@
     "hint": "Up to 4 images (max. 10 MB each) or 1 video (max. 60 s / 50 MB).",
     "permissionDenied": "We need access to your gallery to attach media.",
     "imageTooLarge": "Some image exceeds 10 MB and was not attached.",
+    "unsupportedFormat": "We couldn't process that image. Try JPG or PNG.",
     "imageLimit": "You can attach up to {count} images.",
     "videoTooLong": "The video exceeds 60 seconds.",
     "videoTooLarge": "The video exceeds 50 MB."

@@ -20,7 +20,7 @@ interface ExecuTorchModule {
   models: {
     llm: {
       LLAMA3_2_1B: { DEFAULT: LLMModel };
-      QWEN2_5_0_5B: { DEFAULT: LLMModel };
+      QWEN3_0_6B: { DEFAULT: LLMModel };
     };
   };
   download<T>(source: T, options?: { onProgress?: (progress: number) => void }): Promise<T>;
@@ -33,16 +33,14 @@ interface ExecuTorchModule {
   ): Promise<LLMChatSession>;
 }
 
-/** Keeps a session only while its history is short (system + ~1 turn), then reloads a fresh one. */
-const MAX_SESSION_MESSAGES = 4;
-
-/** Maps our model ids to the curated `models.llm.*` registry of the installed runtime. */function registryModel(runtime: ExecuTorchModule, id: LocalModelId): LLMModel | null {
+/** Maps our model ids to the curated `models.llm.*` registry of the installed runtime. */
+function registryModel(runtime: ExecuTorchModule, id: LocalModelId): LLMModel | null {
   const { llm } = runtime.models;
   switch (id) {
     case 'llama-3.2-1b-q':
       return llm.LLAMA3_2_1B.DEFAULT;
     case 'qwen3-0.6b-q':
-      return llm.QWEN2_5_0_5B.DEFAULT;
+      return llm.QWEN3_0_6B.DEFAULT;
     default:
       return null;
   }
@@ -54,7 +52,7 @@ const MAX_SESSION_MESSAGES = 4;
  * a build that does not link the native module (it degrades to the extractive fallback).
  *
  * `createLLMChatSession` runs generation on a background thread and streams tokens through
- * `onToken`; `stop()` interrupts it. A session is reused while the system prompt is unchanged.
+ * `onToken`; `stop()` interrupts it. A session is reused only for a true continuation of its conversation.
  */
 class ExecutorchLlm implements LocalLlm {
   readonly backend = 'executorch' as const;
@@ -63,7 +61,8 @@ class ExecutorchLlm implements LocalLlm {
   private readonly listeners = new Set<(status: LlmStatus) => void>();
   private modelConfig: LLMModel | null = null;
   private session: LLMChatSession | null = null;
-  private sessionSystem: string | null = null;
+  /** `maxSeqLen` of the exported model, read from the first session (unknown until then). */
+  private maxSeqLen: number | null = null;
 
   private emit(status: LlmStatus): void {
     this.statusValue = status;
@@ -128,34 +127,54 @@ class ExecutorchLlm implements LocalLlm {
     this.emit({ kind: 'ready' });
   }
 
-  private async ensureSession(system: string): Promise<LLMChatSession> {
+  /**
+   * The session is reused only when `prior` (every message before the one being sent) is exactly its
+   * history: system + the same user turns, in order. That keeps the KV cache warm for the flashcards
+   * retry / top-up, but a new chunk, a new text or a new run never inherits the previous context
+   * (which used to leak earlier text into later summaries and cards).
+   */
+  private isContinuation(prior: readonly ChatMessage[]): boolean {
+    if (!this.session) return false;
+    const history = this.session.getHistory();
+    if (history.length !== prior.length) return false;
+    return prior.every((m, i) => {
+      const h = history[i];
+      if (!h || h.role !== m.role) return false;
+      // Assistant turns may have been trimmed/re-serialized by the caller: the role match is enough.
+      return m.role === 'assistant' || h.content === m.content;
+    });
+  }
+
+  private async ensureSession(prior: readonly ChatMessage[]): Promise<LLMChatSession> {
     const runtime = await this.runtime();
     if (!runtime || !this.modelConfig) throw new Error('assistant model is not ready');
-    // Reuse only while the system prompt is unchanged and the history is short; otherwise start a
-    // fresh context so a new summarize/flashcards run is not influenced by the previous one (the
-    // flashcards retry still reuses the session, since its history is within the bound).
-    const reusable =
-      this.session &&
-      this.sessionSystem === system &&
-      this.session.getHistory().length <= MAX_SESSION_MESSAGES;
-    if (reusable) return this.session as LLMChatSession;
+    if (this.session && this.isContinuation(prior)) return this.session;
     this.session?.dispose();
+    this.session = null;
     this.session = await runtime.createLLMChatSession(this.modelConfig, {
-      initialMessages: system ? [{ role: 'system', content: system }] : [],
+      initialMessages: prior,
       generationConfig: { maxNewTokens: 512, temperature: 0.2 },
     });
-    this.sessionSystem = system;
+    try {
+      this.maxSeqLen = this.session.getKVCacheState().maxSeqLen || null;
+    } catch {
+      /* older runtimes: keep the conservative default */
+    }
     return this.session;
   }
 
+  contextWindow(): number | null {
+    return this.maxSeqLen;
+  }
+
   async generate(messages: ChatMessage[], opts?: GenerateOptions): Promise<string> {
-    const system = messages.find((m) => m.role === 'system')?.content ?? '';
-    const user = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
-    const session = await this.ensureSession(system);
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== 'user') throw new Error('the last message must come from the user');
+    const session = await this.ensureSession(messages.slice(0, -1));
     const onAbort = () => session.stop();
     opts?.signal?.addEventListener('abort', onAbort);
     try {
-      const result = await session.sendMessage(user, opts?.onToken, {
+      const result = await session.sendMessage(last.content, opts?.onToken, {
         maxNewTokens: opts?.maxTokens ?? 512,
         temperature: opts?.temperature ?? 0.2,
       });
@@ -169,7 +188,6 @@ class ExecutorchLlm implements LocalLlm {
   async unload(): Promise<void> {
     this.session?.dispose();
     this.session = null;
-    this.sessionSystem = null;
   }
 
   async remove(model: LocalModelId): Promise<void> {

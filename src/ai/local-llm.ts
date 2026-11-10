@@ -31,6 +31,12 @@ export interface ChatMessage {
 export interface GenerateOptions {
   maxTokens?: number;
   temperature?: number;
+  /** Nucleus sampling. Honored by runtimes that expose it (WebLLM); ignored by ExecuTorch. */
+  topP?: number;
+  /** >1 discourages loops/repetition. Honored by WebLLM; ignored by ExecuTorch. */
+  repetitionPenalty?: number;
+  /** JSON Schema for constrained decoding (guarantees valid JSON where supported, e.g. WebLLM). */
+  jsonSchema?: object;
   signal?: AbortSignal;
   onToken?: (token: string) => void;
 }
@@ -50,6 +56,11 @@ export interface LocalLlm {
   download(model: LocalModelId, opts?: { allowCellular?: boolean }): Promise<void>;
   load(model: LocalModelId): Promise<void>;
   generate(messages: ChatMessage[], opts?: GenerateOptions): Promise<string>;
+  /**
+   * Context window of the loaded model in tokens, or null while it is not known yet (the assistant
+   * then sizes its chunks conservatively).
+   */
+  contextWindow?(): number | null;
   unload(): Promise<void>;
   remove(model: LocalModelId): Promise<void>;
 }

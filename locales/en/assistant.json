@@ -10,6 +10,7 @@
   "counter": "{used} of {max} characters",
   "summarize": "Summarize",
   "flashcards": "Generate flashcards",
+  "generatingCards": "Generating flashcards… {percent}%",
   "stop": "Stop",
   "summaryTitle": "Summary",
   "disclaimer": "Generated on your device, may contain mistakes.",
@@ -29,6 +30,7 @@
     "remove": "Remove model",
     "noSpace": "Not enough space: {missing} more needed.",
     "cellular": "You are on mobile data. Download over Wi-Fi, or confirm to use mobile data.",
+    "confirmCellular": "Download using mobile data",
     "downloadError": "Could not download the model. Try again."
   }
 }

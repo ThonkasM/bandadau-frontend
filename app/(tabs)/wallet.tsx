@@ -1,7 +1,7 @@
 import { formatCredits, formatNumber, type Locale } from '@bandada/i18n';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -41,6 +41,15 @@ export default function WalletScreen() {
   const [payPhase, setPayPhase] = useState<PaymentPhase>('processing');
   const [payVisible, setPayVisible] = useState(false);
   const idempotencyKey = useRef(newUuid());
+
+  // UC-16: refresh the balance every time the screen regains focus (tab re-entry,
+  // return from an event, etc.) so the credit amount is always current.
+  const refetchWallet = wallet.refetch;
+  useFocusEffect(
+    useCallback(() => {
+      void refetchWallet();
+    }, [refetchWallet]),
+  );
 
   // Arriving from an event pre-selects the minimum package; otherwise the default.
   const pkg = selectedPkg ?? (returnTo ? minPackageFor(neededCredits) : 'CREDITS_50');
@@ -83,6 +92,19 @@ export default function WalletScreen() {
         <View style={styles.balanceTop}>
           <MaterialCommunityIcons name="wallet-outline" size={18} color={tokens.color.text.muted} />
           <Text style={{ color: tokens.color.text.muted }}>{t('balance')}</Text>
+          <Pressable
+            onPress={() => void wallet.refetch()}
+            disabled={wallet.isFetching}
+            accessibilityRole="button"
+            accessibilityLabel={t('refresh')}
+            hitSlop={8}
+            style={[styles.refresh, wallet.isFetching && styles.refreshBusy]}>
+            <MaterialCommunityIcons
+              name="refresh"
+              size={18}
+              color={tokens.color.text.muted}
+            />
+          </Pressable>
         </View>
         {wallet.isLoading ? (
           <BalanceSkeleton />
@@ -197,6 +219,8 @@ export default function WalletScreen() {
 const styles = StyleSheet.create({
   balance: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 6 },
   balanceTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  refresh: { marginLeft: 'auto' },
+  refreshBusy: { opacity: 0.4 },
   amount: { fontSize: 30, fontWeight: '900', lineHeight: 38 },
   returnNote: {
     flexDirection: 'row',

@@ -23,9 +23,12 @@ export async function checkDownload(
   const needed = requiredFreeBytes(model);
   if (free !== null && free < needed) return { ok: false, reason: 'no-space', missingBytes: needed - free };
 
+  // Detect cellular positively: on web `NetInfo` never reports `wifi`/`ethernet` (it falls back to
+  // `other`), so gating on "not wifi" wrongly flagged desktop browsers as mobile data.
   const net = await NetInfo.fetch();
-  const onWifi = net.type === 'wifi' || net.type === 'ethernet';
-  if (!onWifi && !allowCellular) return { ok: false, reason: 'cellular' };
+  const details = net.details as { isConnectionExpensive?: boolean } | null | undefined;
+  const onCellular = net.type === 'cellular' || details?.isConnectionExpensive === true;
+  if (onCellular && !allowCellular) return { ok: false, reason: 'cellular' };
 
   return { ok: true };
 }

@@ -13,11 +13,17 @@ import { Screen } from '@/components/screens/screen';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { FlashcardView } from '@/features/assistant/components/flashcard-view';
-import { TextEditorSheet } from '@/features/assistant/components/text-editor-sheet';
+import TextEditorSheet from '@/features/assistant/components/text-editor-sheet';
 import { useTokens } from '@/theme/theme-provider';
 
 const llm = createLocalLlm();
 const assistant = createStudyAssistant(llm);
+
+/** Inline banner under the model card; `confirmCellular` shows the "use mobile data" action. */
+interface Notice {
+  text: string;
+  confirmCellular?: boolean;
+}
 
 /** UC-17 · Offline study assistant (on-device; summary + flashcards). No network, ever. */
 export default function AssistantScreen() {
@@ -28,12 +34,13 @@ export default function AssistantScreen() {
   const [summary, setSummary] = useState('');
   const [cards, setCards] = useState<{ q: string; a: string }[]>([]);
   const [busy, setBusy] = useState<'summary' | 'cards' | null>(null);
+  const [cardsProgress, setCardsProgress] = useState(0);
   const [flipped, setFlipped] = useState<number | null>(null);
   const [editorVisible, setEditorVisible] = useState(false);
   const [failed, setFailed] = useState(false);
   const [status, setStatus] = useState<LlmStatus>(llm.status());
   const [recommended, setRecommended] = useState<LocalModelInfo | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -53,15 +60,15 @@ export default function AssistantScreen() {
     if (!gate.ok) {
       setNotice(
         gate.reason === 'no-space'
-          ? t('model.noSpace', { missing: formatBytes(gate.missingBytes) })
-          : t('model.cellular'),
+          ? { text: t('model.noSpace', { missing: formatBytes(gate.missingBytes) }) }
+          : { text: t('model.cellular'), confirmCellular: true },
       );
       return;
     }
     try {
       await llm.download(recommended.id, { allowCellular });
     } catch {
-      setNotice(t('model.downloadError'));
+      setNotice({ text: t('model.downloadError') });
     }
   };
 
@@ -86,7 +93,7 @@ export default function AssistantScreen() {
       );
       setSummary(result);
     } catch {
-      setNotice(t('model.downloadError'));
+      setNotice({ text: t('model.downloadError') });
     } finally {
       setBusy(null);
       abortRef.current = null;
@@ -101,15 +108,16 @@ export default function AssistantScreen() {
   const onFlashcards = async () => {
     // Flashcards need the on-device model; the extractive mode cannot produce them.
     if (status.kind !== 'ready') {
-      setNotice(t('model.notDownloaded'));
+      setNotice({ text: t('model.notDownloaded') });
       return;
     }
     setBusy('cards');
+    setCardsProgress(0);
     setCards([]);
     setSummary('');
     setFailed(false);
     try {
-      const deck = await assistant.generateFlashcards(text, locale);
+      const deck = await assistant.generateFlashcards(text, locale, undefined, setCardsProgress);
       if (deck) setCards(deck.cards);
       else setFailed(true);
     } catch {
@@ -184,8 +192,16 @@ export default function AssistantScreen() {
           {modelCard}
           {notice ? (
             <Text variant="caption" color={tokens.color.feedback.danger.fg}>
-              {notice}
+              {notice.text}
             </Text>
+          ) : null}
+          {notice?.confirmCellular ? (
+            <Button
+              label={t('model.confirmCellular')}
+              icon="wifi-off"
+              variant="secondary"
+              onPress={() => onDownload(true)}
+            />
           ) : null}
         </View>
 
@@ -241,6 +257,25 @@ export default function AssistantScreen() {
             ) : null}
           </View>
         )}
+
+        {busy === 'cards' ? (
+          <View style={styles.progress}>
+            <View style={[styles.track, { backgroundColor: tokens.color.bg.muted }]}>
+              <View
+                style={[
+                  styles.fill,
+                  {
+                    width: `${Math.round(cardsProgress * 100)}%`,
+                    backgroundColor: tokens.color.brand.accent,
+                  },
+                ]}
+              />
+            </View>
+            <Text variant="caption" style={{ color: tokens.color.text.muted }}>
+              {t('generatingCards', { percent: Math.round(cardsProgress * 100) })}
+            </Text>
+          </View>
+        ) : null}
 
         {summary ? (
           <View
@@ -302,4 +337,7 @@ const styles = StyleSheet.create({
   composerFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   row: { flexDirection: 'row', gap: 12, flexWrap: 'wrap', alignItems: 'center' },
   cards: { gap: 10 },
+  progress: { gap: 6 },
+  track: { height: 6, borderRadius: 3, overflow: 'hidden' },
+  fill: { height: 6, borderRadius: 3 },
 });

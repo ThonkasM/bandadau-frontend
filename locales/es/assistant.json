@@ -10,6 +10,7 @@
   "counter": "{used} de {max} caracteres",
   "summarize": "Resumir",
   "flashcards": "Generar flashcards",
+  "generatingCards": "Generando flashcards… {percent}%",
   "stop": "Detener",
   "summaryTitle": "Resumen",
   "disclaimer": "Generado en tu dispositivo, puede contener errores.",
@@ -29,6 +30,7 @@
     "remove": "Eliminar modelo",
     "noSpace": "No hay espacio suficiente: faltan {missing}.",
     "cellular": "Estás con datos móviles. Descarga por Wi-Fi o confirma para usar datos móviles.",
+    "confirmCellular": "Descargar con datos móviles",
     "downloadError": "No pudimos descargar el modelo. Intenta de nuevo."
   }
 }
