@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { cachedSource } from '@/lib/image-cache';
 import { useTokens } from '@/theme/theme-provider';
 
 /** Round avatar: the user's photo when there is one, otherwise their initial. */
@@ -34,7 +35,8 @@ export function Avatar({
       ]}>
       {url ? (
         <Image
-          source={{ uri: url }}
+          source={cachedSource(url)}
+          cachePolicy="memory-disk"
           style={{ width: '100%', height: '100%' }}
           contentFit="cover"
           transition={150}

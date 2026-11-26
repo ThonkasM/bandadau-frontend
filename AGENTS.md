@@ -47,8 +47,11 @@ subpaths de `expo-router` sin `@react-navigation/*`).
   el composer/acción fija va **fuera** de la lista (`BottomSheetFlatList`), no dentro. Regla general:
   dividir por plataforma con archivos `.native.tsx`/`.web.tsx` y, dentro de web, por ancho con
   `useDeviceType()` (`isWebMobile` vs `isWebDesktop`).
-- **Media**: relación de aspecto según Instagram (`src/lib/media-ratio.ts`) — retrato 4:5, paisaje
-  1.91:1, cuadrado 1:1; el contenedor toma el ratio de la primera imagen (`expo-image onLoad`).
+- **Media**: el contenedor toma la proporción real de la primera imagen (`expo-image onLoad`), acotada
+  a 9:16 … 1.91:1 (`src/lib/media-ratio.ts`); solo los extremos se recortan. Las fotos se reducen a
+  1600 px / JPEG 0.8 antes de subir (`src/lib/image-format.ts`; HEIC→JPEG; GIF intacto); avatares 320 px / 0.8.
+  Las URLs prefirmadas cambian en cada respuesta: usar `cachedSource()` (`src/lib/image-cache.ts`) para
+  que `expo-image` cachee por la ruta del objeto y no por la firma.
 - **Teclado**: `react-native-keyboard-controller` — `KeyboardProvider` en el root, `KeyboardAvoidingView`
   en los formularios (`AuthLayout`) y la tab bar se oculta con el teclado
   (`src/hooks/use-tab-bar-keyboard.{ts,native.ts}`). No usar `keyboardDidShow` para animar (llega tarde).

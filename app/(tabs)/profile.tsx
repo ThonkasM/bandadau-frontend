@@ -12,6 +12,7 @@ import { useMyProfile, useUserPosts } from '@/features/profile/api';
 import { ProfileMenu } from '@/features/profile/components/profile-menu';
 import { ProfileGridSkeleton, ProfileSkeleton } from '@/features/profile/components/profile-skeleton';
 import { useAvatarUpload } from '@/features/profile/use-avatar-upload';
+import { cachedSource } from '@/lib/image-cache';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
@@ -177,7 +178,8 @@ export default function ProfileScreen() {
                 onPress={() => openPost(item.post.id)}
                 style={[styles.gridItem, { backgroundColor: tokens.color.bg.muted }]}>
                 <Image
-                  source={{ uri: item.post.media[0]?.thumbnailUrl ?? item.post.media[0]?.url ?? undefined }}
+                  source={cachedSource(item.post.media[0]?.thumbnailUrl ?? item.post.media[0]?.url)}
+                  cachePolicy="memory-disk"
                   style={styles.gridImage}
                   contentFit="cover"
                   transition={150}

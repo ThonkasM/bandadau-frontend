@@ -11,7 +11,7 @@ import {
   type MediaKind,
 } from '@/features/create/types';
 import { newUuid } from '@/lib/ids';
-import { needsJpegConversion, toJpeg } from '@/lib/image-format';
+import { needsCompression, toJpeg } from '@/lib/image-format';
 
 export interface MediaSelection {
   error: string | null;
@@ -49,14 +49,15 @@ export function useMediaSelection({
   });
 
   /**
-   * iPhones shoot HEIC/HEIF, which browsers cannot display (`Content-Type: image/heic` shows as a
-   * broken image) and `sharp` cannot thumbnail. Re-encode such images to JPEG before upload.
+   * Every post image is downscaled (longest side 1600 px) and re-encoded to JPEG (q 0.8) on-device
+   * before upload: lighter S3 objects and a faster feed. This also converts iPhone HEIC/HEIF,
+   * which browsers cannot display and `sharp` cannot thumbnail. GIFs are kept as-is.
    */
   const toImageItem = async (asset: ImagePicker.ImagePickerAsset): Promise<MediaItem | null> => {
     const item = toItem(asset, 'image');
-    if (!needsJpegConversion(item.mimeType, item.uri)) return item;
+    if (!needsCompression(item.mimeType)) return item;
     try {
-      const jpeg = await toJpeg(item.uri);
+      const jpeg = await toJpeg(item.uri, { width: item.width, height: item.height });
       return {
         ...item,
         uri: jpeg.uri,

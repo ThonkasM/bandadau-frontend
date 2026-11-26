@@ -9,6 +9,7 @@ import { Screen } from '@/components/screens/screen';
 import { useMyProfile, useProfile, useUserPosts } from '@/features/profile/api';
 import { ProfileGridSkeleton, ProfileSkeleton } from '@/features/profile/components/profile-skeleton';
 import { useFollow, useUnfollow } from '@/features/social/api';
+import { cachedSource } from '@/lib/image-cache';
 import { useTokens } from '@/theme/theme-provider';
 import { useBrand } from '@/theme/use-brand';
 
@@ -128,21 +129,21 @@ export default function UserProfileScreen() {
                   accessibilityRole="button"
                   onPress={() => openPost(item.post.id)}
                   style={[styles.gridItem, { backgroundColor: tokens.color.bg.muted }]}>
-                  <Image
-                    source={{
-                      uri: item.post.media[0]?.thumbnailUrl ?? item.post.media[0]?.url ?? undefined,
-                    }}
-                    style={styles.gridImage}
-                    contentFit="cover"
-                    transition={150}
-                  />
-                  {item.post.media.length === 0 ? (
+                  {item.post.media.length > 0 ? (
+                    <Image
+                      source={cachedSource(item.post.media[0]?.thumbnailUrl ?? item.post.media[0]?.url)}
+                      cachePolicy="memory-disk"
+                      style={styles.gridImage}
+                      contentFit="cover"
+                      transition={150}
+                    />
+                  ) : (
                     <Text
                       numberOfLines={5}
                       style={[styles.gridText, { color: tokens.color.text.primary }]}>
                       {item.post.text}
                     </Text>
-                  ) : null}
+                  )}
                 </Pressable>
               ))}
             </View>
@@ -187,7 +188,8 @@ const styles = StyleSheet.create({
   },
   gridDivider: { marginTop: 20, borderTopWidth: StyleSheet.hairlineWidth },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 2, padding: 2 },
-  gridItem: { width: '32.6%', aspectRatio: 1, borderRadius: 4, overflow: 'hidden', padding: 6 },
-  gridImage: { ...StyleSheet.absoluteFill as object },
-  gridText: { fontSize: 11 },
+  // Igual que el perfil propio ((tabs)/profile.tsx): sin padding en el cuadro ni imagen absoluta, que colapsaban la altura.
+  gridItem: { width: '32.6%', aspectRatio: 1, borderRadius: 4, overflow: 'hidden' },
+  gridImage: { width: '100%', height: '100%' },
+  gridText: { fontSize: 11, padding: 6 },
 });

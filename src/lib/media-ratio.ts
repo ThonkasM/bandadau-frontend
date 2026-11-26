@@ -6,9 +6,9 @@ export interface TargetRatio {
 }
 
 /**
- * Instagram crop convention for the feed:
- * portrait → 4:5, landscape → 1.91:1, square → 1:1.
- * (Media is cropped to fill this ratio with `contentFit="cover"`.)
+ * Feed frame: respects the image's real aspect ratio, clamped to a sane range so extreme
+ * panoramas / very tall screenshots do not produce absurd cards (only those are cropped).
+ * Range: tall 9:16 … wide 1.91:1. A 4:5, 3:4, 9:16 or 4:3 photo is shown whole.
  */
 export const IG_RATIOS = {
   portrait: 4 / 5,
@@ -16,11 +16,15 @@ export const IG_RATIOS = {
   square: 1,
 } as const;
 
+export const MIN_MEDIA_RATIO = 9 / 16;
+export const MAX_MEDIA_RATIO = IG_RATIOS.landscape;
+
 export const DEFAULT_MEDIA_RATIO = IG_RATIOS.portrait;
 
 export function targetRatio(width: number, height: number): TargetRatio {
   if (!width || !height) return { ratio: DEFAULT_MEDIA_RATIO, orientation: 'portrait' };
-  if (height > width) return { ratio: IG_RATIOS.portrait, orientation: 'portrait' };
-  if (width > height) return { ratio: IG_RATIOS.landscape, orientation: 'landscape' };
+  const ratio = Math.min(MAX_MEDIA_RATIO, Math.max(MIN_MEDIA_RATIO, width / height));
+  if (height > width) return { ratio, orientation: 'portrait' };
+  if (width > height) return { ratio, orientation: 'landscape' };
   return { ratio: IG_RATIOS.square, orientation: 'square' };
 }

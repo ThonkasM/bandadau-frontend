@@ -17,15 +17,39 @@ export interface JpegImage {
   fileSize?: number;
 }
 
+/** Longest side (px) and JPEG quality for post images: sharp on any phone at ~300–500 KB. */
+export const POST_IMAGE_MAX_SIDE = 1600;
+export const POST_IMAGE_QUALITY = 0.8;
+
+/** GIFs are kept as-is (re-encoding to JPEG would drop the animation). */
+const KEEP_AS_IS = /^image\/gif$/i;
+
 /** True when the image should be re-encoded to JPEG before upload (e.g. iPhone HEIC). */
 export function needsJpegConversion(mimeType: string | undefined, uri: string): boolean {
   if (mimeType) return !PROCESSABLE_MIME.test(mimeType);
   return NON_PROCESSABLE_EXTENSION.test(uri);
 }
 
-/** Re-encodes any decodable image to JPEG on-device. Throws when the platform cannot decode it. */
-export async function toJpeg(uri: string, compress = 0.9): Promise<JpegImage> {
-  const rendered = await ImageManipulator.manipulate(uri).renderAsync();
+/** True when a post image should be downscaled/recompressed (everything except GIF). */
+export function needsCompression(mimeType: string | undefined): boolean {
+  return !(mimeType && KEEP_AS_IS.test(mimeType));
+}
+
+/**
+ * Re-encodes any decodable image (HEIC/HEIF, PNG, WebP…) to JPEG on-device, downscaling so the
+ * longest side is at most `maxSide` (never upscales). Orientation (EXIF) is applied by the codec.
+ * Throws when the platform cannot decode it.
+ */
+export async function toJpeg(
+  uri: string,
+  options: { compress?: number; maxSide?: number; width?: number; height?: number } = {},
+): Promise<JpegImage> {
+  const { compress = POST_IMAGE_QUALITY, maxSide = POST_IMAGE_MAX_SIDE, width, height } = options;
+  const context = ImageManipulator.manipulate(uri);
+  if (width && height && Math.max(width, height) > maxSide) {
+    context.resize(width >= height ? { width: maxSide } : { height: maxSide });
+  }
+  const rendered = await context.renderAsync();
   const saved = await rendered.saveAsync({ format: SaveFormat.JPEG, compress });
   return {
     uri: saved.uri,

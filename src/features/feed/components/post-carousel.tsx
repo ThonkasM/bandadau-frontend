@@ -15,13 +15,13 @@ import {
 
 import type { PostMedia } from '@/features/feed/types';
 import { useDeviceType } from '@/hooks/use-device-type';
+import { cachedSource } from '@/lib/image-cache';
 import { DEFAULT_MEDIA_RATIO, targetRatio } from '@/lib/media-ratio';
 import { useTokens } from '@/theme/theme-provider';
 
 /**
- * Instagram-style media carousel. All slides share the ratio derived from the
- * first image's real dimensions (portrait 4:5 / landscape 1.91:1 / square 1:1)
- * and are cropped to fill it. Web **desktop** shows arrows; touch uses swipe.
+ * Instagram-style media carousel. All slides share the ratio of the first image's real
+ * dimensions (clamped to 9:16 … 1.91:1, so normal photos are never cropped). Web **desktop** shows arrows; touch uses swipe.
  */
 export function PostCarousel({ media }: { media: PostMedia[] }) {
   const tokens = useTokens();
@@ -68,7 +68,8 @@ export function PostCarousel({ media }: { media: PostMedia[] }) {
         // Una sola imagen: sin ScrollView. En web, un ScrollView con scrollEnabled=false aplica
         // `touch-action: none` y bloquea el scroll vertical del feed al tocar la foto.
         <Image
-          source={{ uri: media[0]?.url ?? media[0]?.thumbnailUrl ?? undefined }}
+          source={cachedSource(media[0]?.url ?? media[0]?.thumbnailUrl)}
+          cachePolicy="memory-disk"
           style={{ width, height: slideHeight }}
           contentFit="cover"
           transition={200}
@@ -90,7 +91,8 @@ export function PostCarousel({ media }: { media: PostMedia[] }) {
           {media.map((mediaItem, i) => (
             <Image
               key={mediaItem.mediaId ?? i}
-              source={{ uri: mediaItem.url ?? mediaItem.thumbnailUrl ?? undefined }}
+              source={cachedSource(mediaItem.url ?? mediaItem.thumbnailUrl)}
+              cachePolicy="memory-disk"
               style={{ width, height: slideHeight }}
               contentFit="cover"
               transition={200}

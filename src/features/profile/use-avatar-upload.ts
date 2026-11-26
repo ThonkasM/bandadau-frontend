@@ -15,8 +15,9 @@ import { queryKeys } from '@/lib/query-keys';
 
 import { useUpdateProfile } from './api';
 
-/** Avatars are shown at most ~120 px; 512 px keeps them sharp on any density at a few KB. */
-const AVATAR_SIZE = 512;
+/** Avatars are shown at most ~120 px; 320 px is sharp on 2–3x screens at ~15–25 KB (slow networks). */
+const AVATAR_SIZE = 320;
+const AVATAR_QUALITY = 0.8;
 
 export type AvatarUploadError = 'rejected' | 'failed' | null;
 
@@ -54,7 +55,7 @@ export function useAvatarUpload() {
       const rendered = await ImageManipulator.manipulate(asset.uri)
         .resize({ width: AVATAR_SIZE, height: AVATAR_SIZE })
         .renderAsync();
-      const saved = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: 0.85 });
+      const saved = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: AVATAR_QUALITY });
       const sizeBytes = (await byteSize(saved.uri)) ?? asset.fileSize ?? 0;
 
       const input: CreateUploadInput = {

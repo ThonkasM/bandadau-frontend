@@ -97,6 +97,11 @@ const config: ExpoConfig = {
         },
       },
     ],
+    // Debe ir después de los plugins que agregan el build phase de dev-launcher. Ese
+    // plugin lo aplica prebuild automáticamente (lista `legacyExpoPlugins`) *después* de
+    // los plugins del usuario; como los mods `xcodeproj` se ejecutan de más nuevo a más
+    // antiguo, aquí ya existe el phase. No declarar `expo-dev-client` explícitamente.
+    './plugins/with-ios-dev-launcher-phase',
     './plugins/with-ios-signing',
   ],
   extra: {
